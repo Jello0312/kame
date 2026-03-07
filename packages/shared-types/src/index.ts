@@ -62,6 +62,19 @@ export enum SwipeActionType {
   DISLIKE = 'DISLIKE',
 }
 
+export enum TryOnLayer {
+  TOP = 'top',
+  BOTTOM = 'bottom',
+  SOLO = 'solo',
+  COMBINED = 'combined',
+}
+
+export enum OutfitGender {
+  M = 'M',
+  W = 'W',
+  U = 'U',
+}
+
 // ─── API Response Envelope ───────────────────────────
 
 export interface ApiResponse<T = unknown> {

@@ -111,6 +111,7 @@ model User {
 model UserProfile {
   id              String          @id @default(uuid()) @db.Uuid
   userId          String          @unique @map("user_id") @db.Uuid
+  gender          String          @map("gender")           // "M" | "W" — set during onboarding
   heightCm        Float?          @map("height_cm")
   weightKg        Float?          @map("weight_kg")
   waistCm         Float?          @map("waist_cm")
@@ -171,33 +172,54 @@ model Product {
   createdAt      DateTime @default(now()) @map("created_at")
   updatedAt      DateTime @updatedAt @map("updated_at")
 
-  tryOns       TryOnResult[]
-  swipeActions SwipeAction[]
+  tryOns        TryOnResult[]
+  swipeActions  SwipeAction[]
+  outfitTops    OutfitPairing[] @relation("OutfitTop")
+  outfitBottoms OutfitPairing[] @relation("OutfitBottom")
 
   @@unique([externalId, platform])
   @@map("products")
 }
 
-model TryOnResult {
-  id             String      @id @default(uuid()) @db.Uuid
-  userId         String      @map("user_id") @db.Uuid
-  productId      String      @map("product_id") @db.Uuid
-  resultImageUrl String?     @map("result_image_url")
-  status         TryOnStatus @default(PENDING)
-  createdAt      DateTime    @default(now()) @map("created_at")
+model OutfitPairing {
+  id              String   @id @default(uuid()) @db.Uuid
+  topProductId    String   @map("top_product_id") @db.Uuid
+  bottomProductId String   @map("bottom_product_id") @db.Uuid
+  gender          String   @map("gender")           // "M" | "W" | "U"
+  styleTags       String[] @map("style_tags")
+  createdAt       DateTime @default(now()) @map("created_at")
 
-  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  topProduct    Product     @relation("OutfitTop", fields: [topProductId], references: [id], onDelete: Cascade)
+  bottomProduct Product     @relation("OutfitBottom", fields: [bottomProductId], references: [id], onDelete: Cascade)
+  tryOnResults  TryOnResult[]
+
+  @@map("outfit_pairings")
+}
+
+model TryOnResult {
+  id              String         @id @default(uuid()) @db.Uuid
+  userId          String         @map("user_id") @db.Uuid
+  productId       String?        @map("product_id") @db.Uuid     // nullable for combined outfit results
+  outfitPairingId String?        @map("outfit_pairing_id") @db.Uuid
+  resultImageUrl  String?        @map("result_image_url")
+  status          TryOnStatus    @default(PENDING)
+  layer           String?        @map("layer")                   // "top" | "bottom" | "solo" | "combined"
+  createdAt       DateTime       @default(now()) @map("created_at")
+
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product       Product?       @relation(fields: [productId], references: [id], onDelete: Cascade)
+  outfitPairing OutfitPairing? @relation(fields: [outfitPairingId], references: [id], onDelete: Cascade)
 
   @@map("try_on_results")
 }
 
 model SwipeAction {
-  id        String          @id @default(uuid()) @db.Uuid
-  userId    String          @map("user_id") @db.Uuid
-  productId String          @map("product_id") @db.Uuid
-  action    SwipeActionType
-  createdAt DateTime        @default(now()) @map("created_at")
+  id            String          @id @default(uuid()) @db.Uuid
+  userId        String          @map("user_id") @db.Uuid
+  productId     String          @map("product_id") @db.Uuid
+  action        SwipeActionType
+  outfitGroupId String?         @map("outfit_group_id") @db.Uuid  // links paired items from same swipe
+  createdAt     DateTime        @default(now()) @map("created_at")
 
   user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
