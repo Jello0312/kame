@@ -1,0 +1,203 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ─── Enums ───────────────────────────────────────────
+
+enum SubscriptionTier {
+  FREE
+  PREMIUM
+
+  @@map("subscription_tier")
+}
+
+enum BodyShape {
+  HOURGLASS
+  PEAR
+  APPLE
+  RECTANGLE
+  INVERTED_TRIANGLE
+
+  @@map("body_shape")
+}
+
+enum MeasurementUnit {
+  METRIC
+  IMPERIAL
+
+  @@map("measurement_unit")
+}
+
+enum AvatarStatus {
+  PENDING
+  PROCESSING
+  READY
+  FAILED
+
+  @@map("avatar_status")
+}
+
+enum BudgetRange {
+  BUDGET
+  MID
+  PREMIUM
+  LUXURY
+
+  @@map("budget_range")
+}
+
+enum Platform {
+  AMAZON
+  SHEIN
+  ZARA
+
+  @@map("platform")
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  UNISEX
+
+  @@map("gender")
+}
+
+enum TryOnStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+
+  @@map("try_on_status")
+}
+
+enum SwipeActionType {
+  LIKE
+  DISLIKE
+
+  @@map("swipe_action_type")
+}
+
+// ─── Models ──────────────────────────────────────────
+
+model User {
+  id               String           @id @default(uuid()) @db.Uuid
+  email            String           @unique
+  passwordHash     String           @map("password_hash")
+  name             String
+  subscriptionTier SubscriptionTier @default(FREE) @map("subscription_tier")
+  createdAt        DateTime         @default(now()) @map("created_at")
+  updatedAt        DateTime         @updatedAt @map("updated_at")
+
+  profile      UserProfile?
+  avatar       UserAvatar?
+  style        StylePreference?
+  tryOns       TryOnResult[]
+  swipeActions SwipeAction[]
+
+  @@map("users")
+}
+
+model UserProfile {
+  id              String          @id @default(uuid()) @db.Uuid
+  userId          String          @unique @map("user_id") @db.Uuid
+  heightCm        Float?          @map("height_cm")
+  weightKg        Float?          @map("weight_kg")
+  waistCm         Float?          @map("waist_cm")
+  bodyShape       BodyShape?      @map("body_shape")
+  measurementUnit MeasurementUnit @default(METRIC) @map("measurement_unit")
+  createdAt       DateTime        @default(now()) @map("created_at")
+  updatedAt       DateTime        @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_profiles")
+}
+
+model UserAvatar {
+  id           String       @id @default(uuid()) @db.Uuid
+  userId       String       @unique @map("user_id") @db.Uuid
+  facePhotoUrl String?      @map("face_photo_url")
+  bodyPhotoUrl String?      @map("body_photo_url")
+  status       AvatarStatus @default(PENDING)
+  createdAt    DateTime     @default(now()) @map("created_at")
+  updatedAt    DateTime     @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_avatars")
+}
+
+model StylePreference {
+  id                 String      @id @default(uuid()) @db.Uuid
+  userId             String      @unique @map("user_id") @db.Uuid
+  budgetRange        BudgetRange @default(MID) @map("budget_range")
+  fashionStyles      String[]    @map("fashion_styles")
+  preferredPlatforms String[]    @map("preferred_platforms")
+  createdAt          DateTime    @default(now()) @map("created_at")
+  updatedAt          DateTime    @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("style_preferences")
+}
+
+model Product {
+  id             String   @id @default(uuid()) @db.Uuid
+  externalId     String   @map("external_id")
+  platform       Platform
+  name           String
+  brand          String?
+  price          Decimal  @db.Decimal(10, 2)
+  currency       String   @default("USD")
+  imageUrls      String[] @map("image_urls")
+  productPageUrl String   @map("product_page_url")
+  affiliateUrl   String?  @map("affiliate_url")
+  category       String
+  fashnCategory  String?  @map("fashn_category")
+  availableSizes String[] @map("available_sizes")
+  styleTags      String[] @map("style_tags")
+  gender         Gender
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  tryOns       TryOnResult[]
+  swipeActions SwipeAction[]
+
+  @@unique([externalId, platform])
+  @@map("products")
+}
+
+model TryOnResult {
+  id             String      @id @default(uuid()) @db.Uuid
+  userId         String      @map("user_id") @db.Uuid
+  productId      String      @map("product_id") @db.Uuid
+  resultImageUrl String?     @map("result_image_url")
+  status         TryOnStatus @default(PENDING)
+  createdAt      DateTime    @default(now()) @map("created_at")
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("try_on_results")
+}
+
+model SwipeAction {
+  id        String          @id @default(uuid()) @db.Uuid
+  userId    String          @map("user_id") @db.Uuid
+  productId String          @map("product_id") @db.Uuid
+  action    SwipeActionType
+  createdAt DateTime        @default(now()) @map("created_at")
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+  @@map("swipe_actions")
+}
