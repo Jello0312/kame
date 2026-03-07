@@ -1,0 +1,55 @@
+name: Database Migrate & Seed
+
+on:
+  workflow_dispatch:
+    inputs:
+      run_seed:
+        description: 'Also run seed after migration?'
+        required: false
+        default: 'true'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+
+jobs:
+  migrate:
+    name: Prisma Migrate & Seed
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/server
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        working-directory: .
+
+      - name: Generate Prisma Client
+        run: pnpm exec prisma generate
+
+      - name: Push Schema to Database
+        run: pnpm exec prisma db push
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DIRECT_URL: ${{ secrets.DIRECT_URL }}
+
+      - name: Run Seed
+        if: inputs.run_seed == 'true'
+        run: pnpm exec tsx prisma/seed.ts
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DIRECT_URL: ${{ secrets.DIRECT_URL }}
