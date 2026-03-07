@@ -38,6 +38,10 @@ export enum ProductPlatform {
   AMAZON = 'AMAZON',
   SHEIN = 'SHEIN',
   ZARA = 'ZARA',
+  ZALORA = 'ZALORA',
+  ZALANDO = 'ZALANDO',
+  TAOBAO = 'TAOBAO',
+  ASOS = 'ASOS',
 }
 
 export enum ProductGender {

@@ -56,6 +56,10 @@ enum Platform {
   AMAZON
   SHEIN
   ZARA
+  ZALORA
+  ZALANDO
+  TAOBAO
+  ASOS
 
   @@map("platform")
 }
