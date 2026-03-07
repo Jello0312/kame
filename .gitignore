@@ -44,6 +44,9 @@ pnpm-debug.log*
 # Testing
 coverage/
 
+# Claude Code
+.claude/
+
 # Misc
 *.tgz
 .cache/
