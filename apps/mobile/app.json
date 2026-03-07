@@ -1,0 +1,30 @@
+{
+  "expo": {
+    "name": "Kame",
+    "slug": "kame",
+    "version": "0.0.1",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "scheme": "kame",
+    "splash": {
+      "backgroundColor": "#1A2B3D",
+      "resizeMode": "contain"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.kame.app"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#1A2B3D"
+      },
+      "package": "com.kame.app"
+    },
+    "plugins": ["expo-router", "expo-secure-store"],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

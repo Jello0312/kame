@@ -1,0 +1,19 @@
+{
+  "name": "kame",
+  "private": true,
+  "scripts": {
+    "dev": "pnpm -r --parallel dev",
+    "dev:mobile": "pnpm --filter @kame/mobile dev",
+    "dev:server": "pnpm --filter @kame/server dev",
+    "test": "pnpm -r test",
+    "lint": "pnpm -r lint",
+    "typecheck": "pnpm -r typecheck",
+    "db:migrate": "pnpm --filter @kame/server db:migrate",
+    "db:seed": "pnpm --filter @kame/server db:seed",
+    "db:studio": "pnpm --filter @kame/server db:studio"
+  },
+  "engines": {
+    "node": ">=20",
+    "pnpm": ">=9"
+  }
+}

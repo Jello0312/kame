@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "server",
+      "runtimeExecutable": "C:\\Users\\Ho Jolene\\AppData\\Roaming\\npm\\pnpm.cmd",
+      "runtimeArgs": ["--filter", "@kame/server", "dev"],
+      "port": 3001
+    },
+    {
+      "name": "mobile",
+      "runtimeExecutable": "C:\\Users\\Ho Jolene\\AppData\\Roaming\\npm\\pnpm.cmd",
+      "runtimeArgs": ["--filter", "@kame/mobile", "dev"],
+      "port": 8081
+    }
+  ]
+}
