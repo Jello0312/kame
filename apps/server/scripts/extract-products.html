@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Kame Product Extractor</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, -apple-system, sans-serif; background: #0f172a; color: #e2e8f0; padding: 2rem; }
+    h1 { color: #38bdf8; margin-bottom: 0.5rem; }
+    .subtitle { color: #94a3b8; margin-bottom: 2rem; }
+    .section { background: #1e293b; border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; }
+    .section h2 { color: #38bdf8; margin-bottom: 1rem; font-size: 1.1rem; }
+    .step { display: flex; gap: 1rem; margin-bottom: 1rem; align-items: flex-start; }
+    .step-num { background: #38bdf8; color: #0f172a; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0; }
+    .step-content { flex: 1; }
+    .step-content a { color: #38bdf8; }
+    code { background: #334155; padding: 2px 6px; border-radius: 4px; font-size: 0.9rem; }
+    textarea { width: 100%; height: 120px; background: #0f172a; color: #e2e8f0; border: 1px solid #475569; border-radius: 8px; padding: 0.75rem; font-family: monospace; font-size: 0.85rem; resize: vertical; }
+    button { background: #38bdf8; color: #0f172a; border: none; padding: 0.5rem 1.5rem; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 0.5rem; }
+    button:hover { background: #7dd3fc; }
+    .btn-copy { background: #22c55e; }
+    .btn-copy:hover { background: #4ade80; }
+    #output { margin-top: 1rem; }
+    .status { padding: 0.5rem 1rem; border-radius: 8px; margin-top: 0.5rem; }
+    .status.success { background: #166534; }
+    .status.error { background: #991b1b; }
+    .status.info { background: #1e40af; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    @media (max-width: 800px) { .grid { grid-template-columns: 1fr; } }
+    .progress { margin-top: 0.5rem; font-size: 0.9rem; color: #94a3b8; }
+    .product-preview { display: flex; gap: 0.5rem; align-items: center; padding: 0.5rem; background: #334155; border-radius: 8px; margin-bottom: 0.5rem; }
+    .product-preview img { width: 40px; height: 50px; object-fit: cover; border-radius: 4px; }
+    .product-preview .info { font-size: 0.8rem; }
+    .product-preview .name { color: #e2e8f0; }
+    .product-preview .price { color: #22c55e; }
+  </style>
+</head>
+<body>
+  <h1>Kame Product Extractor</h1>
+  <p class="subtitle">Extract real product data from SHEIN & Amazon for the catalog</p>
+
+  <div class="grid">
+    <div class="section">
+      <h2>SHEIN Extraction Script</h2>
+      <p style="color:#94a3b8;margin-bottom:1rem;font-size:0.9rem;">
+        Copy this script, navigate to a SHEIN category page, open DevTools (F12),
+        paste in Console tab, press Enter. Repeat for each category.
+      </p>
+      <textarea id="sheinScript" readonly>
+(() => {
+  const clean = url => url ? url.split('?')[0] : '';
+  const cards = document.querySelectorAll('div.product-card');
+  const products = []; const seen = new Set();
+  for (const card of cards) {
+    const link = card.querySelector('a[href*="-p-"]');
+    if (!link) continue;
+    const idMatch = link.href.match(/-p-(\d+)/);
+    if (!idMatch || seen.has(idMatch[1])) continue;
+    seen.add(idMatch[1]);
+    const nameMatch = new URL(link.href).pathname.match(/\/([^\/]+)-p-\d+/);
+    let name = nameMatch ? nameMatch[1].replace(/-/g, ' ') : '';
+    const img = card.querySelector('img[src*="ltwebstatic"]');
+    const imgUrl = clean(img?.src || '');
+    let price = null;
+    for (const s of card.querySelectorAll('span')) {
+      const m = s.textContent.match(/^\$([0-9]+\.[0-9]+)$/);
+      if (m) { price = m[1]; break; }
+    }
+    if (imgUrl && name) products.push({
+      id: idMatch[1], name: name.substring(0,120), img: imgUrl, price,
+      url: 'https://us.shein.com' + new URL(link.href).pathname
+    });
+  }
+  const cat = document.title.match(/Women|Men/) ? document.title.split('|')[0].trim() : 'Unknown';
+  const prev = JSON.parse(localStorage.getItem('kame_shein') || '{}');
+  prev[cat] = products.slice(0, 15);
+  localStorage.setItem('kame_shein', JSON.stringify(prev));
+  console.log(`Saved ${products.length} products for "${cat}". Total categories: ${Object.keys(prev).length}`);
+  console.log('Products:', products.slice(0,3).map(p => p.name.substring(0,50)));
+  alert(`Saved ${products.length} products for "${cat}"`);
+})();
+      </textarea>
+      <button onclick="navigator.clipboard.writeText(document.getElementById('sheinScript').value.trim())">Copy SHEIN Script</button>
+
+      <div style="margin-top:1rem">
+        <h3 style="color:#94a3b8;font-size:0.9rem;margin-bottom:0.5rem;">Pages to visit:</h3>
+        <div class="step"><div class="step-num">1</div><div class="step-content"><a href="https://us.shein.com/Women-T-Shirts-c-1738.html" target="_blank">Women's T-Shirts</a> (need 8 tops)</div></div>
+        <div class="step"><div class="step-num">2</div><div class="step-content"><a href="https://us.shein.com/Women-Pants-c-1740.html" target="_blank">Women's Pants</a> (need 6 bottoms)</div></div>
+        <div class="step"><div class="step-num">3</div><div class="step-content"><a href="https://us.shein.com/Women-Dresses-c-1727.html" target="_blank">Women's Dresses</a> (need 6 dresses)</div></div>
+        <div class="step"><div class="step-num">4</div><div class="step-content"><a href="https://us.shein.com/Men-T-Shirts-c-1980.html" target="_blank">Men's T-Shirts</a> (need 8 tops)</div></div>
+        <div class="step"><div class="step-num">5</div><div class="step-content"><a href="https://us.shein.com/Men-Pants-c-1981.html" target="_blank">Men's Pants</a> (need 5 bottoms)</div></div>
+        <div class="step"><div class="step-num">6</div><div class="step-content"><a href="https://us.shein.com/Women-Sweatshirts-c-2218.html" target="_blank">Women's Sweatshirts</a> (for unisex tops)</div></div>
+      </div>
+
+      <div style="margin-top:1rem">
+        <h3 style="color:#94a3b8;font-size:0.9rem;margin-bottom:0.5rem;">After visiting all pages, run this to export:</h3>
+        <textarea id="sheinExport" readonly style="height:60px;">
+console.log(JSON.stringify(JSON.parse(localStorage.getItem('kame_shein')||'{}'),null,2)); copy(localStorage.getItem('kame_shein'));alert('Copied to clipboard!');
+        </textarea>
+        <button onclick="navigator.clipboard.writeText(document.getElementById('sheinExport').value.trim())">Copy Export Script</button>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Amazon Extraction Script</h2>
+      <p style="color:#94a3b8;margin-bottom:1rem;font-size:0.9rem;">
+        Navigate to an Amazon search results page for "Amazon Essentials" in each category.
+        Open DevTools (F12), paste in Console, press Enter.
+      </p>
+      <textarea id="amzScript" readonly>
+(() => {
+  const existing = new Set(['B0FX338KX4','B0CQXTJBY8','B0C746SD2Y','B0DHS3R55X','B0FT2CC48Y','B0FN4HS99W','B0FR7CDKMT','B0CSSHP46K','B0FG7DNDBN','B0D2HTXRZF','B0DP2X2QCW','B0D7PQRN7K','B0DKHMMQBJ','B0F7QX62MV','B0FNQGF8C3','B0BQZYX9WN','B0D986LTTT','B0G1RDB54C','B0BQZZR97L','B07R54H2X4','B0B4VS9JJ1','B085Q6KKV6','B0FPQRN4PB','B0FPR64PMK','B0BMZF8QJD','B0FW3XV9CQ','B0C2V7S82C','B082ZT6WBY','B0F1FTWD76','B0FT4V4H3Q','B0DKDZB6WH','B0CXPDRS29','B0BXL73TBD','B0DJ2RJ4JS','B0DK6YG2K6','B0CZCM6BHW','B0DQSK6KWY','B0FS6C43MM','B0FWC94795','B0DJ8TLM7P','B0G5MGQMTP','B0G19HGXS4','B0DJQTKRZC','B0DJQTQVX5','B0FY2P2YDT','B0DJQTN913','B0FY2NZLMN','B0DJQRWH7J','B0DJS7DRX9','B0936M17S7','B0CL79J2MK','B0DJQT3PSF','B0FY2QGK2R','B0FFGRZZ75','B0G42J6ZC8','B0G34PPWHZ','B0D8TFF3WY','B0FM8PZQG5','B0G4TWGTTF','B0F9FF7M4Z','B0FVXMH5RC','B01JQTOZKG','B0DPHRDFLN','B0DYJZRHX6','B0FFB7TK28','B0FM8KDGR8','B0G34M1KFX']);
+  const results = []; const seen = new Set(); let skipped = 0;
+  const items = document.querySelectorAll('[data-asin]');
+  for (const item of items) {
+    const asin = item.getAttribute('data-asin');
+    if (!asin || asin.length < 5 || seen.has(asin)) continue;
+    seen.add(asin);
+    if (existing.has(asin)) { skipped++; continue; }
+    const img = item.querySelector('img.s-image');
+    let imgSrc = img?.src || '';
+    const titleEl = item.querySelector('h2 span, h2 .a-text-normal');
+    const title = titleEl?.textContent?.trim() || '';
+    const priceEl = item.querySelector('.a-price .a-offscreen');
+    const price = priceEl?.textContent?.match(/\$([0-9]+\.[0-9]+)/)?.[1] || null;
+    if (imgSrc.includes('_AC_')) imgSrc = imgSrc.replace(/\._AC_[A-Z_0-9]+_\./, '._AC_SX679_.');
+    if (title && imgSrc && asin.length >= 10) results.push({
+      asin, title: title.substring(0,120), img: imgSrc, price,
+      url: 'https://www.amazon.com/dp/' + asin
+    });
+  }
+  const cat = prompt('Category name? (e.g. "Women Tops", "Men Bottoms")') || 'Unknown';
+  const prev = JSON.parse(localStorage.getItem('kame_amazon') || '{}');
+  prev[cat] = results.slice(0, 15);
+  localStorage.setItem('kame_amazon', JSON.stringify(prev));
+  console.log(`Saved ${results.length} NEW products for "${cat}" (skipped ${skipped} already in catalog)`);
+  alert(`Saved ${results.length} NEW products for "${cat}"\nSkipped ${skipped} already in catalog`);
+})();
+      </textarea>
+      <button onclick="navigator.clipboard.writeText(document.getElementById('amzScript').value.trim())">Copy Amazon Script</button>
+
+      <div style="margin-top:1rem">
+        <h3 style="color:#94a3b8;font-size:0.9rem;margin-bottom:0.5rem;">Amazon searches to do:</h3>
+        <div class="step"><div class="step-num">1</div><div class="step-content"><a href="https://www.amazon.com/s?k=amazon+essentials+women+t-shirt&rh=p_89%3AAmazon+Essentials" target="_blank">Women's T-Shirts</a></div></div>
+        <div class="step"><div class="step-num">2</div><div class="step-content"><a href="https://www.amazon.com/s?k=amazon+essentials+women+pants+jeans&rh=p_89%3AAmazon+Essentials" target="_blank">Women's Pants/Jeans</a></div></div>
+        <div class="step"><div class="step-num">3</div><div class="step-content"><a href="https://www.amazon.com/s?k=amazon+essentials+women+dress&rh=p_89%3AAmazon+Essentials" target="_blank">Women's Dresses</a></div></div>
+        <div class="step"><div class="step-num">4</div><div class="step-content"><a href="https://www.amazon.com/s?k=amazon+essentials+men+shirt&rh=p_89%3AAmazon+Essentials" target="_blank">Men's Shirts</a></div></div>
+        <div class="step"><div class="step-num">5</div><div class="step-content"><a href="https://www.amazon.com/s?k=amazon+essentials+men+pants+jeans&rh=p_89%3AAmazon+Essentials" target="_blank">Men's Pants/Jeans</a></div></div>
+      </div>
+
+      <div style="margin-top:1rem">
+        <h3 style="color:#94a3b8;font-size:0.9rem;margin-bottom:0.5rem;">After visiting all pages, run this to export:</h3>
+        <textarea id="amzExport" readonly style="height:60px;">
+console.log(JSON.stringify(JSON.parse(localStorage.getItem('kame_amazon')||'{}'),null,2)); copy(localStorage.getItem('kame_amazon'));alert('Copied to clipboard!');
+        </textarea>
+        <button onclick="navigator.clipboard.writeText(document.getElementById('amzExport').value.trim())">Copy Export Script</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Paste Extracted Data Here</h2>
+    <p style="color:#94a3b8;margin-bottom:1rem;font-size:0.9rem;">
+      After running all extraction scripts on SHEIN & Amazon, paste the exported JSON data here:
+    </p>
+    <div class="grid">
+      <div>
+        <label style="color:#94a3b8;font-size:0.9rem;">SHEIN Data:</label>
+        <textarea id="sheinData" placeholder="Paste SHEIN JSON here..." style="height:200px;"></textarea>
+      </div>
+      <div>
+        <label style="color:#94a3b8;font-size:0.9rem;">Amazon Data:</label>
+        <textarea id="amzData" placeholder="Paste Amazon JSON here..." style="height:200px;"></textarea>
+      </div>
+    </div>
+    <button class="btn-copy" onclick="compileData()" style="margin-top:1rem;">Compile Catalog Data</button>
+    <div id="output"></div>
+  </div>
+
+  <script>
+    function compileData() {
+      const out = document.getElementById('output');
+      try {
+        const shein = JSON.parse(document.getElementById('sheinData').value || '{}');
+        const amz = JSON.parse(document.getElementById('amzData').value || '{}');
+
+        let total = 0;
+        let summary = '<div class="status info">Data Summary:</div>';
+
+        for (const [cat, items] of Object.entries(shein)) {
+          summary += `<div class="status success">SHEIN ${cat}: ${items.length} products</div>`;
+          total += items.length;
+        }
+        for (const [cat, items] of Object.entries(amz)) {
+          summary += `<div class="status success">Amazon ${cat}: ${items.length} products</div>`;
+          total += items.length;
+        }
+
+        summary += `<div class="status info">Total: ${total} products</div>`;
+
+        // Compile into catalog format
+        const compiled = { shein, amazon: amz, timestamp: new Date().toISOString(), total };
+        const json = JSON.stringify(compiled, null, 2);
+
+        summary += `<div style="margin-top:1rem"><textarea style="height:300px;">${json}</textarea></div>`;
+        summary += `<button class="btn-copy" onclick="navigator.clipboard.writeText(JSON.stringify(${JSON.stringify(compiled)},null,2));alert('Copied!');" style="margin-top:0.5rem;">Copy Compiled JSON</button>`;
+
+        out.innerHTML = summary;
+      } catch (e) {
+        out.innerHTML = `<div class="status error">Error: ${e.message}</div>`;
+      }
+    }
+  </script>
+</body>
+</html>

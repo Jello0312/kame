@@ -14,7 +14,7 @@ const products = catalogProducts.map((p) => ({
 }));
 
 async function main() {
-  console.log('Seeding database with 84 products and 32 outfit pairings...');
+  console.log(`Seeding database with ${catalogProducts.length} products and ${outfitPairings.length} outfit pairings...`);
 
   // Step 1: Delete existing data (FK order matters)
   await prisma.swipeAction.deleteMany();
@@ -22,7 +22,7 @@ async function main() {
   await prisma.outfitPairing.deleteMany();
   await prisma.product.deleteMany();
 
-  // Step 2: Create all 84 products
+  // Step 2: Create all products
   const result = await prisma.product.createMany({
     data: products,
     skipDuplicates: true,

@@ -1,58 +1,106 @@
 # Kame — Active Sprint Tasks
 
-> Updated by Claude Code at the start and end of each session.
-> See ROADMAP.md for the full multi-week plan.
+> Updated: 2026-03-09
+> See ROADMAP.md for full multi-week plan.
 
 ---
 
-## Completed: Sprint 1.1 — Project Scaffolding ✅
+## ✅ COMPLETED
 
-- [x] Initialize pnpm monorepo workspace (pnpm-workspace.yaml, root package.json)
-- [x] Create apps/mobile with Expo SDK 54 + expo-router + TypeScript
-- [x] Create apps/server with Express + TypeScript (health endpoint on port 3001)
-- [x] Create packages/shared-types with base interfaces and enums
-- [x] Set up tsconfig.base.json + per-package tsconfig extending base
-- [x] Create .env.example with all required environment variables
-- [x] Verify `pnpm dev:server` launches Express on port 3001
+### Sprint 1.1 — Project Scaffolding ✅
+- [x] Monorepo (pnpm workspaces, Expo, Express, shared-types)
+- [x] TypeScript, ESLint, Prettier, NativeWind configured
+- [x] .env.example created
+- [x] Both apps start with pnpm dev
 
-## Completed: Sprint 1.1b — Database + Seed Data ✅
+### Sprint 1.1b — Database Schema + Seed Script ✅
+- [x] Prisma schema: User, UserProfile, UserAvatar, StylePreference, Product, TryOnResult, SwipeAction, OutfitPairing
+- [x] Gender field on UserProfile
+- [x] OutfitPairing model (top + bottom + gender + styleTags)
+- [x] outfitGroupId on SwipeAction
+- [x] Platform enum expanded (AMAZON, SHEIN, ZALORA, ZALANDO, TAOBAO, ASOS)
+- [x] seed.ts with 67 verified Amazon products + 24 outfit pairings
+- [x] DIRECT_URL added to .env.example
 
-- [x] Set up Prisma in apps/server with PostgreSQL (Supabase)
-- [x] Create full schema: User, UserProfile, UserAvatar, StylePreference, Product, TryOnResult, SwipeAction
-- [x] Add OutfitPairing model with named relations (OutfitTop/OutfitBottom)
-- [x] Add gender field to UserProfile ("M" | "W")
-- [x] Add outfitPairingId + layer to TryOnResult, make productId optional
-- [x] Add outfitGroupId to SwipeAction
-- [x] Add Platform enum values: ZALORA, ZALANDO, TAOBAO, ASOS
-- [x] Add TryOnLayer and OutfitGender enums to shared-types
-- [x] Update .env.example with DIRECT_URL for Supabase connection pooling
-- [x] Rewrite seed.ts with 84 real Amazon/SHEIN products + 32 outfit pairings
-- [x] Prisma generate succeeds (client valid)
-- [x] Push schema to Supabase via GitHub Actions (`prisma db push`)
-- [x] Seed database via GitHub Actions (84 products + 32 outfit pairings)
-- [x] Set up GitHub Actions CI workflow (`db-migrate.yml`) for DB operations
+### Sprint 1.2 — Migration + Seed Execution ✅
+- [x] Create + run validate-images.ts script (HEAD request all image URLs) ✅
+- [x] Fix broken image URLs — rebuilt catalog with 67 verified Amazon products ✅
+- [x] Extract + add 74 SHEIN products to catalog (filtered from 105 raw, removed 30 placeholder images + 1 non-clothing) ✅
+- [x] Add 18 SHEIN outfit pairings (8 Women + 10 Men) ✅
+- [x] Run prisma migrate reset (cleared drift from previous db push) ✅
+- [x] Run prisma migrate dev --name init (created initial migration) ✅
+- [x] Run prisma db seed (141 products + 42 pairings seeded) ✅
+- [x] Verified: 141 products, 42 pairings, 141/141 images HTTP 200 ✅
 
-## Current Focus: Sprint 1.2 — Authentication
+### Review — Image Fix (2026-03-08)
+- **Problem:** All 84 original image URLs were returning HTTP 404
+- **Root cause:** Amazon image IDs were fabricated (correct ASIN but wrong image hash); SHEIN URLs had entirely fake hash segments
+- **Solution:** Scraped real product data from Amazon search results via browser DevTools; rebuilt catalog.ts with 67 verified products (all Amazon)
+- **Validation:** 67/67 images confirmed HTTP 200 via validate-images.ts
 
-_Plan to be written._
+### Review — SHEIN Expansion (2026-03-09)
+- **Source:** Extracted 105 products from SHEIN via DevTools console script
+- **Filtered:** Removed 30 products with placeholder gray images + 1 non-clothing item (iron-on sticker)
+- **Result:** 74 valid SHEIN products added (14 W Tops + 10 W Bottoms + 10 W Dresses + 10 M Tees + 10 M Polos + 10 M Bottoms + 10 M Hoodies)
+- **Total catalog:** 141 products (67 Amazon + 74 SHEIN) + 42 outfit pairings (24 Amazon + 18 SHEIN)
+- **Distribution:** 72 Women + 65 Men + 4 Unisex
+
+### Review — Migration + Seed (2026-03-09)
+- **Problem:** `prisma migrate dev` detected drift — DB had tables from previous `db push` but no migration history
+- **Solution:** `prisma migrate reset --force` to wipe clean, then `prisma migrate dev --name init` to create initial migration
+- **Result:** Initial migration `20260308162943_init` created and applied; 141 products + 42 pairings seeded successfully
+- **Added:** Prisma seed config to package.json (`"prisma": { "seed": "tsx prisma/seed.ts" }`)
+- **Note:** Prisma 7 will deprecate package.json#prisma — migrate to `prisma.config.ts` later
 
 ---
 
-## Backlog
-See ROADMAP.md for full sprint breakdown (Weeks 1-3 MVP, then v1.1-v2.0).
+## 🏗️ CURRENT FOCUS: Sprint 1.3 — Authentication Backend
+
+### Sprint 1.3 — Authentication Backend
+- [ ] POST /auth/register, POST /auth/login, GET /auth/me
+- [ ] JWT middleware, Zod validation middleware
+
+### Sprint 1.4 — Profile/Avatar/Preferences Backend + S3
+- [ ] S3 upload utility (with local fallback)
+- [ ] POST /api/profile, POST /api/avatar, POST /api/preferences
+- [ ] GET endpoints for each
+
+### Sprint 1.5 — Feed/Swipe/Favorites/Analytics Backend
+- [ ] FeedService with abstraction layer
+- [ ] GET /api/feed, POST /api/swipe, GET /api/favorites, POST /api/analytics/click
+
+### Sprint 2.1 — FASHN Try-On Pipeline
+- [ ] BullMQ + Redis setup
+- [ ] FASHN API client
+- [ ] Two-pass outfit generation job
+- [ ] POST /api/tryon/batch, GET /api/tryon/status
+
+### Sprint 2.2 — Mobile Auth + Onboarding
+- [ ] Auth store, API client, login/register screens
+- [ ] 4-step onboarding wizard (gender → measurements → photos → preferences → generating)
+- [ ] Navigation routing (auth → onboarding → tabs)
+
+### Sprint 2.3 — Swipe Deck UI
+- [ ] SwipeCard, SwipeDeck components
+- [ ] Reanimated spring animations + gesture handler
+- [ ] Feed loading + pagination
+
+### Sprint 3.1 — Favorites + Product Detail + Profile
+- [ ] ProductDetail modal with Buy Now
+- [ ] Favorites grid, Profile screen
+- [ ] Tab bar: Explore / Favorites / Profile
+
+### Sprint 3.2 — Polish
+- [ ] Loading states, error states, empty states
+- [ ] Splash screen, app icon
+- [ ] End-to-end walkthrough + bug fixes
+
+### Sprint 3.3 — Deploy + Beta
+- [ ] Backend deployment (Railway/Render)
+- [ ] Expo Go distribution to beta testers
+- [ ] Feedback form
 
 ---
 
-## Git Commits (this sprint)
-| Hash | Message |
-|------|---------|
-| `a97f9b2` | feat: initialize kame monorepo with pnpm workspaces |
-| `904eb64` | chore: add pnpm lockfile and approve build scripts |
-| `21f7e0d` | fix: update launch.json to use node+tsx directly |
-| `1a8a357` | feat: add Prisma schema, seed script, and shared types (Sprint 1.1b) |
-| `34348a8` | fix: remove .claude/ from tracking and add to .gitignore |
-| `bf9c3bd` | fix: replace placeholder images with real Unsplash garment photos |
-| `2cdabe5` | feat: add ZALORA, ZALANDO, TAOBAO, ASOS to Platform enum |
-| `2b7f9d4` | feat: add OutfitPairing model, gender on UserProfile, outfit context on TryOnResult/SwipeAction |
-| `458d602` | feat: rewrite seed.ts with 84 real products and 32 outfit pairings |
-| `74621da` | ci: add GitHub Actions workflow for DB migrate and seed |
+## Backlog (Post-MVP)
+See ROADMAP.md for v1.1 through v2.0 roadmap.
