@@ -2,7 +2,7 @@
 
 > Last updated: 2026-03-09
 > Current phase: **MVP Sprint (Weeks 1-3)**
-> Current step: **Sprint 1.3 — Authentication Backend**
+> Current step: **Sprint 1.5 — Feed/Swipe/Favorites/Analytics Backend**
 
 ## Progress Tracking Convention
 - `[ ]` = Todo
@@ -51,20 +51,24 @@
 - [x] Extract + add 74 SHEIN products to catalog (filtered from 105 raw) ✅
 - [x] Add 18 SHEIN outfit pairings (8 Women + 10 Men) ✅
 
-### Sprint 1.3 — Authentication Backend
-- [ ] POST /auth/register (email + password, Zod validation, bcrypt)
-- [ ] POST /auth/login (returns JWT access token)
-- [ ] GET /auth/me (returns current user from token)
-- [ ] Auth middleware (JWT verification on protected routes)
-- [ ] Zod validation middleware
+### Sprint 1.3 — Authentication Backend ✅ COMPLETE
+- [x] POST /auth/register (email + password, Zod validation, bcryptjs) ✅
+- [x] POST /auth/login (returns JWT access token) ✅
+- [x] GET /auth/me (returns current user from token) ✅
+- [x] Auth middleware (JWT verification on protected routes) ✅
+- [x] Zod validation middleware ✅
+- [x] Custom error classes (AppError, AuthError, ValidationError, NotFoundError) ✅
+- [x] Global error handler with Prisma P2002 handling ✅
+- [x] All 10 endpoint tests verified ✅
 
-### Sprint 1.4 — Profile, Avatar, Preferences Backend + S3
-- [ ] Create src/integrations/s3.ts (upload utility with local fallback)
-- [ ] POST /api/profile (save gender + measurements)
-- [ ] GET /api/profile (return user profile)
-- [ ] POST /api/avatar (upload face + body photos, resize with sharp, store in S3)
-- [ ] POST /api/preferences (save style preferences)
-- [ ] GET /api/preferences (return preferences)
+### Sprint 1.4 — Profile, Avatar, Preferences Backend + S3 ✅ COMPLETE
+- [x] Create src/integrations/s3.ts (upload utility with local fallback) ✅
+- [x] POST /api/profile (save gender + measurements) ✅
+- [x] GET /api/profile (return user profile) ✅
+- [x] POST /api/avatar (upload face + body photos, resize with sharp, store in S3) ✅
+- [x] GET /api/avatar (return avatar) ✅
+- [x] POST /api/preferences (save style preferences) ✅
+- [x] GET /api/preferences (return preferences) ✅
 
 ### Sprint 1.5 — Feed, Swipe, Favorites, Analytics Backend
 - [ ] Create src/services/FeedService.ts with abstraction layer

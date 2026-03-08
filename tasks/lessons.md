@@ -77,6 +77,31 @@
 **Root cause:** Prisma needs `"prisma": { "seed": "tsx prisma/seed.ts" }` in package.json to know how to run the seed.
 **Rule:** Always configure the Prisma seed command in package.json. Note: Prisma 7 will deprecate the `package.json#prisma` config — will need to migrate to `prisma.config.ts` later.
 
+### 2026-03-09 — Use bcryptjs instead of bcrypt on Windows
+**What happened:** `pnpm add bcrypt` installed but `pnpm approve-builds` required interactive input to approve native C++ build scripts. The interactive prompt blocked in Claude Code.
+**Root cause:** bcrypt uses native Node.js addons (C++ compilation via node-gyp). pnpm v10+ blocks build scripts by default and requires interactive approval via `pnpm approve-builds`.
+**Rule:** Use `bcryptjs` (pure JavaScript) instead of `bcrypt` (native C++). Identical API (`hash`, `compare`), no native build needed. Slightly slower but functionally equivalent. Avoids Windows build toolchain issues entirely.
+
+### 2026-03-09 — shared-types needs composite + noEmit:false for project references
+**What happened:** `tsc --noEmit` in apps/server failed with TS6306/TS6310 — "Referenced project must have composite:true" and "may not disable emit".
+**Root cause:** tsconfig.base.json sets `noEmit: true` globally. When apps/server references packages/shared-types via project references, TypeScript requires the referenced project to have `composite: true` AND `noEmit: false` so it can emit declaration files.
+**Rule:** Any package used as a TypeScript project reference must override base config with `"composite": true, "noEmit": false` in its own tsconfig.json. Run `npx tsc` in the package to build declarations before typechecking the consuming app.
+
+### 2026-03-09 — Router export needs explicit type annotation
+**What happened:** `const router = Router()` caused TS2742 — "inferred type cannot be named without reference to express-serve-static-core".
+**Root cause:** TypeScript's declaration emit can't infer the Router type across package boundaries without an explicit annotation.
+**Rule:** Always annotate Express router declarations: `const router: Router = Router()`.
+
+### 2026-03-10 — sharp needs onlyBuiltDependencies in pnpm
+**What happened:** `pnpm add sharp` installed the package but its native build scripts were ignored. `pnpm approve-builds` requires interactive input that Claude Code can't provide.
+**Root cause:** pnpm v10+ blocks native build scripts by default. `pnpm approve-builds` is interactive-only.
+**Rule:** Add `"sharp"` to `pnpm.onlyBuiltDependencies` array in root package.json, then run `pnpm install` to trigger the build. Same pattern used for `@prisma/client`, `esbuild`, etc.
+
+### 2026-03-10 — Upsert pattern for 1:1 user relationships
+**What happened:** Profile, avatar, and preferences all have a unique 1:1 relationship with User. Using separate create/update endpoints would require the client to track whether a record exists.
+**Root cause:** Onboarding creates records initially, but users may revisit settings to update them later.
+**Rule:** Use Prisma `upsert` (where: { userId }, create: {...}, update: {...}) for all 1:1 relationships. Single POST endpoint handles both create and update. Client doesn't need to know if the record exists.
+
 ---
 
 ## Patterns to Watch For
@@ -85,6 +110,15 @@
 - expo-camera requires permissions — handle permission denied gracefully
 - NativeWind classes may not apply if Tailwind config isn't set up correctly
 - expo-secure-store has size limits — only store tokens, not full user objects
+
+### Authentication
+- bcryptjs (pure JS) over bcrypt (native) — avoids Windows build issues
+- JWT payload: `{ userId }` only — minimal claims, verified via `jwt.verify(token, JWT_SECRET)`
+- Same error message for bad email AND bad password in login — prevents user enumeration
+- Use Prisma `select` clause (not destructuring) to exclude passwordHash — prevents hash from entering app memory
+- Zod `.trim().toLowerCase()` on email in schemas — prevents duplicate accounts from case differences
+- Express Request.userId augmentation via `src/types/express.d.ts` — standard namespace merge pattern
+- `const router: Router = Router()` — explicit type annotation required for declaration emit
 
 ### Express / Prisma
 - Supabase needs BOTH DATABASE_URL and DIRECT_URL for Prisma
@@ -112,6 +146,14 @@
 - seed.ts dynamically reads catalog length — no hardcoded product counts in log messages
 - Corporate network may timeout on first batch of concurrent requests — re-run validation to confirm transient vs real failures
 - Product scraping helper page: `scripts/extract-products.html` — reuse for future catalog updates
+
+### File Uploads / S3
+- S3 integration: check AWS env vars at startup, fallback to local `uploads/` dir if missing
+- sharp: body photo min 576x864 for FASHN AI, face photo max 512x512 (resize down if larger)
+- multer memoryStorage — buffers go directly to sharp, no temp files on disk
+- multer fileFilter: validate MIME type (image/jpeg, image/png), reject others with AppError(400)
+- MulterError handling: wrap in middleware that converts to AppError (LIMIT_FILE_SIZE → 400)
+- `pnpm.onlyBuiltDependencies` in root package.json — add sharp (and any future native deps)
 
 ### General
 - affiliateUrl is intentionally null in MVP — do NOT populate with fake URLs

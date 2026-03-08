@@ -47,6 +47,9 @@ coverage/
 # Claude Code
 .claude/
 
+# Uploads (local S3 fallback)
+uploads/
+
 # Misc
 *.tgz
 .cache/
