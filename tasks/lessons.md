@@ -97,6 +97,36 @@
 **Root cause:** pnpm v10+ blocks native build scripts by default. `pnpm approve-builds` is interactive-only.
 **Rule:** Add `"sharp"` to `pnpm.onlyBuiltDependencies` array in root package.json, then run `pnpm install` to trigger the build. Same pattern used for `@prisma/client`, `esbuild`, etc.
 
+### 2026-03-10 — Double cast needed for req.query with Zod
+**What happened:** `req.query as z.infer<typeof schema>` failed with TS2352 because Express's `ParsedQs` type doesn't overlap with the Zod inferred type.
+**Root cause:** TypeScript's type assertion requires some overlap between source and target types. `ParsedQs` (all string values) doesn't overlap with typed Zod output (numbers, booleans, etc.).
+**Rule:** Always use double cast for req.query: `req.query as unknown as z.infer<typeof schema>`. This is safe because the Zod `validate` middleware has already parsed and coerced the values.
+
+### 2026-03-10 — Non-null assertions needed in generic array swap
+**What happened:** Fisher-Yates shuffle `[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]` failed with TS2322 — `T | undefined` not assignable to `T`.
+**Root cause:** TypeScript infers array indexing as `T | undefined` with strict mode. The swap is safe because indices are bounds-checked in the for loop, but TS can't verify this.
+**Rule:** Use non-null assertions for array element swaps: `[shuffled[j]!, shuffled[i]!]`.
+
+### 2026-03-10 — Bash escapes ! in double-quoted strings
+**What happened:** Test scripts using `node -e "...!c.isSolo..."` failed because bash's history expansion converted `!c` to a history reference.
+**Root cause:** In bash, `!` inside double quotes triggers history expansion. This breaks JavaScript expressions like `!c.isSolo`.
+**Rule:** For inline node -e test scripts, use single quotes or write to a .mjs file and execute. Avoid double-quoted strings with `!` in bash.
+
+### 2026-03-11 — Pin ioredis version to match BullMQ peer dependency
+**What happened:** `pnpm add ioredis` installed v5.10.0 but BullMQ internally depends on ioredis@5.9.3. TypeScript errored: `Type 'Redis' is not assignable to type 'ConnectionOptions'` (TS2322).
+**Root cause:** ioredis 5.10.0's `Redis` class has slightly different type signatures than what BullMQ's `ConnectionOptions` expects from 5.9.3.
+**Rule:** Always install ioredis at the exact version BullMQ uses: `pnpm add ioredis@5.9.3`. Check BullMQ's package.json for the ioredis peer dep version before installing.
+
+### 2026-03-11 — Dynamic import for conditional module loading
+**What happened:** Importing `generateTryOn.ts` at top level in `index.ts` crashed the server when REDIS_URL wasn't configured, because the module creates a Redis connection at import time.
+**Root cause:** Top-level module imports execute immediately. If a module has side effects (like connecting to Redis), importing it unconditionally breaks graceful degradation.
+**Rule:** Use dynamic `import('./path.js').then(...)` for modules that have external dependencies (Redis, third-party APIs). Guard with an env var check: `if (process.env.REDIS_URL) { import(...) }`.
+
+### 2026-03-11 — BullMQ requires maxRetriesPerRequest: null
+**What happened:** BullMQ worker threw an error about Redis connection configuration.
+**Root cause:** BullMQ requires `maxRetriesPerRequest: null` on the ioredis connection to disable per-request retry limits and use its own retry logic.
+**Rule:** When creating ioredis connections for BullMQ (both Queue and Worker), always pass `{ maxRetriesPerRequest: null }`. BullMQ also needs separate Redis connections for Queue and Worker — don't share one connection.
+
 ### 2026-03-10 — Upsert pattern for 1:1 user relationships
 **What happened:** Profile, avatar, and preferences all have a unique 1:1 relationship with User. Using separate create/update endpoints would require the client to track whether a record exists.
 **Root cause:** Onboarding creates records initially, but users may revisit settings to update them later.
@@ -154,6 +184,27 @@
 - multer fileFilter: validate MIME type (image/jpeg, image/png), reject others with AppError(400)
 - MulterError handling: wrap in middleware that converts to AppError (LIMIT_FILE_SIZE → 400)
 - `pnpm.onlyBuiltDependencies` in root package.json — add sharp (and any future native deps)
+
+### Feed / Swipe / Favorites
+- Feed gender filtering: query OutfitPairing where `gender IN [userGender, 'U']` (string match, not Prisma enum)
+- Product.gender uses Prisma enum (MALE/FEMALE/UNISEX) but OutfitPairing.gender and UserProfile.gender use plain strings (M/W/U)
+- Solo dress cards: only for female users, query Product where `fashnCategory: 'one-pieces'` AND `gender: 'FEMALE'`
+- Swiped exclusion: only exclude pairings where BOTH top AND bottom products are swiped (not just one)
+- SwipeAction upsert: compound unique `userId_productId` — upsert handles re-swipe without error
+- Feed cursor: uses outfitPairingId for pairings, soloProduct.id for solo cards
+- TryOnResult query: status must be `'COMPLETED'` (not "ready") and layer `'combined'`
+- Favorites: query SwipeAction WHERE action='LIKE', join product, map to flat summary
+- `req.query as unknown as z.infer<typeof schema>` — double cast required for Zod coerced queries
+
+### BullMQ / Job Queue
+- ioredis must match BullMQ's peer dep version exactly — pin `ioredis@5.9.3`
+- `maxRetriesPerRequest: null` required on all ioredis connections used by BullMQ
+- Separate Redis connections for Queue and Worker — don't share one connection
+- Dynamic import for worker startup: `if (process.env.REDIS_URL) { import('./jobs/...').then(...) }`
+- Create DB record (PENDING) BEFORE queueing job — DB is source of truth, not the queue
+- Worker concurrency 2: each outfit job makes 2 sequential FASHN calls → max 4 concurrent FASHN requests (within 6-concurrent API limit)
+- Job data carries all URLs/IDs needed — worker never queries for product data, only updates TryOnResult status
+- `msgpackr-extract` build warning is harmless — BullMQ falls back to pure JS serialization
 
 ### General
 - affiliateUrl is intentionally null in MVP — do NOT populate with fake URLs

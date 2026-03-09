@@ -103,7 +103,8 @@ model User {
   avatar       UserAvatar?
   style        StylePreference?
   tryOns       TryOnResult[]
-  swipeActions SwipeAction[]
+  swipeActions     SwipeAction[]
+  analyticsClicks  AnalyticsClick[]
 
   @@map("users")
 }
@@ -174,8 +175,9 @@ model Product {
 
   tryOns        TryOnResult[]
   swipeActions  SwipeAction[]
-  outfitTops    OutfitPairing[] @relation("OutfitTop")
-  outfitBottoms OutfitPairing[] @relation("OutfitBottom")
+  outfitTops      OutfitPairing[]  @relation("OutfitTop")
+  outfitBottoms   OutfitPairing[]  @relation("OutfitBottom")
+  analyticsClicks AnalyticsClick[]
 
   @@unique([externalId, platform])
   @@map("products")
@@ -226,4 +228,17 @@ model SwipeAction {
 
   @@unique([userId, productId])
   @@map("swipe_actions")
+}
+
+model AnalyticsClick {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  productId String   @map("product_id") @db.Uuid
+  platform  String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("analytics_clicks")
 }

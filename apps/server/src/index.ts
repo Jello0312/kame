@@ -6,6 +6,11 @@ import { authRouter } from './routes/auth.js';
 import { profileRouter } from './routes/profile.js';
 import { avatarRouter } from './routes/avatar.js';
 import { preferencesRouter } from './routes/preferences.js';
+import { feedRouter } from './routes/feed.js';
+import { swipeRouter } from './routes/swipe.js';
+import { favoritesRouter } from './routes/favorites.js';
+import { analyticsRouter } from './routes/analytics.js';
+import { tryonRouter } from './routes/tryon.js';
 import { isS3Configured } from './integrations/s3.js';
 import { AppError, ValidationError } from './utils/errors.js';
 import type { ApiResponse } from '@kame/shared-types';
@@ -40,6 +45,20 @@ app.use('/auth', authRouter);
 app.use('/api/profile', profileRouter);
 app.use('/api/avatar', avatarRouter);
 app.use('/api/preferences', preferencesRouter);
+app.use('/api/feed', feedRouter);
+app.use('/api/swipe', swipeRouter);
+app.use('/api/favorites', favoritesRouter);
+app.use('/api/analytics', analyticsRouter);
+app.use('/api/tryon', tryonRouter);
+
+// ─── Try-On Worker (when Redis is configured) ───────
+if (process.env.REDIS_URL) {
+  import('./jobs/generateTryOn.js').then(({ startTryOnWorker }) => {
+    startTryOnWorker();
+  }).catch((err) => {
+    console.error('Failed to start try-on worker:', err);
+  });
+}
 
 // ─── Global Error Handler ───────────────────────────
 app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {

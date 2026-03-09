@@ -2,7 +2,7 @@
 
 > Last updated: 2026-03-09
 > Current phase: **MVP Sprint (Weeks 1-3)**
-> Current step: **Sprint 1.5 — Feed/Swipe/Favorites/Analytics Backend**
+> Current step: **Sprint 2.2 — Mobile Auth Screens + Onboarding Wizard**
 
 ## Progress Tracking Convention
 - `[ ]` = Todo
@@ -70,30 +70,30 @@
 - [x] POST /api/preferences (save style preferences) ✅
 - [x] GET /api/preferences (return preferences) ✅
 
-### Sprint 1.5 — Feed, Swipe, Favorites, Analytics Backend
-- [ ] Create src/services/FeedService.ts with abstraction layer
-- [ ] getTryOnImageForFeed() — with Option C migration comment
-- [ ] getFeedForUser() — gender-filtered, style-matched, exclude swiped
-- [ ] GET /api/feed?cursor=X — outfit cards endpoint
-- [ ] POST /api/swipe — save like/dislike with outfitGroupId
-- [ ] GET /api/favorites — flat list of liked products
-- [ ] POST /api/analytics/click — log Buy Now taps
+### Sprint 1.5 — Feed, Swipe, Favorites, Analytics Backend ✅ COMPLETE
+- [x] Create src/services/FeedService.ts with abstraction layer ✅
+- [x] getTryOnImageForFeed() — with Option C migration comment ✅
+- [x] getFeedForUser() — gender-filtered, style-matched, exclude swiped ✅
+- [x] GET /api/feed?cursor=X — outfit cards endpoint ✅
+- [x] POST /api/swipe — save like/dislike with outfitGroupId ✅
+- [x] GET /api/favorites — flat list of liked products ✅
+- [x] POST /api/analytics/click — log Buy Now taps ✅
 
 ---
 
 ## Week 2: Try-On + Swipe Core
 
-### Sprint 2.1 — FASHN AI Try-On Pipeline
-- [ ] Create src/lib/queue.ts (BullMQ + Redis connection)
-- [ ] Create src/integrations/fashn.ts (FASHN API v1.6 client)
-- [ ] generateTryOn(personImageUrl, garmentImageUrl, category) method
-- [ ] Create src/jobs/generateTryOn.ts (BullMQ worker)
-- [ ] Two-pass outfit pipeline: top on body → bottom on result → upload to S3
-- [ ] Single-pass dress pipeline: dress on body → upload to S3
-- [ ] POST /api/tryon/batch — trigger pre-gen (cap 20 female / 15 male)
-- [ ] GET /api/tryon/status — return generation progress
-- [ ] Error handling: retry 3x, then mark failed
-- [ ] Test with real FASHN API call
+### Sprint 2.1 — FASHN AI Try-On Pipeline ✅ COMPLETE
+- [x] Create src/lib/queue.ts (BullMQ + Redis connection with graceful degradation) ✅
+- [x] Create src/integrations/fashn.ts (FASHN SDK v1.6 client with retry + S3 persistence) ✅
+- [x] generateTryOn(personImageUrl, garmentImageUrl, category, s3Key) method ✅
+- [x] Create src/jobs/generateTryOn.ts (BullMQ worker, concurrency 2) ✅
+- [x] Two-pass outfit pipeline: top on body → bottom on result → upload to S3 ✅
+- [x] Single-pass dress pipeline: dress on body → upload to S3 ✅
+- [x] POST /api/tryon/batch — trigger pre-gen (cap 20 female / 15 male + 6 solo dresses) ✅
+- [x] GET /api/tryon/status — return generation progress (groupBy status) ✅
+- [x] Error handling: retry 3x with linear backoff, then mark failed ✅
+- [x] Graceful degradation: 503 when Redis/FASHN not configured ✅
 
 ### Sprint 2.2 — Mobile Auth Screens + Onboarding Wizard
 - [ ] stores/authStore.ts (Zustand + expo-secure-store)

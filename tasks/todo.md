@@ -1,6 +1,6 @@
 # Kame — Active Sprint Tasks
 
-> Updated: 2026-03-10
+> Updated: 2026-03-11 (Sprint 2.1 complete)
 > See ROADMAP.md for full multi-week plan.
 
 ---
@@ -91,19 +91,49 @@
 - **Validation:** Zod enums match Prisma enums exactly (gender M/W, bodyShape, budgetRange, platform names).
 - **Note:** sharp requires `pnpm.onlyBuiltDependencies` in root package.json for native build approval.
 
+### Sprint 1.5 — Feed/Swipe/Favorites/Analytics Backend ✅
+- [x] AnalyticsClick model added to Prisma schema + migration ✅
+- [x] src/services/FeedService.ts — getTryOnImageForFeed(), getFeedForUser(), Option C migration comment ✅
+- [x] src/routes/feed.ts — GET /api/feed?cursor=X&limit=N with Zod query validation ✅
+- [x] src/routes/swipe.ts — POST /api/swipe with upsert (re-swipe support) ✅
+- [x] src/routes/favorites.ts — GET /api/favorites with offset/limit pagination ✅
+- [x] src/routes/analytics.ts — POST /api/analytics/click ✅
+- [x] All routes registered in index.ts ✅
+- [x] All 13 endpoint tests verified ✅
+
+### Review — Feed/Swipe/Favorites/Analytics (2026-03-10)
+- **Architecture:** FeedService is a dedicated abstraction layer. Routes are thin handlers (validate → service/prisma → response). Analytics is inline (single create, no service needed).
+- **Feed algorithm:** Gender-filtered pairings (user gender + 'U'), style-tag overlap filtering, swiped product exclusion (only when BOTH top+bottom swiped), Fisher-Yates shuffle, cursor-based pagination.
+- **Solo dresses:** Female users also get one-piece/dress cards (`fashnCategory: 'one-pieces'`, `gender: 'FEMALE'`). These appear as `isSolo: true` feed cards with `soloProduct` instead of top/bottom.
+- **Swipe upsert:** Uses Prisma compound unique `userId_productId`. Upsert handles re-swipe (user changes their mind). `outfitGroupId` links paired items from same swipe gesture.
+- **Favorites:** Queries SwipeAction WHERE action='LIKE', includes product relation, maps to flat ProductSummary with `likedAt`.
+- **Try-on images:** `getTryOnImageForFeed()` queries for COMPLETED + combined layer results. Returns null if no try-on exists yet. v1.2 migration comment documents Option C switch.
+- **Feed stats:** 44 cards for female user (22 pairings + 22 solo dresses), drops to 43 after swiping both products of one pairing.
+
 ---
 
-## 🏗️ CURRENT FOCUS: Sprint 1.5 — Feed/Swipe/Favorites/Analytics Backend
+## ✅ Sprint 2.1 — FASHN AI Try-On Pipeline ✅
+- [x] Install deps: fashn, bullmq, ioredis@5.9.3 ✅
+- [x] src/integrations/fashn.ts — FASHN SDK v1.6 client with retry + S3 persistence ✅
+- [x] src/lib/queue.ts — BullMQ + Redis connection with graceful degradation ✅
+- [x] src/jobs/generateTryOn.ts — BullMQ worker (concurrency 2), two-pass outfit + solo dress pipelines ✅
+- [x] src/routes/tryon.ts — POST /batch (trigger pre-gen) + GET /status (progress polling) ✅
+- [x] src/index.ts — tryonRouter mount + conditional worker startup via dynamic import ✅
+- [x] All 12 verification tests passed (health, 503 degradation, auth guards, status counts) ✅
 
-### Sprint 1.5 — Feed/Swipe/Favorites/Analytics Backend
-- [ ] FeedService with abstraction layer
-- [ ] GET /api/feed, POST /api/swipe, GET /api/favorites, POST /api/analytics/click
+### Review — FASHN AI Try-On Pipeline (2026-03-11)
+- **Architecture:** Sub-agent parallel build — Agent 1 built fashn.ts, Agent 2 built queue.ts + worker. Main thread built routes + wired into index.ts. Zero file conflicts.
+- **FASHN SDK:** `fashn` npm package with `client.predictions.subscribe()` auto-polls until terminal state. model_name `tryon-v1.6`, mode `balanced` (~8s), garment_photo_type `auto`.
+- **Two-pass pipeline:** Pass 1: top garment on user body photo → S3. Pass 2: bottom garment on pass-1 result → S3. Solo dresses: single pass.
+- **Graceful degradation:** Without REDIS_URL → queue exports null, worker doesn't start, routes return 503. Without FASHN_API_KEY → fashn client is null, routes return 503. Server runs cleanly in both cases.
+- **Dynamic import:** Worker startup uses `import('./jobs/generateTryOn.js').then(...)` to avoid crash when Redis not configured.
+- **ioredis pinning:** Must use ioredis@5.9.3 to match BullMQ's peer dependency. v5.10.0 causes TS2322 type incompatibility with ConnectionOptions.
+- **Idempotent batch:** Skips outfit pairings that already have a TryOnResult record. Safe to call multiple times.
+- **Pre-gen caps:** 20 female outfits + 6 solo dresses, 15 male outfits. DB record created as PENDING before job queued.
 
-### Sprint 2.1 — FASHN Try-On Pipeline
-- [ ] BullMQ + Redis setup
-- [ ] FASHN API client
-- [ ] Two-pass outfit generation job
-- [ ] POST /api/tryon/batch, GET /api/tryon/status
+---
+
+## 🏗️ CURRENT FOCUS: Sprint 2.2 — Mobile Auth + Onboarding
 
 ### Sprint 2.2 — Mobile Auth + Onboarding
 - [ ] Auth store, API client, login/register screens
