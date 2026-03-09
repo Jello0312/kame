@@ -316,3 +316,54 @@ Simple: filter by user's preferred styles + gender, exclude already-swiped produ
 - ❌ Community features / social sharing — post-MVP
 - ❌ Size prediction ML — manual size display only
 - ❌ Affiliate link integration — deferred to v1.1, foundation only
+
+---
+# KAME BRAND INSTRUCTIONS FOR CLAUDE CODE
+## Add this entire section to CLAUDE.md in the project root
+
+---
+
+## Brand Design System (READ BEFORE ANY UI WORK)
+
+Full brand spec is at: `docs/BRAND_SYSTEM.md` — READ IT before building any screen.
+
+### Quick Reference — The 6 Rules
+
+1. **DARK-FIRST**: Navy `#112836` is the primary background everywhere. White surfaces only inside form cards and modals.
+
+2. **TWO ACCENT COLORS**: Teal bright `#48E6CD` for interactive elements (buttons, selected chips, links, active states). Coral `#FA6869` for prices and the CTA gradient.
+
+3. **FONT**: Plus Jakarta Sans everywhere. Files in `assets/fonts/`. Load via expo-font in `_layout.tsx`. Never use system fonts, Inter, or Roboto.
+
+4. **BUTTONS — TWO CTA TIERS**: 
+   - Commerce CTAs (Buy Now, Checkout, Generate Styles) = coral gradient (`#CC4968` → `#FA6869`, 135deg)
+   - Navigation CTAs (Next, Save, Login, Register, Continue) = teal bright `#48E6CD` solid
+   - Both fully rounded (borderRadius 26px). Swipe like = green `#289B62` circle. Swipe dislike = red `#E3393C` circle.
+
+5. **PRICES ALWAYS CORAL**: Every price tag in the app uses `#FA6869` bold. No exceptions.
+
+6. **TAB BAR = CORAL, IN-SCREEN = TEAL**: Active tab icons/labels use coral `#FA6869`. All other interactive elements inside screens (buttons, links, selected chips, toggles, focus borders) use teal bright `#48E6CD`. This separation makes navigation vs content visually distinct.
+
+7. **LOGO = ALL TEAL**: Render "Kame" as a single teal-bright `#48E6CD` BoldItalic text. Not split colors.
+
+### Color Tokens (import from `src/theme/constants.ts`)
+```
+navy=#112836  navyDeep=#03213B  teal=#1AA39C  tealBright=#48E6CD
+coral=#FA6869  coralDeep=#CC4968  gold=#F7C13D  green=#289B62  
+red=#E3393C  purple=#744DA6  white=#FFFFFF  gray100=#F8F9FB
+gray200=#E5E7EB  gray400=#9CA3AF  gray500=#6B7280  gray700=#374151
+```
+
+### Component Patterns
+- **Chips**: Unselected = transparent + gray border. Selected = teal bright bg + navy text.
+- **Inputs**: gray-100 bg, gray-200 border, teal-bright focus border, 12px radius.
+- **Tab bar**: White bg, coral active icon+label, gray-400 inactive. 3 tabs only: Explore/Favorites/Profile.
+- **Platform badges**: Amazon = orange `#FF9900` bg. SHEIN = black bg. White text, rounded 8px.
+- **Premium banner**: Purple gradient `#744DA6→#9B6BC7`, 16px radius.
+
+### Files to Create (Sprint 2 setup)
+1. `apps/mobile/src/theme/constants.ts` — All color, font, spacing, radius tokens
+2. `apps/mobile/assets/fonts/` — Plus Jakarta Sans .ttf files (5 weights)
+3. Update `tailwind.config.js` — Add Kame color/font tokens to NativeWind
+4. Update `app/_layout.tsx` — Load fonts via expo-font before rendering
+
