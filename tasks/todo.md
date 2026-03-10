@@ -180,12 +180,28 @@
 
 ---
 
-## 🏗️ CURRENT FOCUS: Sprint 2.3 — Swipe Deck UI
+## ✅ Sprint 2.3 — Swipe Deck UI ✅
+- [x] types/feed.ts — FeedCard, ProductSummary, FeedResponse shared types ✅
+- [x] app/_layout.tsx — GestureHandlerRootView + QueryClientProvider wrappers ✅
+- [x] components/SwipeCard.tsx — try-on image, product info overlay, platform badges, LIKE/NOPE stamps ✅
+- [x] components/SwipeDeck.tsx — Gesture.Pan(), spring physics, card stack, action buttons, fire-and-forget API ✅
+- [x] app/(tabs)/explore.tsx — useInfiniteQuery + SwipeDeck + loading/error/empty states ✅
+- [x] TypeScript typecheck passes clean ✅
 
-### Sprint 2.3 — Swipe Deck UI
-- [ ] SwipeCard, SwipeDeck components
-- [ ] Reanimated spring animations + gesture handler
-- [ ] Feed loading + pagination
+### Review — Swipe Deck UI (2026-03-10)
+- **Architecture:** 2 parallel sub-agents built SwipeCard.tsx (pure presentational) and SwipeDeck.tsx (gesture engine) with zero conflicts. Pre-reqs (types, _layout wrappers) done before sub-agents. explore.tsx wired after.
+- **Gesture API:** Gesture.Pan() composable API (not legacy PanGestureHandler). GestureDetector wraps top card only. onUpdate tracks position, onEnd threshold-checks → spring exit or snap back.
+- **Spring physics:** All constants from SWIPE object in constants.ts — threshold=120px, springDamping=15, springStiffness=150, exitX=500, rotationFactor=0.08.
+- **Card stack:** 3 visible cards with z-order via render order (third→second→top). Second/third cards interpolate scale+translateY as top card drags away. All animated styles on UI thread via useAnimatedStyle.
+- **Swipe API:** Fire-and-forget POST /api/swipe. Solo dress = 1 POST. Outfit pair = 2 parallel POSTs with shared crypto.randomUUID() outfitGroupId. Failures logged but don't interrupt UX.
+- **Feed pagination:** useInfiniteQuery with cursor-based pagination. Auto-fetches next page when <3 cards remain. allCards = data.pages.flatMap(p => p.cards).
+- **Programmatic swipe:** Button taps trigger withSpring with completion callback (3rd arg) for precise timing before handleSwipeComplete fires.
+- **Platform badges:** Amazon = #FF9900 bg, SHEIN = #000 bg, white bold text, rounded 8px.
+- **LinearGradient type fix:** GRADIENTS.cardOverlay typed as readonly tuple needs `as unknown as [string, string]` cast for expo-linear-gradient's colors prop.
+
+---
+
+## 🏗️ CURRENT FOCUS: Sprint 3.1 — Product Detail + Favorites + Profile
 
 ### Sprint 3.1 — Favorites + Product Detail + Profile
 - [ ] ProductDetail modal with Buy Now

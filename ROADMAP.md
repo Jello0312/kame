@@ -2,7 +2,7 @@
 
 > Last updated: 2026-03-10
 > Current phase: **MVP Sprint (Weeks 1-3)**
-> Current step: **Sprint 2.3 — Swipe Deck UI**
+> Current step: **Sprint 3.1 — Product Detail + Favorites + Profile**
 
 ## Progress Tracking Convention
 - `[ ]` = Todo
@@ -119,15 +119,15 @@
 - [x] app/onboarding/generating.tsx (loading + API calls + tryon/batch trigger) ✅
 - [x] Onboarding navigation flow (1→2→3→4→tabs) ✅
 
-### Sprint 2.3 — Swipe Deck UI
-- [ ] components/SwipeCard.tsx (try-on image + product overlay + prices)
-- [ ] components/SwipeDeck.tsx (card stack + reanimated + gesture-handler)
-- [ ] Swipe right animation → like (2x POST /api/swipe for outfits)
-- [ ] Swipe left animation → dislike
-- [ ] Bottom action buttons (X / Heart)
-- [ ] Feed loading + pagination (auto-fetch when <3 cards)
-- [ ] Empty state: "All caught up!"
-- [ ] Wire into app/(tabs)/explore.tsx
+### Sprint 2.3 — Swipe Deck UI ✅ COMPLETE
+- [x] components/SwipeCard.tsx (try-on image + product overlay + prices) ✅
+- [x] components/SwipeDeck.tsx (card stack + reanimated + gesture-handler) ✅
+- [x] Swipe right animation → like (2x POST /api/swipe for outfits) ✅
+- [x] Swipe left animation → dislike ✅
+- [x] Bottom action buttons (X / Heart) ✅
+- [x] Feed loading + pagination (auto-fetch when <3 cards) ✅
+- [x] Empty state: "All caught up!" ✅
+- [x] Wire into app/(tabs)/explore.tsx ✅
 
 ---
 

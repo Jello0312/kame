@@ -1,13 +1,23 @@
 import '../global.css';
 
 import { useEffect } from 'react';
-import { View } from 'react-native';
 import { Stack, useSegments, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useAuthStore } from '../stores/authStore';
 import { COLORS } from '../src/theme/constants';
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000,
+      retry: 2,
+    },
+  },
+});
 
 SplashScreen.preventAutoHideAsync();
 
@@ -57,9 +67,11 @@ export default function RootLayout() {
   }
 
   return (
-    <View style={{ flex: 1, backgroundColor: COLORS.navy }}>
-      <StatusBar style="light" />
-      <Stack screenOptions={{ headerShown: false }} />
-    </View>
+    <GestureHandlerRootView style={{ flex: 1, backgroundColor: COLORS.navy }}>
+      <QueryClientProvider client={queryClient}>
+        <StatusBar style="light" />
+        <Stack screenOptions={{ headerShown: false }} />
+      </QueryClientProvider>
+    </GestureHandlerRootView>
   );
 }
