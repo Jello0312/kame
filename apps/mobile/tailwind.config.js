@@ -1,20 +1,52 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  content: ['./app/**/*.{ts,tsx}', './components/**/*.{ts,tsx}'],
+  content: [
+    './app/**/*.{ts,tsx}',
+    './components/**/*.{ts,tsx}',
+    './src/**/*.{ts,tsx}',
+  ],
   presets: [require('nativewind/preset')],
   theme: {
     extend: {
       colors: {
+        navy: {
+          DEFAULT: '#112836',
+          deep: '#03213B',
+        },
+        teal: {
+          DEFAULT: '#1AA39C',
+          bright: '#48E6CD',
+        },
+        coral: {
+          DEFAULT: '#FA6869',
+          deep: '#CC4968',
+        },
+        gold: '#F7C13D',
         kame: {
-          navy: '#1A2B3D',
-          teal: '#00BFA5',
-          coral: '#FF4D6A',
-          gray: '#6B7280',
-          'light-gray': '#F3F4F6',
+          green: '#289B62',
+          red: '#E3393C',
+          purple: '#744DA6',
+        },
+        gray: {
+          100: '#F8F9FB',
+          200: '#E5E7EB',
+          400: '#9CA3AF',
+          500: '#6B7280',
+          700: '#374151',
         },
       },
       fontFamily: {
-        sans: ['System'],
+        heading: ['PlusJakartaSans-Bold'],
+        'heading-semi': ['PlusJakartaSans-SemiBold'],
+        body: ['PlusJakartaSans-Regular'],
+        'body-medium': ['PlusJakartaSans-Medium'],
+      },
+      borderRadius: {
+        card: '20px',
+        'card-sm': '16px',
+        button: '26px',
+        chip: '18px',
+        input: '12px',
       },
     },
   },

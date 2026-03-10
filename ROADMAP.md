@@ -1,6 +1,6 @@
 # Kame — Development Roadmap
 
-> Last updated: 2026-03-09
+> Last updated: 2026-03-10
 > Current phase: **MVP Sprint (Weeks 1-3)**
 > Current step: **Sprint 2.2 — Mobile Auth Screens + Onboarding Wizard**
 
@@ -82,6 +82,18 @@
 ---
 
 ## Week 2: Try-On + Swipe Core
+
+### Sprint 2.0 — Brand Design System Setup ✅ COMPLETE
+- [x] Verify Plus Jakarta Sans .ttf files in assets/fonts/ (5 weights) ✅
+- [x] Verify src/theme/constants.ts with all brand tokens ✅
+- [x] Rewrite tailwind.config.js with brand color/font/radius tokens ✅
+- [x] Rewrite app/_layout.tsx with expo-font loading + splash screen ✅
+- [x] Rewrite app/(tabs)/_layout.tsx with brand colors + Lucide icons ✅
+- [x] Create components/KameLogo.tsx (teal-bright BoldItalic) ✅
+- [x] Fix app.json splash colors (#1A2B3D → #112836) ✅
+- [x] Delete stale utils/colors.ts (superseded by constants.ts) ✅
+- [x] Install deps: expo-font, expo-splash-screen, lucide-react-native, react-native-svg ✅
+- [x] Align all 18 Expo SDK 54 package versions via `npx expo install --fix` ✅
 
 ### Sprint 2.1 — FASHN AI Try-On Pipeline ✅ COMPLETE
 - [x] Create src/lib/queue.ts (BullMQ + Redis connection with graceful degradation) ✅

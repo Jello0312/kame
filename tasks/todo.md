@@ -1,6 +1,6 @@
 # Kame — Active Sprint Tasks
 
-> Updated: 2026-03-11 (Sprint 2.1 complete)
+> Updated: 2026-03-10 (Sprint 2.0 complete)
 > See ROADMAP.md for full multi-week plan.
 
 ---
@@ -130,6 +130,26 @@
 - **ioredis pinning:** Must use ioredis@5.9.3 to match BullMQ's peer dependency. v5.10.0 causes TS2322 type incompatibility with ConnectionOptions.
 - **Idempotent batch:** Skips outfit pairings that already have a TryOnResult record. Safe to call multiple times.
 - **Pre-gen caps:** 20 female outfits + 6 solo dresses, 15 male outfits. DB record created as PENDING before job queued.
+
+## ✅ Sprint 2.0 — Brand Design System Setup ✅
+- [x] Verify Plus Jakarta Sans fonts (5 weights) in assets/fonts/ ✅
+- [x] Verify src/theme/constants.ts (COLORS, FONTS, GRADIENTS, SPACING, RADIUS, SHADOWS) ✅
+- [x] Rewrite tailwind.config.js — brand colors, font families, border radii, NativeWind preset ✅
+- [x] Rewrite app/_layout.tsx — useFonts + SplashScreen + StatusBar light + navy bg ✅
+- [x] Rewrite app/(tabs)/_layout.tsx — coral active tabs, gray inactive, Lucide icons, white tab bar ✅
+- [x] Create components/KameLogo.tsx — teal-bright BoldItalic text ✅
+- [x] Fix app.json splash/adaptive icon bg from #1A2B3D → #112836 ✅
+- [x] Delete stale utils/colors.ts (wrong hex values, superseded by constants.ts) ✅
+- [x] Install expo-font, expo-splash-screen, lucide-react-native, react-native-svg ✅
+- [x] Align 18 Expo SDK 54 packages via npx expo install --fix ✅
+
+### Review — Brand Design System (2026-03-10)
+- **Tailwind config:** Full rewrite with brand tokens from BRAND_SYSTEM.md. Colors (navy, teal, coral, gold, kame-green/red/purple, grays), fontFamily (heading, heading-semi, body, body-medium), borderRadius (card, button, chip, input). NativeWind preset enabled.
+- **Root layout:** expo-font loads 5 Plus Jakarta Sans weights at startup. SplashScreen.preventAutoHideAsync() prevents flash, hideAsync() on fonts loaded. Navy #112836 wrapper view. StatusBar light-content.
+- **Tab layout:** Imports COLORS/FONTS from constants.ts (single source of truth). Coral #FA6869 active tint (tab-specific brand rule), gray-400 inactive. White background tab bar. Lucide icons: Compass (Explore), Heart (Favorites), User (Profile).
+- **KameLogo:** Reusable component, teal-bright #48E6CD, PlusJakartaSans-BoldItalic, configurable size prop.
+- **Cleanup:** Deleted utils/colors.ts (had wrong values #1A2B3D, #00BFA5, #FF4D6A from Sprint 1.1 scaffold). Grep confirmed nothing imported it.
+- **Expo SDK alignment:** npx expo install --fix updated 18 packages to SDK 54 compatible versions. TypeScript typecheck passes clean.
 
 ---
 

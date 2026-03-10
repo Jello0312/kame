@@ -127,6 +127,11 @@
 **Root cause:** BullMQ requires `maxRetriesPerRequest: null` on the ioredis connection to disable per-request retry limits and use its own retry logic.
 **Rule:** When creating ioredis connections for BullMQ (both Queue and Worker), always pass `{ maxRetriesPerRequest: null }`. BullMQ also needs separate Redis connections for Queue and Worker — don't share one connection.
 
+### 2026-03-10 — Run `npx expo install --fix` after adding Expo dependencies
+**What happened:** After installing expo-font, expo-splash-screen, and other deps, Metro bundler failed with version mismatch warnings and missing module errors. 18 packages were out of sync with SDK 54.
+**Root cause:** `pnpm add` installs latest versions which may not match the installed Expo SDK. Expo SDK pins specific compatible versions for all its packages.
+**Rule:** After adding any Expo-related dependency, run `npx expo install --fix` to align all package versions to the installed SDK. This auto-corrects version mismatches. Follow up with `pnpm install` if needed.
+
 ### 2026-03-10 — Upsert pattern for 1:1 user relationships
 **What happened:** Profile, avatar, and preferences all have a unique 1:1 relationship with User. Using separate create/update endpoints would require the client to track whether a record exists.
 **Root cause:** Onboarding creates records initially, but users may revisit settings to update them later.

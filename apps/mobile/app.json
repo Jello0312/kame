@@ -9,7 +9,7 @@
     "newArchEnabled": true,
     "scheme": "kame",
     "splash": {
-      "backgroundColor": "#1A2B3D",
+      "backgroundColor": "#112836",
       "resizeMode": "contain"
     },
     "ios": {
@@ -18,11 +18,15 @@
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#1A2B3D"
+        "backgroundColor": "#112836"
       },
       "package": "com.kame.app"
     },
-    "plugins": ["expo-router", "expo-secure-store"],
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      "expo-font"
+    ],
     "experiments": {
       "typedRoutes": true
     }
