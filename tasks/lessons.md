@@ -152,6 +152,21 @@
 **Root cause:** Onboarding creates records initially, but users may revisit settings to update them later.
 **Rule:** Use Prisma `upsert` (where: { userId }, create: {...}, update: {...}) for all 1:1 relationships. Single POST endpoint handles both create and update. Client doesn't need to know if the record exists.
 
+### 2026-03-10 — tsconfig.base noEmit:true bleeds into server build
+**What happened:** `pnpm --filter @kame/server run build` ran `tsc` successfully but emitted zero files to `dist/`. Server wouldn't start in production.
+**Root cause:** `tsconfig.base.json` has `"noEmit": true`. The server's tsconfig extends it but didn't override — so `tsc` typechecked without emitting.
+**Rule:** Any package that needs compiled output (server, shared-types) MUST explicitly set `"noEmit": false` in its own tsconfig.json. Always verify `dist/` is non-empty after `tsc` — a successful exit code does NOT mean files were emitted.
+
+### 2026-03-10 — ESM output needs "type": "module" in package.json
+**What happened:** `node dist/index.js` printed `MODULE_TYPELESS_PACKAGE_JSON` warning — Node.js couldn't determine module type and had to reparse every file as ESM.
+**Root cause:** Server tsconfig outputs `"module": "ESNext"` but package.json didn't declare `"type": "module"`. Node.js defaults to CommonJS, sees ESM syntax, then reparsess.
+**Rule:** When tsconfig `module` is ESNext/ES2022+, add `"type": "module"` to the package's package.json. This tells Node.js to parse .js files as ESM without guessing.
+
+### 2026-03-10 — Railway deploy needs explicit build order for monorepos
+**What happened:** Railway Nixpacks auto-detects Node.js but doesn't know to build shared-types before server in a monorepo.
+**Root cause:** Monorepo packages have build dependencies (server depends on shared-types dist/). Nixpacks sees root package.json and doesn't traverse workspace build order.
+**Rule:** Use `railway.json` with explicit `buildCommand` that chains: `pnpm install → build shared-types → build server`. And `startCommand` that chains: `prisma migrate deploy → node dist/index.js`. Always build dependencies before dependents.
+
 ---
 
 ## Patterns to Watch For
@@ -225,6 +240,30 @@
 - Worker concurrency 2: each outfit job makes 2 sequential FASHN calls → max 4 concurrent FASHN requests (within 6-concurrent API limit)
 - Job data carries all URLs/IDs needed — worker never queries for product data, only updates TryOnResult status
 - `msgpackr-extract` build warning is harmless — BullMQ falls back to pure JS serialization
+
+### UI Components / React Native
+- ErrorBoundary MUST be a class component — React limitation, overrides CLAUDE.md "functional only" rule
+- expo-updates is NOT installed for Expo Go beta — don't import it. ErrorBoundary restart = setState reset
+- `contentStyle: { backgroundColor: COLORS.navy }` on ALL Stack navigators — prevents white flash between screens during route transitions in dark-themed apps
+- `presentationStyle="pageSheet"` on RN Modal works on iOS only — Android silently falls back to fullscreen (no crash, acceptable)
+- expo-web-browser `openBrowserAsync()` keeps user inside the app — prefer over `Linking.openURL()` for "Buy Now" flows
+- useQuery for small datasets (favorites ~50 items), useInfiniteQuery only for paginated feeds — don't over-engineer
+- Parallel `useQuery` hooks execute concurrently automatically — no special setup needed for profile's 4 API calls
+- Fire-and-forget pattern for analytics: wrap in try/catch that swallows errors, never blocks UI interaction
+- `app.json userInterfaceStyle` must match app theme — "light" causes system keyboards and status bars to clash with dark UI
+- Skeleton loaders: `withRepeat(withTiming(...), -1, true)` pulsing opacity (0.3↔0.7) via react-native-reanimated. Simpler and more elegant than shimmer gradient libraries
+- When replacing loading spinners with skeleton components, clean up dead imports (`ActivityIndicator`) and dead styles (`statusText`) — don't leave dead code behind
+- `probeOnboardingStatus()` via GET /api/profile: 200 = onboarded, 404 = not. Simple, reliable, no extra backend endpoint needed. Used in both `login()` and `checkAuth()` flows
+
+### Deploy / Production
+- Server must bind `0.0.0.0` (not localhost) — cloud platforms reject localhost-only listeners
+- `prisma generate` MUST run before `tsc` in production build — otherwise `@prisma/client` doesn't exist
+- `prisma migrate deploy` for production (non-interactive) — never use `migrate dev` in prod
+- `railway.json` healthcheckPath: `/health` — server already has GET /health endpoint
+- `tsconfig.base.json` noEmit: true is typechecking-only — server and shared-types must override to false
+- `"type": "module"` in package.json when using ESNext module output — eliminates Node.js reparsing warning
+- Railway Nixpacks monorepo: explicit buildCommand chains `install → build deps → build app`
+- Startup diagnostics: log which subsystems are active (S3/Redis/FASHN) — immediate visibility on deploy
 
 ### General
 - affiliateUrl is intentionally null in MVP — do NOT populate with fake URLs

@@ -152,7 +152,7 @@ export default function ProfileScreen() {
   }, []);
 
   const handleFeedback = useCallback(async () => {
-    await WebBrowser.openBrowserAsync('https://forms.google.com/placeholder');
+    await WebBrowser.openBrowserAsync('https://docs.google.com/forms/d/1s5PfWv4gw-jMEFfzG9KWdt1Cl_EGPIrev4Ua8MX-4Vw/viewform');
   }, []);
 
   // ── Render ────────────────────────────────────────────────
@@ -339,7 +339,7 @@ export default function ProfileScreen() {
         </View>
 
         {/* ── 8. Footer ──────────────────────────────────── */}
-        <Text style={styles.footer}>Kame v0.0.1</Text>
+        <Text style={styles.footer}>Kame v0.1.0-beta</Text>
       </ScrollView>
     </SafeAreaView>
   );

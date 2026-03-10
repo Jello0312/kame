@@ -158,16 +158,23 @@
 - [x] Dead code cleanup (unused statusText styles removed) ✅
 - [x] TypeScript: zero type errors ✅
 
-### Sprint 3.3 — Deploy + Beta
-- [ ] Deploy backend to Railway/Render
-- [ ] Set all production environment variables
-- [ ] Update EXPO_PUBLIC_API_URL to deployed backend
-- [ ] Test full flow against production
-- [ ] Set up Expo project on expo.dev
+### Sprint 3.3 — Deploy Infrastructure + Beta Readiness
+- [x] Fix shared-types package.json (main/types → dist/, add build script) ✅
+- [x] Fix server package.json (prisma generate in build, db:deploy script, type: module) ✅
+- [x] Fix server tsconfig.json (noEmit: false for production build) ✅
+- [x] Fix server index.ts (bind 0.0.0.0, DATABASE_URL env validation, startup diagnostics) ✅
+- [x] Create railway.json (Nixpacks build config, healthcheck, restart policy) ✅
+- [x] Create Google Form feedback survey (4 questions: quality, swipes, weekly use, improvements) ✅
+- [x] Wire feedback URL into profile.tsx (replaces placeholder) ✅
+- [x] Version bump to 0.1.0 (app.json + profile footer) ✅
+- [x] Server build verified: prisma generate → tsc → dist/ emitted ✅
+- [x] Server boot verified: 0.0.0.0 binding, diagnostics printed, /health reachable ✅
+- [x] TypeScript: zero errors across workspace ✅
+- [ ] Deploy backend to Railway/Render (user: set env vars in dashboard)
+- [ ] Update EXPO_PUBLIC_API_URL to deployed backend URL
+- [ ] Set up Expo project on expo.dev (npx expo login)
 - [ ] Test on iOS + Android via Expo Go
 - [ ] Distribute to 10-20 beta testers
-- [ ] Add "Give Feedback" button → Google Form link
-- [ ] Monitor: server logs, FASHN usage, error rates
 
 ---
 

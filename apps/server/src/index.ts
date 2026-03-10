@@ -16,7 +16,7 @@ import { AppError, ValidationError } from './utils/errors.js';
 import type { ApiResponse } from '@kame/shared-types';
 
 // ─── Env validation ─────────────────────────────────
-const requiredEnv = ['JWT_SECRET'] as const;
+const requiredEnv = ['JWT_SECRET', 'DATABASE_URL'] as const;
 for (const key of requiredEnv) {
   if (!process.env[key]) {
     console.error(`FATAL: Missing required environment variable: ${key}`);
@@ -39,6 +39,11 @@ app.get('/health', (_req, res) => {
 if (!isS3Configured()) {
   app.use('/uploads', express.static(path.resolve('uploads')));
 }
+
+// ─── Startup Diagnostics ────────────────────────────
+console.log(`  Storage : ${isS3Configured() ? 'AWS S3' : 'LOCAL (ephemeral)'}`);
+console.log(`  Try-on  : ${process.env.REDIS_URL ? 'Redis / BullMQ' : 'DISABLED (no REDIS_URL)'}`);
+console.log(`  FASHN AI: ${process.env.FASHN_API_KEY ? 'configured' : 'DISABLED (no FASHN_API_KEY)'}`);
 
 // ─── Routes ─────────────────────────────────────────
 app.use('/auth', authRouter);
@@ -97,6 +102,6 @@ app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
   res.status(500).json(response);
 });
 
-app.listen(PORT, () => {
-  console.log(`Kame server running on port ${PORT}`);
+app.listen(Number(PORT), '0.0.0.0', () => {
+  console.log(`Kame server running on 0.0.0.0:${PORT}`);
 });

@@ -1,6 +1,6 @@
 # Kame — Active Sprint Tasks
 
-> Updated: 2026-03-10 (Sprint 3.2 complete)
+> Updated: 2026-03-10 (Sprint 3.3 infrastructure complete)
 > See ROADMAP.md for full multi-week plan.
 
 ---
@@ -241,18 +241,27 @@
 
 ---
 
-## 🏗️ CURRENT FOCUS: Sprint 3.3 — Deploy + Beta
+## ✅ Sprint 3.3 — Deploy Infrastructure + Beta Readiness ✅
 
-### Sprint 3.3 — Deploy + Beta
-- [ ] Deploy backend to Railway/Render
-- [ ] Set all production environment variables
-- [ ] Update EXPO_PUBLIC_API_URL to deployed backend
-- [ ] Test full flow against production
-- [ ] Set up Expo project on expo.dev
-- [ ] Test on iOS + Android via Expo Go
-- [ ] Distribute to 10-20 beta testers
-- [ ] Add "Give Feedback" button → Google Form link
-- [ ] Monitor: server logs, FASHN usage, error rates
+### Infrastructure (automated — complete)
+- [x] Fix shared-types package.json — main/types point to dist/, add build script ✅
+- [x] Fix server package.json — prisma generate in build, db:deploy script, type: module ✅
+- [x] Fix server tsconfig.json — noEmit: false override (base has noEmit: true) ✅
+- [x] Expand server env validation — DATABASE_URL required (fail fast) ✅
+- [x] Add startup diagnostics — Storage/Try-on/FASHN status on boot ✅
+- [x] Bind server to 0.0.0.0 — required for cloud platforms ✅
+- [x] Create railway.json — Nixpacks build config, healthcheck, restart policy ✅
+- [x] Create Google Form feedback survey (4 questions) ✅
+- [x] Wire feedback URL into profile.tsx ✅
+- [x] Version bump to 0.1.0 (app.json) + footer to v0.1.0-beta ✅
+- [x] Build verification — shared-types + server compile, server boots, typecheck clean ✅
+
+### Manual steps (user performs)
+- [ ] Deploy to Railway — connect repo, set root directory to apps/server
+- [ ] Set production env vars in Railway dashboard (DATABASE_URL, JWT_SECRET, REDIS_URL, FASHN_API_KEY, AWS_*)
+- [ ] Update EXPO_PUBLIC_API_URL in mobile .env to deployed server URL
+- [ ] Set up Expo project on expo.dev, test on iOS + Android via Expo Go
+- [ ] Distribute to 10-20 beta testers, monitor logs + FASHN usage
 
 ---
 
