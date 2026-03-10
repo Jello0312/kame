@@ -132,6 +132,21 @@
 **Root cause:** `pnpm add` installs latest versions which may not match the installed Expo SDK. Expo SDK pins specific compatible versions for all its packages.
 **Rule:** After adding any Expo-related dependency, run `npx expo install --fix` to align all package versions to the installed SDK. This auto-corrects version mismatches. Follow up with `pnpm install` if needed.
 
+### 2026-03-10 — Regenerate typed routes after adding new route files
+**What happened:** After creating auth/ and onboarding/ route directories, TypeScript had 10 errors — expo-router's generated types only knew about old routes ((tabs), explore, favorites, profile). New paths like "/auth/login" were not assignable to the router's union type.
+**Root cause:** expo-router with `experiments.typedRoutes: true` auto-generates route types from the file structure, but only when the dev server runs or when explicitly triggered.
+**Rule:** After adding/removing route files, run `npx expo customize tsconfig.json` to regenerate typed route definitions. Then re-run `npx tsc --noEmit` to verify.
+
+### 2026-03-10 — Lazy require() resolves circular imports with Zustand
+**What happened:** api.ts needs authStore (for JWT token + logout on 401). authStore needs api.ts (for login/register/checkAuth API calls). Top-level imports would create a circular dependency.
+**Root cause:** ES module circular imports can cause one module to see `undefined` exports from the other during initialization.
+**Rule:** Use lazy `require()` inside methods (not at top level) for the circular direction. Zustand's `getState()` is a runtime lookup — the store is always initialized by the time any API call runs. Pattern: `const { useAuthStore } = require('../stores/authStore');` inside ApiClient methods.
+
+### 2026-03-10 — OneDrive EPERM on pnpm install — use --force
+**What happened:** `npx expo install expo-linear-gradient` (which runs pnpm) failed with `EPERM: operation not permitted, rename` on node_modules files.
+**Root cause:** OneDrive file sync locks files during rename operations. pnpm's hardlink/symlink approach conflicts with OneDrive's file watching.
+**Rule:** When pnpm install fails with EPERM on OneDrive-synced repos, retry with `pnpm install --force`. This bypasses the lockfile check and retries file operations.
+
 ### 2026-03-10 — Upsert pattern for 1:1 user relationships
 **What happened:** Profile, avatar, and preferences all have a unique 1:1 relationship with User. Using separate create/update endpoints would require the client to track whether a record exists.
 **Root cause:** Onboarding creates records initially, but users may revisit settings to update them later.

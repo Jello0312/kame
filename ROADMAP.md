@@ -2,7 +2,7 @@
 
 > Last updated: 2026-03-10
 > Current phase: **MVP Sprint (Weeks 1-3)**
-> Current step: **Sprint 2.2 — Mobile Auth Screens + Onboarding Wizard**
+> Current step: **Sprint 2.3 — Swipe Deck UI**
 
 ## Progress Tracking Convention
 - `[ ]` = Todo
@@ -107,17 +107,17 @@
 - [x] Error handling: retry 3x with linear backoff, then mark failed ✅
 - [x] Graceful degradation: 503 when Redis/FASHN not configured ✅
 
-### Sprint 2.2 — Mobile Auth Screens + Onboarding Wizard
-- [ ] stores/authStore.ts (Zustand + expo-secure-store)
-- [ ] services/api.ts (fetch wrapper with auto-JWT)
-- [ ] app/auth/login.tsx (email + password)
-- [ ] app/auth/register.tsx (name + email + password)
-- [ ] app/_layout.tsx routing (auth → onboarding → tabs)
-- [ ] app/onboarding/measurements.tsx (gender selector + body measurements)
-- [ ] app/onboarding/photos.tsx (face + body photo capture)
-- [ ] app/onboarding/preferences.tsx (budget + platforms + styles)
-- [ ] app/onboarding/generating.tsx (loading + API calls + tryon/batch trigger)
-- [ ] Onboarding navigation flow (1→2→3→4→tabs)
+### Sprint 2.2 — Mobile Auth Screens + Onboarding Wizard ✅ COMPLETE
+- [x] stores/authStore.ts (Zustand + expo-secure-store) ✅
+- [x] services/api.ts (fetch wrapper with auto-JWT) ✅
+- [x] app/auth/login.tsx (email + password) ✅
+- [x] app/auth/register.tsx (name + email + password) ✅
+- [x] app/_layout.tsx routing (auth → onboarding → tabs) ✅
+- [x] app/onboarding/measurements.tsx (gender selector + body measurements) ✅
+- [x] app/onboarding/photos.tsx (face + body photo capture) ✅
+- [x] app/onboarding/preferences.tsx (budget + platforms + styles) ✅
+- [x] app/onboarding/generating.tsx (loading + API calls + tryon/batch trigger) ✅
+- [x] Onboarding navigation flow (1→2→3→4→tabs) ✅
 
 ### Sprint 2.3 — Swipe Deck UI
 - [ ] components/SwipeCard.tsx (try-on image + product overlay + prices)

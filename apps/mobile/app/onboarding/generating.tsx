@@ -1,0 +1,217 @@
+import { useState, useEffect } from 'react';
+import { View, Text, ActivityIndicator, TouchableOpacity } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { KameLogo } from '../../components/KameLogo';
+import { useOnboardingStore } from '../../stores/onboardingStore';
+import { useAuthStore } from '../../stores/authStore';
+import { api } from '../../services/api';
+import {
+  COLORS,
+  FONTS,
+  TYPE,
+  SPACING,
+  RADIUS,
+  COMPONENT,
+  SHADOWS,
+} from '../../src/theme/constants';
+
+export default function GeneratingScreen() {
+  const [status, setStatus] = useState('Setting up your profile...');
+  const [progress, setProgress] = useState('');
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    submitOnboarding();
+  }, []);
+
+  async function submitOnboarding() {
+    const store = useOnboardingStore.getState();
+
+    try {
+      // Phase 1: POST /api/profile
+      setStatus('Setting up your profile...');
+      await api.post('/api/profile', {
+        gender: store.gender,
+        heightCm: store.heightCm,
+        weightKg: store.weightKg,
+        waistCm: store.waistCm,
+        bodyShape: store.bodyShape,
+        measurementUnit: store.measurementUnit,
+      });
+
+      // Phase 2: POST /api/avatar (FormData)
+      if (store.facePhotoUri || store.bodyPhotoUri) {
+        setStatus('Uploading your photos...');
+        const formData = new FormData();
+        if (store.bodyPhotoUri) {
+          formData.append('bodyPhoto', {
+            uri: store.bodyPhotoUri,
+            type: 'image/jpeg',
+            name: 'body.jpg',
+          } as unknown as Blob);
+        }
+        if (store.facePhotoUri) {
+          formData.append('facePhoto', {
+            uri: store.facePhotoUri,
+            type: 'image/jpeg',
+            name: 'face.jpg',
+          } as unknown as Blob);
+        }
+        await api.post('/api/avatar', formData);
+      }
+
+      // Phase 3: POST /api/preferences
+      setStatus('Saving your preferences...');
+      await api.post('/api/preferences', {
+        budgetRange: store.budgetRange,
+        fashionStyles: store.fashionStyles,
+        preferredPlatforms: store.preferredPlatforms,
+      });
+
+      // Phase 4: Trigger try-on batch (may 503 if Redis not configured)
+      setStatus('Generating your personalized outfits...');
+      let tryOnTriggered = false;
+      try {
+        await api.post('/api/tryon/batch');
+        tryOnTriggered = true;
+      } catch {
+        // tryon/batch may 503 if Redis/FASHN not configured — skip polling
+      }
+
+      // Phase 5: Poll status (only if batch was triggered)
+      if (tryOnTriggered) {
+        const MAX_POLLS = 20; // 20 * 3s = 60s max
+        for (let i = 0; i < MAX_POLLS; i++) {
+          try {
+            const res = await api.get<{
+              total: number;
+              completed: number;
+              pending: number;
+              processing: number;
+            }>('/api/tryon/status');
+            const data = res.data!;
+            setProgress(`Generating outfit ${data.completed} of ${data.total}...`);
+            // Navigate early if 5+ ready or all done
+            if (data.completed >= 5 || (data.pending === 0 && data.processing === 0)) break;
+          } catch {
+            break;
+          }
+          await new Promise((r) => setTimeout(r, 3000));
+        }
+      }
+
+      // Done!
+      useOnboardingStore.getState().reset();
+      useAuthStore.getState().setHasCompletedOnboarding(true);
+      // _layout.tsx will automatically redirect to (tabs)/explore
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
+    }
+  }
+
+  function handleRetry() {
+    setError('');
+    submitOnboarding();
+  }
+
+  return (
+    <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.background }}>
+      <View
+        style={{
+          flex: 1,
+          justifyContent: 'center',
+          alignItems: 'center',
+          paddingHorizontal: COMPONENT.screenPadding,
+        }}
+      >
+        {/* Logo */}
+        <KameLogo size={40} />
+
+        <View style={{ height: SPACING['3xl'] }} />
+
+        {/* Loading / Error */}
+        {error ? (
+          <>
+            <Text
+              style={{
+                ...TYPE.bodyMd,
+                color: COLORS.error,
+                textAlign: 'center',
+                marginBottom: SPACING['2xl'],
+              }}
+            >
+              {error}
+            </Text>
+
+            <TouchableOpacity
+              onPress={handleRetry}
+              activeOpacity={0.8}
+              style={{
+                height: COMPONENT.buttonHeight,
+                paddingHorizontal: SPACING['3xl'],
+                backgroundColor: COLORS.ctaNavigation,
+                borderRadius: RADIUS.button,
+                justifyContent: 'center',
+                alignItems: 'center',
+                ...SHADOWS.tealButton,
+              }}
+            >
+              <Text
+                style={{
+                  fontFamily: FONTS.semiBold,
+                  fontSize: 16,
+                  color: COLORS.navy,
+                }}
+              >
+                Retry
+              </Text>
+            </TouchableOpacity>
+          </>
+        ) : (
+          <>
+            <ActivityIndicator size="large" color={COLORS.tealBright} />
+
+            <View style={{ height: SPACING['2xl'] }} />
+
+            {/* Status Text */}
+            <Text
+              style={{
+                ...TYPE.headingMd,
+                color: COLORS.textPrimary,
+                textAlign: 'center',
+                marginBottom: SPACING.sm,
+              }}
+            >
+              {status}
+            </Text>
+
+            {/* Progress Text */}
+            {progress ? (
+              <Text
+                style={{
+                  ...TYPE.bodyMd,
+                  color: COLORS.tealBright,
+                  textAlign: 'center',
+                  marginBottom: SPACING.md,
+                }}
+              >
+                {progress}
+              </Text>
+            ) : null}
+
+            {/* Subtitle */}
+            <Text
+              style={{
+                ...TYPE.bodySm,
+                color: COLORS.gray400,
+                textAlign: 'center',
+              }}
+            >
+              This usually takes about a minute
+            </Text>
+          </>
+        )}
+      </View>
+    </SafeAreaView>
+  );
+}

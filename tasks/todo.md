@@ -1,6 +1,6 @@
 # Kame — Active Sprint Tasks
 
-> Updated: 2026-03-10 (Sprint 2.0 complete)
+> Updated: 2026-03-10 (Sprint 2.2 complete)
 > See ROADMAP.md for full multi-week plan.
 
 ---
@@ -153,12 +153,34 @@
 
 ---
 
-## 🏗️ CURRENT FOCUS: Sprint 2.2 — Mobile Auth + Onboarding
+## ✅ Sprint 2.2 — Mobile Auth + Onboarding ✅
+- [x] stores/authStore.ts — Zustand + expo-secure-store (token, user, login, register, logout, checkAuth) ✅
+- [x] services/api.ts — fetch wrapper with auto-JWT, 401→logout, FormData support ✅
+- [x] app/auth/_layout.tsx — Stack with slide animation ✅
+- [x] app/auth/login.tsx — email + password, navy bg, teal CTA ✅
+- [x] app/auth/register.tsx — name + email + password, teal CTA ✅
+- [x] stores/onboardingStore.ts — ephemeral Zustand store (measurements, photos, preferences) ✅
+- [x] app/onboarding/_layout.tsx — Stack with gestureEnabled: false ✅
+- [x] app/onboarding/measurements.tsx — gender cards, body shape chips (server enums), metric/imperial toggle ✅
+- [x] app/onboarding/photos.tsx — face + body photo via expo-image-picker gallery ✅
+- [x] app/onboarding/preferences.tsx — budget (4 chips), styles (6 multi), platforms (5 multi), coral gradient CTA ✅
+- [x] app/onboarding/generating.tsx — sequential POSTs (profile→avatar→preferences→tryon/batch), poll status ✅
+- [x] app/_layout.tsx — auth-based routing (auth↔onboarding↔tabs), splash timing ✅
+- [x] TypeScript typecheck passes clean ✅
 
-### Sprint 2.2 — Mobile Auth + Onboarding
-- [ ] Auth store, API client, login/register screens
-- [ ] 4-step onboarding wizard (gender → measurements → photos → preferences → generating)
-- [ ] Navigation routing (auth → onboarding → tabs)
+### Review — Mobile Auth + Onboarding (2026-03-10)
+- **Architecture:** 3 parallel sub-agents built 11 files with zero conflicts. Auth infra (Sub-Agent 1), onboarding steps 1-2 (Sub-Agent 2), onboarding steps 3-4 + navigation (Sub-Agent 3).
+- **Auth routing:** `_layout.tsx` uses `useSegments()` + `useEffect` + `router.replace()` to redirect based on `isAuthenticated` and `hasCompletedOnboarding`. Splash visible until fonts + checkAuth() both complete.
+- **Circular dependency:** api.ts ↔ authStore.ts resolved via lazy `require()` in api.ts. Zustand's `getState()` is runtime lookup, safe for circular refs.
+- **Onboarding probe:** `checkAuth()` probes `GET /api/profile` — 200 means onboarded, 404 means not. No extra backend endpoint needed.
+- **Server enum alignment:** Body shape chips use server values directly (HOURGLASS, PEAR, APPLE, RECTANGLE, INVERTED_TRIANGLE). Budget uses 4 friendly labels mapped to server enum (BUDGET, MID, PREMIUM, LUXURY).
+- **Imperial conversion:** Client-side conversion before storing in onboardingStore (inches×2.54, lbs×0.453592). Server always receives metric.
+- **Generating flow:** Sequential POSTs to 4 endpoints, graceful 503 handling for tryon/batch, poll status with early exit (5+ ready or all done), auto-redirect to tabs on completion.
+- **Typed routes:** Must run `npx expo customize tsconfig.json` after adding new route files to regenerate expo-router's TypeScript definitions.
+
+---
+
+## 🏗️ CURRENT FOCUS: Sprint 2.3 — Swipe Deck UI
 
 ### Sprint 2.3 — Swipe Deck UI
 - [ ] SwipeCard, SwipeDeck components
