@@ -2,7 +2,7 @@
 
 > Last updated: 2026-03-10
 > Current phase: **MVP Sprint (Weeks 1-3)**
-> Current step: **Sprint 3.1 — Product Detail + Favorites + Profile**
+> Current step: **Sprint 3.2 — UI Polish**
 
 ## Progress Tracking Convention
 - `[ ]` = Todo
@@ -133,13 +133,15 @@
 
 ## Week 3: Favorites + Polish + Beta
 
-### Sprint 3.1 — Product Detail + Favorites + Profile
-- [ ] components/ProductDetail.tsx (modal: image + details + Buy Now)
-- [ ] "Buy Now" → opens productPageUrl + fires POST /api/analytics/click
-- [ ] app/(tabs)/favorites.tsx (2-column grid of liked products)
-- [ ] app/(tabs)/profile.tsx (measurements + photos + preferences + logout)
-- [ ] Tab bar: Explore / Favorites / Profile (NO cart tab)
-- [ ] Tab styling: navy background, teal active indicator
+### Sprint 3.1 — Product Detail + Favorites + Profile ✅ COMPLETE
+- [x] components/ProductDetailModal.tsx (modal: image + details + Buy Now) ✅
+- [x] "Buy Now" → opens productPageUrl via expo-web-browser + fires POST /api/analytics/click ✅
+- [x] components/FavoriteCard.tsx (2-column grid card) ✅
+- [x] app/(tabs)/favorites.tsx (2-column grid of liked products, pull-to-refresh) ✅
+- [x] app/(tabs)/profile.tsx (measurements + photos + preferences + logout) ✅
+- [x] components/ProfileSection.tsx (reusable section wrapper) ✅
+- [x] types/profile.ts + hooks/useAnalyticsClick.ts (shared types + analytics hook) ✅
+- [x] Tab bar: Explore / Favorites / Profile (NO cart tab) — verified ✅
 
 ### Sprint 3.2 — UI Polish
 - [ ] Splash screen (navy + Kame logo)

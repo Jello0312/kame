@@ -201,12 +201,27 @@
 
 ---
 
-## 🏗️ CURRENT FOCUS: Sprint 3.1 — Product Detail + Favorites + Profile
+## ✅ Sprint 3.1 — Product Detail + Favorites + Profile ✅
+- [x] types/profile.ts — FavoriteItem, UserMe, UserProfile, UserAvatar, StylePreferences interfaces ✅
+- [x] hooks/useAnalyticsClick.ts — fire-and-forget analytics click hook ✅
+- [x] components/FavoriteCard.tsx — 2-column grid card (expo-image, platform badge, price) ✅
+- [x] components/ProductDetailModal.tsx — slide-up modal (hero image, gradient, Buy Now coral CTA) ✅
+- [x] components/ProfileSection.tsx — reusable section wrapper ✅
+- [x] app/(tabs)/favorites.tsx — useQuery + FlatList grid + empty/loading/error + modal ✅
+- [x] app/(tabs)/profile.tsx — 4 parallel queries + measurements + photos + prefs + logout ✅
+- [x] TypeScript typecheck passes clean ✅
 
-### Sprint 3.1 — Favorites + Product Detail + Profile
-- [ ] ProductDetail modal with Buy Now
-- [ ] Favorites grid, Profile screen
-- [ ] Tab bar: Explore / Favorites / Profile
+### Review — Product Detail + Favorites + Profile (2026-03-10)
+- **Architecture:** 2 parallel sub-agents — Agent A (favorites track: FavoriteCard + ProductDetailModal + favorites.tsx), Agent B (profile track: ProfileSection + profile.tsx). Zero conflicts, shared types created as pre-req.
+- **ProductDetail:** RN Modal with `presentationStyle="pageSheet"` (iOS card-modal feel). Hero image with gradient overlay, platform badge, product info, coral gradient Buy Now button pinned to bottom. Uses expo-web-browser for in-app browser (keeps user in app vs Linking.openURL). Analytics click fires via useAnalyticsClick hook (fire-and-forget).
+- **Favorites:** useQuery (not infinite — 50-item default is fine for beta). 2-column FlatList with responsive card width via useWindowDimensions(). Pull-to-refresh. Empty state with Heart icon + guidance text. Tap card → ProductDetailModal opens via selectedProduct state.
+- **Profile:** 4 parallel useQuery calls (/auth/me, /api/profile, /api/avatar, /api/preferences). ScrollView with 8 sections: header, divider, shopping-for chip, 2x2 measurement grid, avatar thumbnails, style preference chips, action buttons, version footer. Imperial conversion helpers for display. Skeleton placeholders during loading.
+- **Buttons:** "Buy Now" = coral gradient (GRADIENTS.cta). "Give Feedback" = teal solid. "Log Out" = ghost/outline (teal border + text). All follow brand CTA hierarchy.
+- **Size chips:** Omitted — available_sizes not in API, mock sizes mislead beta testers. Real sizing on retailer page via Buy Now.
+
+---
+
+## 🏗️ CURRENT FOCUS: Sprint 3.2 — UI Polish
 
 ### Sprint 3.2 — Polish
 - [ ] Loading states, error states, empty states
