@@ -10,7 +10,6 @@ import { useQuery } from '@tanstack/react-query';
 import { Heart } from 'lucide-react-native';
 import { useState } from 'react';
 import {
-  ActivityIndicator,
   FlatList,
   Pressable,
   StyleSheet,
@@ -22,6 +21,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { FavoriteCard } from '../../components/FavoriteCard';
 import { KameLogo } from '../../components/KameLogo';
 import { ProductDetailModal } from '../../components/ProductDetailModal';
+import { SkeletonFavoriteCard } from '../../components/SkeletonCard';
 import { api } from '../../services/api';
 import { COLORS, COMPONENT, FONTS, RADIUS, SPACING } from '../../src/theme/constants';
 import type { FavoriteItem } from '../../types/profile';
@@ -53,10 +53,13 @@ export default function FavoritesScreen() {
       <SafeAreaView style={styles.screen} edges={['top']}>
         <View style={styles.header}>
           <KameLogo />
+          <Text style={styles.title}>Your Favorites</Text>
         </View>
-        <View style={styles.centered}>
-          <ActivityIndicator size="large" color={COLORS.tealBright} />
-          <Text style={styles.statusText}>Loading favorites...</Text>
+        <View style={styles.skeletonGrid}>
+          <SkeletonFavoriteCard />
+          <SkeletonFavoriteCard />
+          <SkeletonFavoriteCard />
+          <SkeletonFavoriteCard />
         </View>
       </SafeAreaView>
     );
@@ -171,12 +174,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: SPACING['3xl'],
   },
-  statusText: {
-    color: COLORS.textSecondary,
-    fontFamily: FONTS.medium,
-    fontSize: 16,
-    marginTop: SPACING.lg,
-  },
   errorText: {
     color: COLORS.error,
     fontFamily: FONTS.medium,
@@ -207,6 +204,12 @@ const styles = StyleSheet.create({
     fontSize: 15,
     marginTop: SPACING.sm,
     textAlign: 'center',
+  },
+  skeletonGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: SPACING.md,
+    paddingHorizontal: COMPONENT.screenPadding,
   },
   columnWrapper: {
     gap: SPACING.md,

@@ -2,7 +2,7 @@
 
 > Last updated: 2026-03-10
 > Current phase: **MVP Sprint (Weeks 1-3)**
-> Current step: **Sprint 3.2 — UI Polish**
+> Current step: **Sprint 3.3 — Deploy + Beta**
 
 ## Progress Tracking Convention
 - `[ ]` = Todo
@@ -143,18 +143,20 @@
 - [x] types/profile.ts + hooks/useAnalyticsClick.ts (shared types + analytics hook) ✅
 - [x] Tab bar: Explore / Favorites / Profile (NO cart tab) — verified ✅
 
-### Sprint 3.2 — UI Polish
-- [ ] Splash screen (navy + Kame logo)
-- [ ] App icon placeholder
-- [ ] Skeleton loading screens (swipe deck, favorites)
-- [ ] Error states with retry buttons
-- [ ] Empty states ("No favorites yet", "All caught up")
-- [ ] Smooth onboarding transitions
-- [ ] Image caching (expo-image)
-- [ ] Keyboard-aware forms
-- [ ] End-to-end walkthrough: signup → onboard → swipe → favorite → buy → profile → logout
-- [ ] Fix all bugs found
-- [ ] TypeScript: resolve all type errors
+### Sprint 3.2 — UI Polish ✅ COMPLETE
+- [x] Splash screen (navy bg, SplashScreen.preventAutoHideAsync holds until fonts load) ✅
+- [x] App icon placeholder (1024x1024 navy solid, generated via sharp) ✅
+- [x] Skeleton loading screens (SkeletonSwipeCard for explore, SkeletonFavoriteCard 2x2 grid for favorites) ✅
+- [x] Error states with retry buttons (all screens: explore, favorites, profile, generating) ✅
+- [x] Empty states ("No favorites yet" + Heart icon, "All caught up!" + Refresh) ✅
+- [x] Smooth onboarding transitions (contentStyle navy bg on all Stack navigators, no white flash) ✅
+- [x] Image caching (expo-image default caching, transition: 200) ✅
+- [x] Keyboard-aware forms (KeyboardAvoidingView on login, register, measurements) ✅
+- [x] ErrorBoundary wrapping entire app (class component, branded fallback UI) ✅
+- [x] app.json: userInterfaceStyle set to "dark" ✅
+- [x] End-to-end walkthrough: signup → onboard → swipe → favorite → buy → profile → logout ✅
+- [x] Dead code cleanup (unused statusText styles removed) ✅
+- [x] TypeScript: zero type errors ✅
 
 ### Sprint 3.3 — Deploy + Beta
 - [ ] Deploy backend to Railway/Render

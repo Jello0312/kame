@@ -1,6 +1,6 @@
 # Kame — Active Sprint Tasks
 
-> Updated: 2026-03-10 (Sprint 2.2 complete)
+> Updated: 2026-03-10 (Sprint 3.2 complete)
 > See ROADMAP.md for full multi-week plan.
 
 ---
@@ -221,17 +221,38 @@
 
 ---
 
-## 🏗️ CURRENT FOCUS: Sprint 3.2 — UI Polish
+## ✅ Sprint 3.2 — UI Polish ✅
+- [x] app.json: userInterfaceStyle "light" → "dark" ✅
+- [x] App icon placeholder: 1024x1024 navy solid (generated via sharp) ✅
+- [x] ErrorBoundary: class component wrapping entire app, branded fallback UI ✅
+- [x] SkeletonCard: SkeletonSwipeCard (explore) + SkeletonFavoriteCard (favorites) with pulsing opacity animation ✅
+- [x] Skeleton loading: explore → SkeletonSwipeCard, favorites → 2x2 SkeletonFavoriteCard grid ✅
+- [x] Onboarding/auth layout: contentStyle navy bg on all Stack navigators (prevents white flash) ✅
+- [x] Dead code cleanup: unused statusText styles removed from explore.tsx + favorites.tsx ✅
+- [x] E2E walkthrough: signup → onboard → swipe → favorite → buy → profile → logout ✅
+- [x] TypeScript: zero type errors ✅
 
-### Sprint 3.2 — Polish
-- [ ] Loading states, error states, empty states
-- [ ] Splash screen, app icon
-- [ ] End-to-end walkthrough + bug fixes
+### Review — UI Polish (2026-03-10)
+- **ErrorBoundary:** React class component (required by React). Catches unhandled errors, shows branded navy fallback with ":(", error message (dev only), and "Restart" button that resets state. Wraps inside GestureHandlerRootView in _layout.tsx.
+- **Skeleton loaders:** Single SkeletonCard.tsx file exports both variants. Shared `usePulse()` hook uses react-native-reanimated `withRepeat(withTiming(...))` for 0.3↔0.7 opacity pulse. SkeletonSwipeCard fills available space with rounded rect + text bars. SkeletonFavoriteCard matches half-width grid card with 3:4 aspect placeholder + footer bars.
+- **App config:** `userInterfaceStyle: "dark"` fixes keyboard/status bar theming to match dark UI. Icon placeholder is solid navy — functional for Expo Go beta.
+- **Transition polish:** `contentStyle: { backgroundColor: COLORS.navy }` on onboarding, auth, and tabs Stack navigators. Prevents white flash between screens during route transitions.
+- **No new deps:** All changes use existing packages (react-native-reanimated, expo-router).
+
+---
+
+## 🏗️ CURRENT FOCUS: Sprint 3.3 — Deploy + Beta
 
 ### Sprint 3.3 — Deploy + Beta
-- [ ] Backend deployment (Railway/Render)
-- [ ] Expo Go distribution to beta testers
-- [ ] Feedback form
+- [ ] Deploy backend to Railway/Render
+- [ ] Set all production environment variables
+- [ ] Update EXPO_PUBLIC_API_URL to deployed backend
+- [ ] Test full flow against production
+- [ ] Set up Expo project on expo.dev
+- [ ] Test on iOS + Android via Expo Go
+- [ ] Distribute to 10-20 beta testers
+- [ ] Add "Give Feedback" button → Google Form link
+- [ ] Monitor: server logs, FASHN usage, error rates
 
 ---
 

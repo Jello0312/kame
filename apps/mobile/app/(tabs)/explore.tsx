@@ -1,10 +1,11 @@
 import { useState, useCallback } from 'react';
-import { View, Text, ActivityIndicator, Pressable, StyleSheet } from 'react-native';
+import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useInfiniteQuery } from '@tanstack/react-query';
 
 import { SwipeDeck } from '../../components/SwipeDeck';
 import { KameLogo } from '../../components/KameLogo';
+import { SkeletonSwipeCard } from '../../components/SkeletonCard';
 import { api } from '../../services/api';
 import { COLORS, FONTS, SPACING, RADIUS } from '../../src/theme/constants';
 import type { FeedCard, FeedResponse } from '../../types/feed';
@@ -75,10 +76,7 @@ export default function ExploreScreen() {
         <View style={styles.header}>
           <KameLogo />
         </View>
-        <View style={styles.centered}>
-          <ActivityIndicator size="large" color={COLORS.tealBright} />
-          <Text style={styles.statusText}>Loading your feed...</Text>
-        </View>
+        <SkeletonSwipeCard />
       </SafeAreaView>
     );
   }
@@ -157,12 +155,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: SPACING['3xl'],
-  },
-  statusText: {
-    color: COLORS.textSecondary,
-    fontFamily: FONTS.medium,
-    fontSize: 16,
-    marginTop: SPACING.lg,
   },
   errorText: {
     color: COLORS.error,
