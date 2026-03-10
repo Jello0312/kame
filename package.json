@@ -1,6 +1,7 @@
 {
   "name": "kame",
   "private": true,
+  "packageManager": "pnpm@10.30.3",
   "scripts": {
     "dev": "pnpm -r --parallel dev",
     "dev:mobile": "pnpm --filter @kame/mobile dev",

@@ -2,10 +2,10 @@
   "$schema": "https://railway.com/railway.schema.json",
   "build": {
     "builder": "NIXPACKS",
-    "buildCommand": "pnpm install --frozen-lockfile && cd ../../packages/shared-types && pnpm run build && cd ../../apps/server && pnpm run build"
+    "buildCommand": "pnpm --filter @kame/shared-types run build && pnpm --filter @kame/server run build"
   },
   "deploy": {
-    "startCommand": "pnpm run db:deploy && pnpm run start",
+    "startCommand": "cd apps/server && pnpm run db:deploy && pnpm run start",
     "healthcheckPath": "/health",
     "healthcheckTimeout": 30,
     "restartPolicyType": "ON_FAILURE",
