@@ -5,6 +5,7 @@
 // platform badge, and animated LIKE/NOPE stamps during drag.
 // ═══════════════════════════════════════════════════════════════
 
+import { useEffect, useState } from 'react';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
@@ -135,10 +136,22 @@ function SoloProductInfo({ card }: { card: FeedCard }) {
 
 // ── Main Component ────────────────────────────────────────────
 
+const GENERATING_TIMEOUT_MS = 30_000;
+
 export function SwipeCard({ card, isTop, translationX }: SwipeCardProps) {
   const imageUrl = getCardImageUrl(card);
   const platform = getPlatform(card);
-  const showGenerating = !card.tryOnImageUrl;
+
+  // Show "Generating..." overlay, but auto-dismiss after timeout
+  const [timedOut, setTimedOut] = useState(false);
+  useEffect(() => {
+    if (card.tryOnImageUrl) return;
+    setTimedOut(false);
+    const timer = setTimeout(() => setTimedOut(true), GENERATING_TIMEOUT_MS);
+    return () => clearTimeout(timer);
+  }, [card.tryOnImageUrl]);
+
+  const showGenerating = !card.tryOnImageUrl && !timedOut;
 
   return (
     <Animated.View style={styles.card}>

@@ -92,8 +92,8 @@ export default function GeneratingScreen() {
       try {
         await api.post('/api/tryon/batch');
         tryOnTriggered = true;
-      } catch {
-        // tryon/batch may 503 if Redis/FASHN not configured — skip polling
+      } catch (err) {
+        console.warn('Try-on batch failed (Redis/FASHN may not be configured):', err);
       }
 
       // Phase 5: Poll status (only if batch was triggered)
@@ -111,7 +111,7 @@ export default function GeneratingScreen() {
             setProgress(`Generating outfit ${data.completed} of ${data.total}...`);
             // Navigate early if 5+ ready or all done
             if (data.completed >= 5 || (data.pending === 0 && data.processing === 0)) break;
-          } catch {
+          } catch (err) {
             break;
           }
           await new Promise((r) => setTimeout(r, 3000));

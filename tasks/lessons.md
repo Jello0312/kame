@@ -280,3 +280,8 @@
 - affiliateUrl is intentionally null in MVP — do NOT populate with fake URLs
 - Tabs are Explore/Favorites/Profile — NEVER add a Cart tab in MVP
 - outfitGroupId on SwipeAction links paired items from same swipe — generate UUID client-side
+
+### 2026-03-11 — Missing REDIS_URL silently disables entire try-on pipeline
+**What happened:** Feed showed "Generating your look..." spinner forever. No try-on images were ever generated despite FASHN_API_KEY being configured.
+**Root cause:** `REDIS_URL` was missing from `apps/server/.env`. This caused: `tryonQueue = null` → `POST /api/tryon/batch` returns 503 → `generating.tsx` silently catches the error → no jobs queued → no worker processes → no TryOnResult rows reach COMPLETED → feed returns `tryOnImageUrl: null` → SwipeCard shows infinite spinner.
+**Rule:** After adding any new infrastructure dependency (Redis, S3, external API), immediately verify the env var is present in BOTH `.env.example` AND the actual `.env` file. Add startup diagnostics that explicitly log which subsystems are active/disabled. Never silently swallow errors during onboarding — at minimum `console.warn` so developers see the failure.
