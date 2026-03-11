@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import * as SecureStore from 'expo-secure-store';
+import * as storage from '../src/storage';
 import { api, ApiError } from '../services/api';
 
 const TOKEN_KEY = 'kame_auth_token';
@@ -52,7 +52,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
     const { token, user } = res.data!;
 
-    await SecureStore.setItemAsync(TOKEN_KEY, token);
+    await storage.setItem(TOKEN_KEY, token);
 
     const onboarded = await probeOnboardingStatus(token);
 
@@ -73,7 +73,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
     const { token, user } = res.data!;
 
-    await SecureStore.setItemAsync(TOKEN_KEY, token);
+    await storage.setItem(TOKEN_KEY, token);
 
     set({
       token,
@@ -84,7 +84,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   logout: async () => {
-    await SecureStore.deleteItemAsync(TOKEN_KEY);
+    await storage.deleteItem(TOKEN_KEY);
 
     set({
       token: null,
@@ -97,7 +97,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   checkAuth: async () => {
     try {
-      const token = await SecureStore.getItemAsync(TOKEN_KEY);
+      const token = await storage.getItem(TOKEN_KEY);
 
       if (!token) {
         set({ isLoading: false });
@@ -119,7 +119,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       });
     } catch {
       // Token is invalid or network error — clear everything
-      await SecureStore.deleteItemAsync(TOKEN_KEY);
+      await storage.deleteItem(TOKEN_KEY);
 
       set({
         token: null,

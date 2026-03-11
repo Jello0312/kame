@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { View, Text, ActivityIndicator, TouchableOpacity } from 'react-native';
+import { View, Text, ActivityIndicator, TouchableOpacity, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { KameLogo } from '../../components/KameLogo';
 import { useOnboardingStore } from '../../stores/onboardingStore';
@@ -14,6 +14,13 @@ import {
   COMPONENT,
   SHADOWS,
 } from '../../src/theme/constants';
+
+/** Convert a blob/data URI to a File object (web only) */
+async function uriToFile(uri: string, fileName: string): Promise<File> {
+  const res = await fetch(uri);
+  const blob = await res.blob();
+  return new File([blob], fileName, { type: blob.type || 'image/jpeg' });
+}
 
 export default function GeneratingScreen() {
   const [status, setStatus] = useState('Setting up your profile...');
@@ -43,19 +50,30 @@ export default function GeneratingScreen() {
       if (store.facePhotoUri || store.bodyPhotoUri) {
         setStatus('Uploading your photos...');
         const formData = new FormData();
+
         if (store.bodyPhotoUri) {
-          formData.append('bodyPhoto', {
-            uri: store.bodyPhotoUri,
-            type: 'image/jpeg',
-            name: 'body.jpg',
-          } as unknown as Blob);
+          if (Platform.OS === 'web') {
+            const file = await uriToFile(store.bodyPhotoUri, 'body.jpg');
+            formData.append('bodyPhoto', file);
+          } else {
+            formData.append('bodyPhoto', {
+              uri: store.bodyPhotoUri,
+              type: 'image/jpeg',
+              name: 'body.jpg',
+            } as unknown as Blob);
+          }
         }
         if (store.facePhotoUri) {
-          formData.append('facePhoto', {
-            uri: store.facePhotoUri,
-            type: 'image/jpeg',
-            name: 'face.jpg',
-          } as unknown as Blob);
+          if (Platform.OS === 'web') {
+            const file = await uriToFile(store.facePhotoUri, 'face.jpg');
+            formData.append('facePhoto', file);
+          } else {
+            formData.append('facePhoto', {
+              uri: store.facePhotoUri,
+              type: 'image/jpeg',
+              name: 'face.jpg',
+            } as unknown as Blob);
+          }
         }
         await api.post('/api/avatar', formData);
       }

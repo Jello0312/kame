@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, Image, Alert, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, Image, Alert, StyleSheet, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
@@ -71,7 +71,11 @@ export default function PhotosScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <View style={styles.container}>
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        bounces={false}
+      >
         {/* Step Indicator */}
         <Text style={styles.stepIndicator}>Step 2 of 4</Text>
 
@@ -145,9 +149,6 @@ export default function PhotosScreen() {
           For best results, use a full-body photo with a plain background
         </Text>
 
-        {/* Spacer */}
-        <View style={styles.flex} />
-
         {/* Skip Link */}
         <TouchableOpacity onPress={handleSkip} style={styles.skipButton}>
           <Text style={styles.skipText}>Skip for now</Text>
@@ -161,21 +162,21 @@ export default function PhotosScreen() {
         >
           <Text style={styles.nextButtonText}>Next</Text>
         </TouchableOpacity>
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  flex: {
-    flex: 1,
-  },
   safeArea: {
     flex: 1,
     backgroundColor: COLORS.navy,
   },
-  container: {
+  scrollView: {
     flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
     paddingHorizontal: COMPONENT.screenPadding,
     paddingTop: SPACING.lg,
     paddingBottom: SPACING.lg,
@@ -200,12 +201,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: SPACING.md,
     alignItems: 'flex-start',
+    maxHeight: 320,
   },
   photoCard: {
     flex: 1,
     borderRadius: RADIUS.cardSm,
     overflow: 'hidden',
     position: 'relative',
+    maxHeight: 320,
   },
   emptyCard: {
     flex: 1,
@@ -258,10 +261,12 @@ const styles = StyleSheet.create({
     color: COLORS.gray400,
     textAlign: 'center',
     marginTop: SPACING.xl,
+    marginBottom: SPACING.xl,
   },
   // Skip
   skipButton: {
     alignItems: 'center',
+    marginTop: 'auto' as unknown as number,
     marginBottom: SPACING.lg,
   },
   skipText: {

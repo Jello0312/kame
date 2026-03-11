@@ -265,6 +265,17 @@
 - Railway Nixpacks monorepo: explicit buildCommand chains `install → build deps → build app`
 - Startup diagnostics: log which subsystems are active (S3/Redis/FASHN) — immediate visibility on deploy
 
+### Deploy / Railway (Continued)
+- Railway placeholder env vars kill deploys silently — always verify ALL env vars contain real values (not `postgresql://user:password@host:5432/kame`). The DIRECT_URL placeholder caused P1001 at startup.
+- Railway Custom Build/Start Commands override Nixpacks entirely — when Nixpacks refuses to detect pnpm, set Custom Build Command in Railway UI: `npm i -g pnpm@10.30.3 && pnpm install --frozen-lockfile && ...`. This was the final fix after 5+ failed deploys.
+- Prisma uses directUrl for migrations, not DATABASE_URL — so DIRECT_URL being wrong causes `prisma migrate deploy` to fail even if DATABASE_URL is correct
+
+### Windows / Local Dev
+- Windows Firewall blocks Expo dev server ports — iOS Expo Go cannot reach Metro bundler. Use `expo start --tunnel` (ngrok tunneling) to bypass instead of opening firewall ports (which requires admin elevation)
+- Metro cache must be cleared after adding new route files — run with `--clear` flag or delete `.expo/` and `node_modules/.cache/`
+- pnpm global install PATH issue on Windows: `npm i -g pnpm` installs to AppData/Roaming/npm/ which may not be in PowerShell PATH. Workaround: `npx pnpm <command>` or restart terminal after install
+- corepack `packageManager` field requires exact version match — `"packageManager": "pnpm@10.30.3"` means you must install that exact version globally
+
 ### General
 - affiliateUrl is intentionally null in MVP — do NOT populate with fake URLs
 - Tabs are Explore/Favorites/Profile — NEVER add a Cart tab in MVP
