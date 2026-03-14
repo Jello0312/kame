@@ -48,7 +48,12 @@ export function MeasurementsStep({ onValidChange }: MeasurementsStepProps) {
   const [focusedField, setFocusedField] = useState<string | null>(null);
 
   const isMetric = measurementUnit === 'METRIC';
-  const canProceed = gender !== null;
+  const canProceed =
+    gender !== null &&
+    bodyShape !== null &&
+    height.trim() !== '' &&
+    weight.trim() !== '' &&
+    waist.trim() !== '';
 
   // Notify parent of validity changes
   useEffect(() => {
@@ -164,11 +169,13 @@ export function MeasurementsStep({ onValidChange }: MeasurementsStepProps) {
     fieldName: string,
   ) {
     const isFocused = focusedField === fieldName;
+    const isEmpty = value.trim() === '';
     return (
       <View style={styles.inputGroup}>
         <Text style={styles.inputLabel}>
           {label}{' '}
           <Text style={styles.inputUnit}>({unit})</Text>
+          <Text style={styles.requiredStar}> *</Text>
         </Text>
         <TextInput
           style={[styles.textInput, isFocused && styles.textInputFocused]}
@@ -180,6 +187,9 @@ export function MeasurementsStep({ onValidChange }: MeasurementsStepProps) {
           onFocus={() => setFocusedField(fieldName)}
           onBlur={() => setFocusedField(null)}
         />
+        {isEmpty && gender !== null && (
+          <Text style={styles.requiredHint}>Required</Text>
+        )}
       </View>
     );
   }
@@ -202,14 +212,21 @@ export function MeasurementsStep({ onValidChange }: MeasurementsStepProps) {
         </Text>
 
         {/* Gender Selection */}
-        <Text style={styles.sectionLabel}>I'm shopping for:</Text>
+        <Text style={styles.sectionLabel}>
+          I'm shopping for:<Text style={styles.requiredStar}> *</Text>
+        </Text>
         <View style={styles.genderRow}>
           {renderGenderCard('W', "Women's", '👗')}
           {renderGenderCard('M', "Men's", '👔')}
         </View>
 
         {/* Body Shape */}
-        <Text style={styles.sectionLabel}>Body Shape</Text>
+        <Text style={styles.sectionLabel}>
+          Body Shape<Text style={styles.requiredStar}> *</Text>
+        </Text>
+        {gender !== null && bodyShape === null && (
+          <Text style={styles.requiredHintSection}>Please select a body shape</Text>
+        )}
         <View style={styles.chipRow}>
           {BODY_SHAPES.map((shape) =>
             renderChip(shape.label, shape.value, bodyShape, setBodyShape),
@@ -217,7 +234,9 @@ export function MeasurementsStep({ onValidChange }: MeasurementsStepProps) {
         </View>
 
         {/* Measurement Unit */}
-        <Text style={styles.sectionLabel}>Measurements</Text>
+        <Text style={styles.sectionLabel}>
+          Measurements<Text style={styles.requiredStar}> *</Text>
+        </Text>
         <View style={styles.chipRow}>
           {UNIT_OPTIONS.map((opt) => renderUnitChip(opt.value, opt.label))}
         </View>
@@ -253,6 +272,20 @@ const styles = StyleSheet.create({
     color: COLORS.white,
     marginBottom: SPACING.md,
     marginTop: SPACING.xl,
+  },
+  requiredStar: {
+    color: COLORS.coral,
+    fontFamily: FONTS.bold,
+  },
+  requiredHint: {
+    ...TYPE.bodySm,
+    color: COLORS.coral,
+    marginTop: 4,
+  },
+  requiredHintSection: {
+    ...TYPE.bodySm,
+    color: COLORS.coral,
+    marginBottom: SPACING.sm,
   },
   genderRow: {
     flexDirection: 'row',

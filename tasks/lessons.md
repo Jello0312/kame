@@ -304,6 +304,21 @@
 - corepack `packageManager` field requires exact version match — `"packageManager": "pnpm@10.30.3"` means you must install that exact version globally
 
 
+### 2026-03-14 — Prefer frontend validation over backend .nullish() for required fields
+**What happened:** Audit found profile route sends null for height/weight/waist/bodyShape which Zod .optional() rejects. Initial instinct was to change backend Zod to .nullish().
+**Root cause:** Those fields should be required from the user. Instead of weakening backend validation, add frontend validation (Required notices, disable Next button).
+**Rule:** When null hits a backend validation: first ask “should this field be required?” If yes, enforce in frontend. Only use .nullish() when the field is truly optional (like budgetRange in preferences). Strip nulls to undefined in the API payload as a safety net.
+
+### 2026-03-14 — Strip nulls from API payloads when backend uses .optional()
+**What happened:** Frontend Zustand store initializes fields as null, but Zod .optional() only accepts undefined (absent key). Sending null causes 400.
+**Root cause:** JSON serialization preserves null — key:null is NOT the same as omitting the key.
+**Rule:** When sending to a Zod .optional() endpoint, use spread pattern to omit null values: . This converts null to absent-key (undefined in Zod terms).
+
+### 2026-03-14 — Remove dead code during cleanup passes
+**What happened:** PreferencesStep had saveToStore(), _save(), and two misused useState() initializers that were never called.
+**Root cause:** Iterating on save strategy during development, forgot to delete abandoned approaches.
+**Rule:** After any implementation iteration, grep for unused functions and dead code. If a function is defined but never called, delete it. useState() with no return value assignment is always wrong.
+
 ### Cross-Platform (iOS / Android / Web)
 - StatusBar style must match screen background — 'dark' for light backgrounds, 'light' for dark backgrounds
 - Dynamic StatusBar: use route segments to determine style

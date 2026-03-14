@@ -54,27 +54,6 @@ export function PreferencesStep() {
     );
   }
 
-  // Save preferences to store (called by wizard before advancing)
-  function saveToStore() {
-    setPreferences({ budgetRange, fashionStyles, preferredPlatforms });
-  }
-
-  // Expose save method via ref pattern — wizard calls this before generating
-  // For simplicity, we save on every change
-  useState(() => {
-    // Save on unmount handled by the wizard's goNext
-  });
-
-  // We expose saveToStore via a wrapper the wizard calls
-  // Actually, let's save continuously so wizard can just advance
-  // Use effect to save to store on changes
-  const _save = () => {
-    setPreferences({ budgetRange, fashionStyles, preferredPlatforms });
-  };
-
-  // Save whenever selections change
-  useState(() => undefined);
-
   return (
     <ScrollView
       style={styles.flex}

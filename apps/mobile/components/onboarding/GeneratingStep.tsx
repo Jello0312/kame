@@ -42,10 +42,10 @@ export function GeneratingStep({ onComplete }: GeneratingStepProps) {
       setStatus('Setting up your profile...');
       await api.post('/api/profile', {
         gender: store.gender,
-        heightCm: store.heightCm,
-        weightKg: store.weightKg,
-        waistCm: store.waistCm,
-        bodyShape: store.bodyShape,
+        ...(store.heightCm != null && { heightCm: store.heightCm }),
+        ...(store.weightKg != null && { weightKg: store.weightKg }),
+        ...(store.waistCm != null && { waistCm: store.waistCm }),
+        ...(store.bodyShape != null && { bodyShape: store.bodyShape }),
         measurementUnit: store.measurementUnit,
       });
 
