@@ -19,7 +19,8 @@
   },
   "pnpm": {
     "overrides": {
-      "@expo/metro-runtime": "~6.1.2"
+      "@expo/metro-runtime": "~6.1.2",
+      "react-native-worklets": "0.5.1"
     },
     "onlyBuiltDependencies": [
       "@prisma/client",

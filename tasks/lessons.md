@@ -285,3 +285,8 @@
 **What happened:** Feed showed "Generating your look..." spinner forever. No try-on images were ever generated despite FASHN_API_KEY being configured.
 **Root cause:** `REDIS_URL` was missing from `apps/server/.env`. This caused: `tryonQueue = null` → `POST /api/tryon/batch` returns 503 → `generating.tsx` silently catches the error → no jobs queued → no worker processes → no TryOnResult rows reach COMPLETED → feed returns `tryOnImageUrl: null` → SwipeCard shows infinite spinner.
 **Rule:** After adding any new infrastructure dependency (Redis, S3, external API), immediately verify the env var is present in BOTH `.env.example` AND the actual `.env` file. Add startup diagnostics that explicitly log which subsystems are active/disabled. Never silently swallow errors during onboarding — at minimum `console.warn` so developers see the failure.
+
+### 2026-03-14 — BullMQ + Upstash free tier burns through 500k daily request limit
+**What happened:** Server logs flooded with `ReplyError: ERR max requests limit exceeded. Limit: 500000, Usage: 500002`. Try-on worker crashed.
+**Root cause:** BullMQ workers continuously poll Redis via BRPOPLPUSH even when idle. Upstash is serverless — every command counts as a request. Default settings (~10-20 commands/sec) exhaust the 500k/day free tier in hours.
+**Rule:** When using BullMQ with Upstash free tier, set `drainDelay: 60` (1min idle poll), `stalledInterval: 300_000` (5min stalled checks), `lockDuration: 600_000` (10min locks). This reduces idle usage to ~15k req/day. Tradeoff: jobs may wait up to 1min to be picked up — acceptable for MVP.

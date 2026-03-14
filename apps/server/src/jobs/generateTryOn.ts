@@ -71,7 +71,13 @@ export function startTryOnWorker(): Worker<TryOnJobData> | null {
         throw err; // Let BullMQ track the failure
       }
     },
-    { connection, concurrency: 2 },
+    {
+      connection,
+      concurrency: 2,
+      drainDelay: 60,            // 1min idle poll (Upstash free tier: 500k req/day)
+      stalledInterval: 300_000,   // Check stalled jobs every 5min (default 30s)
+      lockDuration: 600_000,      // 10min lock (default 30s) — try-on jobs take ~20s
+    },
   );
 
   // Event handlers
