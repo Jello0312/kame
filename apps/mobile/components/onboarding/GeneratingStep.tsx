@@ -40,54 +40,66 @@ export function GeneratingStep({ onComplete }: GeneratingStepProps) {
     try {
       // Phase 1: POST /api/profile
       setStatus('Setting up your profile...');
-      await api.post('/api/profile', {
-        gender: store.gender,
-        ...(store.heightCm != null && { heightCm: store.heightCm }),
-        ...(store.weightKg != null && { weightKg: store.weightKg }),
-        ...(store.waistCm != null && { waistCm: store.waistCm }),
-        ...(store.bodyShape != null && { bodyShape: store.bodyShape }),
-        measurementUnit: store.measurementUnit,
-      });
+      try {
+        await api.post('/api/profile', {
+          gender: store.gender,
+          ...(store.heightCm != null && { heightCm: store.heightCm }),
+          ...(store.weightKg != null && { weightKg: store.weightKg }),
+          ...(store.waistCm != null && { waistCm: store.waistCm }),
+          ...(store.bodyShape != null && { bodyShape: store.bodyShape }),
+          measurementUnit: store.measurementUnit,
+        });
+      } catch (err) {
+        throw new Error(`Profile setup failed: ${err instanceof Error ? err.message : 'Unknown error'}`);
+      }
 
       // Phase 2: POST /api/avatar (FormData)
       if (store.facePhotoUri || store.bodyPhotoUri) {
         setStatus('Uploading your photos...');
-        const formData = new FormData();
+        try {
+          const formData = new FormData();
 
-        if (store.bodyPhotoUri) {
-          if (Platform.OS === 'web') {
-            const file = await uriToFile(store.bodyPhotoUri, 'body.jpg');
-            formData.append('bodyPhoto', file);
-          } else {
-            formData.append('bodyPhoto', {
-              uri: store.bodyPhotoUri,
-              type: 'image/jpeg',
-              name: 'body.jpg',
-            } as unknown as Blob);
+          if (store.bodyPhotoUri) {
+            if (Platform.OS === 'web') {
+              const file = await uriToFile(store.bodyPhotoUri, 'body.jpg');
+              formData.append('bodyPhoto', file);
+            } else {
+              formData.append('bodyPhoto', {
+                uri: store.bodyPhotoUri,
+                type: 'image/jpeg',
+                name: 'body.jpg',
+              } as unknown as Blob);
+            }
           }
-        }
-        if (store.facePhotoUri) {
-          if (Platform.OS === 'web') {
-            const file = await uriToFile(store.facePhotoUri, 'face.jpg');
-            formData.append('facePhoto', file);
-          } else {
-            formData.append('facePhoto', {
-              uri: store.facePhotoUri,
-              type: 'image/jpeg',
-              name: 'face.jpg',
-            } as unknown as Blob);
+          if (store.facePhotoUri) {
+            if (Platform.OS === 'web') {
+              const file = await uriToFile(store.facePhotoUri, 'face.jpg');
+              formData.append('facePhoto', file);
+            } else {
+              formData.append('facePhoto', {
+                uri: store.facePhotoUri,
+                type: 'image/jpeg',
+                name: 'face.jpg',
+              } as unknown as Blob);
+            }
           }
+          await api.post('/api/avatar', formData);
+        } catch (err) {
+          throw new Error(`Photo upload failed: ${err instanceof Error ? err.message : 'Unknown error'}`);
         }
-        await api.post('/api/avatar', formData);
       }
 
       // Phase 3: POST /api/preferences
       setStatus('Saving your preferences...');
-      await api.post('/api/preferences', {
-        budgetRange: store.budgetRange,
-        fashionStyles: store.fashionStyles,
-        preferredPlatforms: store.preferredPlatforms,
-      });
+      try {
+        await api.post('/api/preferences', {
+          ...(store.budgetRange != null && { budgetRange: store.budgetRange }),
+          fashionStyles: store.fashionStyles ?? [],
+          preferredPlatforms: store.preferredPlatforms ?? [],
+        });
+      } catch (err) {
+        throw new Error(`Preferences save failed: ${err instanceof Error ? err.message : 'Unknown error'}`);
+      }
 
       // Phase 4: Trigger try-on batch (may 503 if Redis not configured)
       setStatus('Generating your personalized outfits...');
@@ -204,7 +216,7 @@ const styles = StyleSheet.create({
   },
   statusText: {
     ...TYPE.headingMd,
-    color: COLORS.textPrimary,
+    color: COLORS.navy,
     textAlign: 'center',
     marginBottom: SPACING.sm,
   },
@@ -216,7 +228,7 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     ...TYPE.bodySm,
-    color: COLORS.gray400,
+    color: COLORS.gray500,
     textAlign: 'center',
   },
 });

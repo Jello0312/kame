@@ -18,7 +18,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { ChevronLeft } from 'lucide-react-native';
 
-import { FloatingParticles } from '../FloatingParticles';
+import { AuthBackground } from '../AuthBackground';
 import { KameLogo } from '../KameLogo';
 import { StepIndicator } from './StepIndicator';
 import { MeasurementsStep } from './MeasurementsStep';
@@ -182,7 +182,7 @@ export function OnboardingWizard() {
   return (
     <View style={styles.root}>
       {/* Background particles */}
-      <FloatingParticles />
+      <AuthBackground />
 
       <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
         {/* Logo */}
@@ -213,7 +213,7 @@ export function OnboardingWizard() {
                   disabled={isAnimating}
                   activeOpacity={0.7}
                 >
-                  <ChevronLeft size={20} color={COLORS.tealBright} />
+                  <ChevronLeft size={20} color={COLORS.teal} />
                   <Text style={styles.backButtonText}>Back</Text>
                 </TouchableOpacity>
               ) : (
@@ -249,7 +249,7 @@ export function OnboardingWizard() {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: COLORS.navy,
+    backgroundColor: '#F0FAFB',
   },
   safeArea: {
     flex: 1,
@@ -266,13 +266,18 @@ const styles = StyleSheet.create({
   },
   card: {
     flex: 1,
-    backgroundColor: 'rgba(3, 33, 59, 0.7)',
+    backgroundColor: 'rgba(255, 255, 255, 0.85)',
     borderRadius: RADIUS.card,
     borderWidth: 1,
-    borderColor: 'rgba(72, 230, 205, 0.15)',
+    borderColor: 'rgba(0, 0, 0, 0.08)',
     padding: SPACING.xl,
     overflow: 'hidden',
     ...SHADOWS.card,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 12,
+    elevation: 3,
   },
   stepContent: {
     flex: 1,
@@ -294,7 +299,7 @@ const styles = StyleSheet.create({
   backButtonText: {
     ...TYPE.bodyMd,
     fontFamily: FONTS.medium,
-    color: COLORS.tealBright,
+    color: COLORS.teal,
   },
   backPlaceholder: {
     width: 70,
@@ -338,7 +343,7 @@ const styles = StyleSheet.create({
   },
   stepCounter: {
     ...TYPE.bodySm,
-    color: COLORS.gray400,
+    color: COLORS.gray500,
     textAlign: 'center',
     marginTop: SPACING.md,
   },

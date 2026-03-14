@@ -4,7 +4,6 @@ import Animated, {
   withTiming,
   Easing,
 } from 'react-native-reanimated';
-import { Check } from 'lucide-react-native';
 import { COLORS, FONTS, SPACING } from '../../src/theme/constants';
 
 const STEP_LABELS = ['About You', 'Photos', 'Style', 'Generate'];
@@ -50,7 +49,6 @@ function StepDot({
           !isCompleted && !isActive && styles.dotInactive,
         ]}
       >
-        {isCompleted && <Check size={14} color={COLORS.navy} strokeWidth={3} />}
         {isActive && <View style={styles.dotInner} />}
       </Animated.View>
       <Text
@@ -149,7 +147,7 @@ const styles = StyleSheet.create({
   dotInactive: {
     backgroundColor: 'transparent',
     borderWidth: 2,
-    borderColor: COLORS.gray500,
+    borderColor: COLORS.gray200,
   },
   dotInner: {
     width: 10,
@@ -166,7 +164,7 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   labelActive: {
-    color: COLORS.tealBright,
+    color: COLORS.navy,
   },
   lineContainer: {
     flex: 1,
@@ -177,7 +175,7 @@ const styles = StyleSheet.create({
   },
   lineTrack: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(255,255,255,0.08)',
+    backgroundColor: 'rgba(0, 0, 0, 0.06)',
     borderRadius: 1,
   },
   lineFill: {
@@ -190,7 +188,7 @@ const styles = StyleSheet.create({
   },
   progressTrack: {
     height: 3,
-    backgroundColor: 'rgba(255,255,255,0.08)',
+    backgroundColor: 'rgba(0, 0, 0, 0.06)',
     borderRadius: 2,
     marginTop: SPACING.lg,
     overflow: 'hidden',

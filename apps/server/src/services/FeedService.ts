@@ -54,10 +54,31 @@ function toProductSummary(product: {
   };
 }
 
-function shuffleArray<T>(array: T[]): T[] {
+/** FNV-1a hash — turns a string into a 32-bit integer */
+function seedFromString(str: string): number {
+  let hash = 2166136261;
+  for (let i = 0; i < str.length; i++) {
+    hash ^= str.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
+  }
+  return hash >>> 0;
+}
+
+/** Mulberry32 — seeded PRNG returning () => number in [0,1) */
+function mulberry32(seed: number): () => number {
+  let state = seed | 0;
+  return () => {
+    state = (state + 0x6D2B79F5) | 0;
+    let t = Math.imul(state ^ (state >>> 15), 1 | state);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function shuffleArray<T>(array: T[], random: () => number): T[] {
   const shuffled = [...array];
   for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
+    const j = Math.floor(random() * (i + 1));
     [shuffled[i], shuffled[j]] = [shuffled[j]!, shuffled[i]!];
   }
   return shuffled;
@@ -78,6 +99,21 @@ export async function getTryOnImageForFeed(
     },
   });
 
+  return result?.resultImageUrl ?? null;
+}
+
+export async function getSoloTryOnImageForFeed(
+  userId: string,
+  productId: string,
+): Promise<string | null> {
+  const result = await prisma.tryOnResult.findFirst({
+    where: {
+      userId,
+      productId,
+      status: 'COMPLETED',
+      layer: 'solo',
+    },
+  });
   return result?.resultImageUrl ?? null;
 }
 
@@ -187,18 +223,26 @@ export async function getFeedForUser(
     }),
   );
 
-  const soloCards: FeedCard[] = soloProducts.map((product) => ({
-    outfitPairingId: null,
-    tryOnImageUrl: null,
-    topProduct: null,
-    bottomProduct: null,
-    soloProduct: toProductSummary(product),
-    totalPrice: Number(product.price),
-    isSolo: true,
-  }));
+  const soloCards: FeedCard[] = await Promise.all(
+    soloProducts.map(async (product) => {
+      const tryOnImageUrl = await getSoloTryOnImageForFeed(userId, product.id);
+      return {
+        outfitPairingId: null,
+        tryOnImageUrl,
+        topProduct: null,
+        bottomProduct: null,
+        soloProduct: toProductSummary(product),
+        totalPrice: Number(product.price),
+        isSolo: true,
+      };
+    }),
+  );
 
-  // 9. Shuffle the combined array (Fisher-Yates)
-  const allCards = shuffleArray([...pairingCards, ...soloCards]);
+  // 9. Deterministic shuffle (seeded by userId + date for stable pagination)
+  const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+  const seed = seedFromString(userId + today);
+  const random = mulberry32(seed);
+  const allCards = shuffleArray([...pairingCards, ...soloCards], random);
 
   // 10. Cursor pagination
   let startIndex = 0;

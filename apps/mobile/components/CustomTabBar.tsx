@@ -26,7 +26,7 @@ import Animated, {
 import { Flame, Heart, User } from 'lucide-react-native';
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 
-import { FONTS } from '../src/theme/constants';
+import { COLORS, FONTS } from '../src/theme/constants';
 
 // ── Tab Configuration ───────────────────────────────────────
 
@@ -44,25 +44,25 @@ const TAB_CONFIG: TabConfig[] = [
     name: 'explore',
     label: 'EXPLORE',
     icon: Flame,
-    activeColor: '#EF4444',
-    activeBg: '#FEF2F2',
-    inactiveColor: '#6B7280',
+    activeColor: COLORS.tabActive,
+    activeBg: '#FFF0F0',
+    inactiveColor: COLORS.tabInactive,
   },
   {
     name: 'favorites',
     label: 'FAVORITES',
     icon: Heart,
-    activeColor: '#374151',
-    activeBg: '#F3F4F6',
-    inactiveColor: '#6B7280',
+    activeColor: COLORS.tabActive,
+    activeBg: '#FFF0F0',
+    inactiveColor: COLORS.tabInactive,
   },
   {
     name: 'profile',
     label: 'PROFILE',
     icon: User,
-    activeColor: '#374151',
-    activeBg: '#F3F4F6',
-    inactiveColor: '#6B7280',
+    activeColor: COLORS.tabActive,
+    activeBg: '#FFF0F0',
+    inactiveColor: COLORS.tabInactive,
   },
 ];
 

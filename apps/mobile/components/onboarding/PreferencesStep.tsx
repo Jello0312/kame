@@ -190,17 +190,17 @@ const styles = StyleSheet.create({
   },
   heading: {
     ...TYPE.headingXl,
-    color: COLORS.white,
+    color: COLORS.navy,
     marginBottom: SPACING.sm,
   },
   subheading: {
     ...TYPE.bodyMd,
-    color: COLORS.gray400,
+    color: COLORS.gray500,
     marginBottom: SPACING['2xl'],
   },
   sectionLabel: {
     ...TYPE.headingMd,
-    color: COLORS.white,
+    color: COLORS.navy,
     marginBottom: SPACING.md,
     marginTop: SPACING.xl,
   },

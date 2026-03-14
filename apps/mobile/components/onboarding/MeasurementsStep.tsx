@@ -99,7 +99,7 @@ export function MeasurementsStep({ onValidChange }: MeasurementsStepProps) {
         <Text
           style={[
             styles.genderLabel,
-            { color: selected ? COLORS.navy : COLORS.white },
+            { color: selected ? COLORS.navy : COLORS.gray700 },
           ]}
         >
           {label}
@@ -259,17 +259,17 @@ const styles = StyleSheet.create({
   },
   heading: {
     ...TYPE.headingXl,
-    color: COLORS.white,
+    color: COLORS.navy,
     marginBottom: SPACING.sm,
   },
   subheading: {
     ...TYPE.bodyMd,
-    color: COLORS.gray400,
+    color: COLORS.gray500,
     marginBottom: SPACING['2xl'],
   },
   sectionLabel: {
     ...TYPE.headingMd,
-    color: COLORS.white,
+    color: COLORS.navy,
     marginBottom: SPACING.md,
     marginTop: SPACING.xl,
   },
@@ -355,12 +355,12 @@ const styles = StyleSheet.create({
   },
   inputLabel: {
     ...TYPE.bodyMd,
-    color: COLORS.white,
+    color: COLORS.navy,
     marginBottom: SPACING.sm,
     fontFamily: FONTS.medium,
   },
   inputUnit: {
-    color: COLORS.gray400,
+    color: COLORS.gray500,
     fontFamily: FONTS.regular,
   },
   textInput: {

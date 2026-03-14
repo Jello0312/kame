@@ -2,7 +2,7 @@ import { Router, Request, Response, NextFunction } from 'express';
 import { z } from 'zod';
 import { validate } from '../middleware/validate.js';
 import { authenticate } from '../middleware/auth.js';
-import { prisma } from '../lib/prisma.js';
+import * as SwipeService from '../services/SwipeService.js';
 import type { ApiResponse } from '@kame/shared-types';
 
 const router: Router = Router();
@@ -24,26 +24,7 @@ router.post(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const data = req.body as z.infer<typeof swipeSchema>;
-
-      const swipe = await prisma.swipeAction.upsert({
-        where: {
-          userId_productId: {
-            userId: req.userId!,
-            productId: data.productId,
-          },
-        },
-        create: {
-          userId: req.userId!,
-          productId: data.productId,
-          action: data.action,
-          outfitGroupId: data.outfitGroupId ?? null,
-        },
-        update: {
-          action: data.action,
-          outfitGroupId: data.outfitGroupId ?? null,
-        },
-      });
-
+      const swipe = await SwipeService.recordSwipe(req.userId!, data);
       const response: ApiResponse<typeof swipe> = {
         success: true,
         data: swipe,

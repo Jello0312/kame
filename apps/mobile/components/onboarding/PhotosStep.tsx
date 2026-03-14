@@ -90,7 +90,9 @@ function PhotoUploadCard({
           <ImagePlus size={24} color={COLORS.gray500} />
         </View>
         <Text style={styles.uploadText}>Tap to upload</Text>
-        <Text style={styles.uploadSubtext}>or take a photo</Text>
+        {Platform.OS !== 'web' && (
+          <Text style={styles.uploadSubtext}>or take a photo</Text>
+        )}
       </View>
     </TouchableOpacity>
   );
@@ -185,6 +187,12 @@ export function PhotosStep() {
   // ── Show source picker (camera vs gallery) ──
 
   function showSourcePicker(type: PhotoType) {
+    if (Platform.OS === 'web') {
+      // Web: no camera, no action sheet — go straight to file picker
+      pickFromLibrary(type);
+      return;
+    }
+
     if (Platform.OS === 'ios') {
       ActionSheetIOS.showActionSheetWithOptions(
         {
@@ -197,6 +205,7 @@ export function PhotosStep() {
         },
       );
     } else {
+      // Android
       Alert.alert('Upload Photo', 'Choose a source', [
         { text: 'Cancel', style: 'cancel' },
         { text: 'Take Photo', onPress: () => takePhoto(type) },
@@ -241,7 +250,8 @@ export function PhotosStep() {
 
       {/* Guidance */}
       <Text style={styles.guidance}>
-        For best results, use a full-body photo with a plain background
+        For best results, use a full-body photo with a plain background.
+        Body photo should be at least 576×864 pixels.
       </Text>
     </ScrollView>
   );
@@ -257,12 +267,12 @@ const styles = StyleSheet.create({
   },
   heading: {
     ...TYPE.headingXl,
-    color: COLORS.white,
+    color: COLORS.navy,
     marginBottom: SPACING.sm,
   },
   subheading: {
     ...TYPE.bodyMd,
-    color: COLORS.gray400,
+    color: COLORS.gray500,
     marginBottom: SPACING['2xl'],
   },
 
@@ -379,7 +389,7 @@ const styles = StyleSheet.create({
   // ── Guidance ──
   guidance: {
     ...TYPE.bodySm,
-    color: COLORS.gray400,
+    color: COLORS.gray500,
     textAlign: 'center',
     marginTop: SPACING.xl,
   },

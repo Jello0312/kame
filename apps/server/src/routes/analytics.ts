@@ -2,7 +2,7 @@ import { Router, Request, Response, NextFunction } from 'express';
 import { z } from 'zod';
 import { validate } from '../middleware/validate.js';
 import { authenticate } from '../middleware/auth.js';
-import { prisma } from '../lib/prisma.js';
+import * as AnalyticsService from '../services/AnalyticsService.js';
 import type { ApiResponse } from '@kame/shared-types';
 
 const router: Router = Router();
@@ -23,13 +23,7 @@ router.post(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const data = req.body as z.infer<typeof clickSchema>;
-      await prisma.analyticsClick.create({
-        data: {
-          userId: req.userId!,
-          productId: data.productId,
-          platform: data.platform,
-        },
-      });
+      await AnalyticsService.logClick(req.userId!, data);
       const response: ApiResponse = {
         success: true,
         message: 'Click logged',
