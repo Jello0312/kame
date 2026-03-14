@@ -3,7 +3,7 @@ import { NotFoundError } from '../utils/errors.js';
 import type { BudgetRange } from '@prisma/client';
 
 interface PreferenceData {
-  budgetRange?: BudgetRange;
+  budgetRange?: BudgetRange | null;
   fashionStyles?: string[];
   preferredPlatforms?: string[];
 }
@@ -18,7 +18,7 @@ export async function upsertPreferences(userId: string, data: PreferenceData) {
       preferredPlatforms: data.preferredPlatforms ?? [],
     },
     update: {
-      ...(data.budgetRange !== undefined && { budgetRange: data.budgetRange }),
+      ...(data.budgetRange != null && { budgetRange: data.budgetRange }),
       ...(data.fashionStyles !== undefined && { fashionStyles: data.fashionStyles }),
       ...(data.preferredPlatforms !== undefined && { preferredPlatforms: data.preferredPlatforms }),
     },

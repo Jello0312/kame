@@ -21,7 +21,7 @@ import Animated, {
 
 import { useAuthStore } from '../../stores/authStore';
 import { KameLogo } from '../../components/KameLogo';
-import { FloatingParticles } from '../../components/FloatingParticles';
+import { AuthBackground } from '../../components/AuthBackground';
 import { FloatingLabelInput } from '../../components/FloatingLabelInput';
 import {
   COLORS,
@@ -94,8 +94,8 @@ export default function LoginScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      {/* Animated background particles */}
-      <FloatingParticles />
+      {/* Light pastel flowing gradient background */}
+      <AuthBackground />
 
       <KeyboardAvoidingView
         style={styles.flex}
@@ -186,7 +186,7 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: '#F0FAFB',
   },
   flex: {
     flex: 1,
@@ -204,25 +204,30 @@ const styles = StyleSheet.create({
   },
   heading: {
     ...TYPE.headingXl,
-    color: COLORS.textPrimary,
+    color: COLORS.navy,
     textAlign: 'center',
     marginBottom: SPACING.sm,
   },
   subtitle: {
     ...TYPE.bodyMd,
-    color: COLORS.gray400,
+    color: COLORS.gray500,
     textAlign: 'center',
     marginBottom: SPACING['3xl'],
   },
 
-  // Form card
+  // Form card — frosted white glass on light background
   formCard: {
-    backgroundColor: 'rgba(3, 33, 59, 0.6)',
+    backgroundColor: 'rgba(255, 255, 255, 0.85)',
     borderWidth: 1,
-    borderColor: 'rgba(72, 230, 205, 0.12)',
+    borderColor: 'rgba(0, 0, 0, 0.08)',
     borderRadius: RADIUS.card,
     padding: SPACING.xl,
     marginBottom: SPACING.xl,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.06,
+    shadowRadius: 16,
+    elevation: 3,
   },
 
   // Forgot password
@@ -233,7 +238,7 @@ const styles = StyleSheet.create({
   },
   forgotPasswordText: {
     ...TYPE.bodySm,
-    color: COLORS.tealBright,
+    color: COLORS.teal,
     fontFamily: FONTS.medium,
   },
 
@@ -270,11 +275,11 @@ const styles = StyleSheet.create({
   },
   signUpPrompt: {
     ...TYPE.bodyMd,
-    color: COLORS.gray400,
+    color: COLORS.gray500,
   },
   signUpLink: {
     ...TYPE.bodyMd,
-    color: COLORS.tealBright,
+    color: COLORS.teal,
     fontFamily: FONTS.semiBold,
   },
 });

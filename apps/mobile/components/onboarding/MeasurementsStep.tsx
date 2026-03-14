@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -9,8 +9,6 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
 import { useOnboardingStore } from '../../stores/onboardingStore';
 import {
   COLORS,
@@ -19,7 +17,6 @@ import {
   SPACING,
   RADIUS,
   COMPONENT,
-  SHADOWS,
 } from '../../src/theme/constants';
 
 const BODY_SHAPES = [
@@ -35,8 +32,11 @@ const UNIT_OPTIONS = [
   { value: 'IMPERIAL' as const, label: 'Imperial (in/lbs)' },
 ] as const;
 
-export default function MeasurementsScreen() {
-  const router = useRouter();
+interface MeasurementsStepProps {
+  onValidChange: (isValid: boolean) => void;
+}
+
+export function MeasurementsStep({ onValidChange }: MeasurementsStepProps) {
   const { setMeasurements } = useOnboardingStore();
 
   const [gender, setGender] = useState<'M' | 'W' | null>(null);
@@ -50,44 +50,33 @@ export default function MeasurementsScreen() {
   const isMetric = measurementUnit === 'METRIC';
   const canProceed = gender !== null;
 
-  function handleNext() {
-    if (!canProceed) return;
+  // Notify parent of validity changes
+  useEffect(() => {
+    onValidChange(canProceed);
+  }, [canProceed, onValidChange]);
 
+  // Save data to store whenever values change
+  useEffect(() => {
+    if (!gender) return;
     const heightNum = height ? parseFloat(height) : null;
     const weightNum = weight ? parseFloat(weight) : null;
     const waistNum = waist ? parseFloat(waist) : null;
 
-    // Convert imperial to metric for storage
     const heightCm =
       heightNum !== null
-        ? isMetric
-          ? heightNum
-          : Math.round(heightNum * 2.54 * 10) / 10
+        ? isMetric ? heightNum : Math.round(heightNum * 2.54 * 10) / 10
         : null;
     const weightKg =
       weightNum !== null
-        ? isMetric
-          ? weightNum
-          : Math.round(weightNum * 0.453592 * 10) / 10
+        ? isMetric ? weightNum : Math.round(weightNum * 0.453592 * 10) / 10
         : null;
     const waistCm =
       waistNum !== null
-        ? isMetric
-          ? waistNum
-          : Math.round(waistNum * 2.54 * 10) / 10
+        ? isMetric ? waistNum : Math.round(waistNum * 2.54 * 10) / 10
         : null;
 
-    setMeasurements({
-      gender,
-      heightCm,
-      weightKg,
-      waistCm,
-      bodyShape,
-      measurementUnit,
-    });
-
-    router.push('/onboarding/photos');
-  }
+    setMeasurements({ gender, heightCm, weightKg, waistCm, bodyShape, measurementUnit });
+  }, [gender, bodyShape, measurementUnit, height, weight, waist, isMetric, setMeasurements]);
 
   function renderGenderCard(value: 'W' | 'M', label: string, icon: string) {
     const selected = gender === value;
@@ -182,10 +171,7 @@ export default function MeasurementsScreen() {
           <Text style={styles.inputUnit}>({unit})</Text>
         </Text>
         <TextInput
-          style={[
-            styles.textInput,
-            isFocused && styles.textInputFocused,
-          ]}
+          style={[styles.textInput, isFocused && styles.textInputFocused]}
           value={value}
           onChangeText={onChangeText}
           keyboardType="numeric"
@@ -199,111 +185,58 @@ export default function MeasurementsScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <KeyboardAvoidingView
+    <KeyboardAvoidingView
+      style={styles.flex}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
+      <ScrollView
         style={styles.flex}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
       >
-        <ScrollView
-          style={styles.flex}
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled"
-        >
-          {/* Step Indicator */}
-          <Text style={styles.stepIndicator}>Step 1 of 4</Text>
+        {/* Heading */}
+        <Text style={styles.heading}>About You</Text>
+        <Text style={styles.subheading}>
+          Tell us about yourself to personalize your experience
+        </Text>
 
-          {/* Heading */}
-          <Text style={styles.heading}>About You</Text>
-          <Text style={styles.subheading}>
-            Tell us about yourself to personalize your experience
-          </Text>
-
-          {/* Gender Selection */}
-          <Text style={styles.sectionLabel}>I'm shopping for:</Text>
-          <View style={styles.genderRow}>
-            {renderGenderCard('W', "Women's", '👗')}
-            {renderGenderCard('M', "Men's", '👔')}
-          </View>
-
-          {/* Body Shape */}
-          <Text style={styles.sectionLabel}>Body Shape</Text>
-          <View style={styles.chipRow}>
-            {BODY_SHAPES.map((shape) =>
-              renderChip(shape.label, shape.value, bodyShape, setBodyShape),
-            )}
-          </View>
-
-          {/* Measurement Unit */}
-          <Text style={styles.sectionLabel}>Measurements</Text>
-          <View style={styles.chipRow}>
-            {UNIT_OPTIONS.map((opt) => renderUnitChip(opt.value, opt.label))}
-          </View>
-
-          {/* Measurement Inputs */}
-          {renderInput(
-            'Height',
-            isMetric ? 'cm' : 'in',
-            height,
-            setHeight,
-            'height',
-          )}
-          {renderInput(
-            'Weight',
-            isMetric ? 'kg' : 'lbs',
-            weight,
-            setWeight,
-            'weight',
-          )}
-          {renderInput(
-            'Waist',
-            isMetric ? 'cm' : 'in',
-            waist,
-            setWaist,
-            'waist',
-          )}
-
-          {/* Spacer for button */}
-          <View style={{ height: SPACING['3xl'] }} />
-        </ScrollView>
-
-        {/* Next Button */}
-        <View style={styles.bottomBar}>
-          <TouchableOpacity
-            style={[
-              styles.nextButton,
-              !canProceed && styles.nextButtonDisabled,
-              canProceed && SHADOWS.tealButton,
-            ]}
-            onPress={handleNext}
-            disabled={!canProceed}
-            activeOpacity={0.8}
-          >
-            <Text style={styles.nextButtonText}>Next</Text>
-          </TouchableOpacity>
+        {/* Gender Selection */}
+        <Text style={styles.sectionLabel}>I'm shopping for:</Text>
+        <View style={styles.genderRow}>
+          {renderGenderCard('W', "Women's", '👗')}
+          {renderGenderCard('M', "Men's", '👔')}
         </View>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+
+        {/* Body Shape */}
+        <Text style={styles.sectionLabel}>Body Shape</Text>
+        <View style={styles.chipRow}>
+          {BODY_SHAPES.map((shape) =>
+            renderChip(shape.label, shape.value, bodyShape, setBodyShape),
+          )}
+        </View>
+
+        {/* Measurement Unit */}
+        <Text style={styles.sectionLabel}>Measurements</Text>
+        <View style={styles.chipRow}>
+          {UNIT_OPTIONS.map((opt) => renderUnitChip(opt.value, opt.label))}
+        </View>
+
+        {/* Measurement Inputs */}
+        {renderInput('Height', isMetric ? 'cm' : 'in', height, setHeight, 'height')}
+        {renderInput('Weight', isMetric ? 'kg' : 'lbs', weight, setWeight, 'weight')}
+        {renderInput('Waist', isMetric ? 'cm' : 'in', waist, setWaist, 'waist')}
+
+        <View style={{ height: SPACING.lg }} />
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  flex: {
-    flex: 1,
-  },
-  safeArea: {
-    flex: 1,
-    backgroundColor: COLORS.navy,
-  },
+  flex: { flex: 1 },
   scrollContent: {
-    paddingHorizontal: COMPONENT.screenPadding,
-    paddingTop: SPACING.lg,
     paddingBottom: SPACING.lg,
-  },
-  stepIndicator: {
-    ...TYPE.bodySm,
-    color: COLORS.tealBright,
-    marginBottom: SPACING.xl,
   },
   heading: {
     ...TYPE.headingXl,
@@ -313,7 +246,7 @@ const styles = StyleSheet.create({
   subheading: {
     ...TYPE.bodyMd,
     color: COLORS.gray400,
-    marginBottom: SPACING['3xl'],
+    marginBottom: SPACING['2xl'],
   },
   sectionLabel: {
     ...TYPE.headingMd,
@@ -321,7 +254,6 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.md,
     marginTop: SPACING.xl,
   },
-  // Gender cards
   genderRow: {
     flexDirection: 'row',
     gap: SPACING.md,
@@ -351,7 +283,6 @@ const styles = StyleSheet.create({
     ...TYPE.bodyLg,
     fontFamily: FONTS.semiBold,
   },
-  // Chips
   chipRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -386,7 +317,6 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.semiBold,
     color: COLORS.navy,
   },
-  // Inputs
   inputGroup: {
     marginTop: SPACING.lg,
   },
@@ -413,26 +343,5 @@ const styles = StyleSheet.create({
   },
   textInputFocused: {
     borderColor: COLORS.tealBright,
-  },
-  // Bottom bar
-  bottomBar: {
-    paddingHorizontal: COMPONENT.screenPadding,
-    paddingBottom: SPACING.lg,
-    paddingTop: SPACING.sm,
-  },
-  nextButton: {
-    height: COMPONENT.buttonHeight,
-    backgroundColor: COLORS.tealBright,
-    borderRadius: RADIUS.button,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  nextButtonDisabled: {
-    opacity: 0.5,
-  },
-  nextButtonText: {
-    fontFamily: FONTS.semiBold,
-    fontSize: 16,
-    color: COLORS.navy,
   },
 });

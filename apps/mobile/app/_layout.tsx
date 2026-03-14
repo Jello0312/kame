@@ -1,7 +1,7 @@
 import '../global.css';
 
 import { useEffect } from 'react';
-import { Stack, useSegments, useRouter } from 'expo-router';
+import { Stack, useSegments, useRouter, type Href } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
@@ -57,7 +57,7 @@ export default function RootLayout() {
     if (!isAuthenticated && !inAuthGroup) {
       router.replace('/auth/login');
     } else if (isAuthenticated && !hasCompletedOnboarding && !inOnboardingGroup) {
-      router.replace('/onboarding/measurements');
+      router.replace('/onboarding' as Href);
     } else if (isAuthenticated && hasCompletedOnboarding && (inAuthGroup || inOnboardingGroup)) {
       router.replace('/(tabs)/explore');
     }
@@ -71,7 +71,7 @@ export default function RootLayout() {
     <GestureHandlerRootView style={{ flex: 1, backgroundColor: COLORS.navy }}>
       <ErrorBoundary>
         <QueryClientProvider client={queryClient}>
-          <StatusBar style="light" />
+          <StatusBar style={segments[0] === "auth" ? "dark" : "light"} />
           <Stack screenOptions={{ headerShown: false }} />
         </QueryClientProvider>
       </ErrorBoundary>

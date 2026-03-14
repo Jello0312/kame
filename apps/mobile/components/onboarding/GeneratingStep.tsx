@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
-import { View, Text, ActivityIndicator, TouchableOpacity, Platform } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { KameLogo } from '../../components/KameLogo';
+import { View, Text, ActivityIndicator, TouchableOpacity, Platform, StyleSheet } from 'react-native';
+import { KameLogo } from '../KameLogo';
 import { useOnboardingStore } from '../../stores/onboardingStore';
 import { useAuthStore } from '../../stores/authStore';
 import { api } from '../../services/api';
@@ -22,7 +21,11 @@ async function uriToFile(uri: string, fileName: string): Promise<File> {
   return new File([blob], fileName, { type: blob.type || 'image/jpeg' });
 }
 
-export default function GeneratingScreen() {
+interface GeneratingStepProps {
+  onComplete: () => void;
+}
+
+export function GeneratingStep({ onComplete }: GeneratingStepProps) {
   const [status, setStatus] = useState('Setting up your profile...');
   const [progress, setProgress] = useState('');
   const [error, setError] = useState('');
@@ -121,7 +124,7 @@ export default function GeneratingScreen() {
       // Done!
       useOnboardingStore.getState().reset();
       useAuthStore.getState().setHasCompletedOnboarding(true);
-      // _layout.tsx will automatically redirect to (tabs)/explore
+      onComplete();
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
     }
@@ -133,103 +136,87 @@ export default function GeneratingScreen() {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.background }}>
-      <View
-        style={{
-          flex: 1,
-          justifyContent: 'center',
-          alignItems: 'center',
-          paddingHorizontal: COMPONENT.screenPadding,
-        }}
-      >
-        {/* Logo */}
-        <KameLogo size={40} />
+    <View style={styles.container}>
+      {/* Logo */}
+      <KameLogo size={40} />
 
-        <View style={{ height: SPACING['3xl'] }} />
+      <View style={{ height: SPACING['3xl'] }} />
 
-        {/* Loading / Error */}
-        {error ? (
-          <>
-            <Text
-              style={{
-                ...TYPE.bodyMd,
-                color: COLORS.error,
-                textAlign: 'center',
-                marginBottom: SPACING['2xl'],
-              }}
-            >
-              {error}
-            </Text>
+      {/* Loading / Error */}
+      {error ? (
+        <>
+          <Text style={styles.errorText}>{error}</Text>
+          <TouchableOpacity
+            onPress={handleRetry}
+            activeOpacity={0.8}
+            style={[styles.retryButton, SHADOWS.tealButton]}
+          >
+            <Text style={styles.retryButtonText}>Retry</Text>
+          </TouchableOpacity>
+        </>
+      ) : (
+        <>
+          <ActivityIndicator size="large" color={COLORS.tealBright} />
 
-            <TouchableOpacity
-              onPress={handleRetry}
-              activeOpacity={0.8}
-              style={{
-                height: COMPONENT.buttonHeight,
-                paddingHorizontal: SPACING['3xl'],
-                backgroundColor: COLORS.ctaNavigation,
-                borderRadius: RADIUS.button,
-                justifyContent: 'center',
-                alignItems: 'center',
-                ...SHADOWS.tealButton,
-              }}
-            >
-              <Text
-                style={{
-                  fontFamily: FONTS.semiBold,
-                  fontSize: 16,
-                  color: COLORS.navy,
-                }}
-              >
-                Retry
-              </Text>
-            </TouchableOpacity>
-          </>
-        ) : (
-          <>
-            <ActivityIndicator size="large" color={COLORS.tealBright} />
+          <View style={{ height: SPACING['2xl'] }} />
 
-            <View style={{ height: SPACING['2xl'] }} />
+          {/* Status Text */}
+          <Text style={styles.statusText}>{status}</Text>
 
-            {/* Status Text */}
-            <Text
-              style={{
-                ...TYPE.headingMd,
-                color: COLORS.textPrimary,
-                textAlign: 'center',
-                marginBottom: SPACING.sm,
-              }}
-            >
-              {status}
-            </Text>
+          {/* Progress Text */}
+          {progress ? (
+            <Text style={styles.progressText}>{progress}</Text>
+          ) : null}
 
-            {/* Progress Text */}
-            {progress ? (
-              <Text
-                style={{
-                  ...TYPE.bodyMd,
-                  color: COLORS.tealBright,
-                  textAlign: 'center',
-                  marginBottom: SPACING.md,
-                }}
-              >
-                {progress}
-              </Text>
-            ) : null}
-
-            {/* Subtitle */}
-            <Text
-              style={{
-                ...TYPE.bodySm,
-                color: COLORS.gray400,
-                textAlign: 'center',
-              }}
-            >
-              This usually takes about a minute
-            </Text>
-          </>
-        )}
-      </View>
-    </SafeAreaView>
+          {/* Subtitle */}
+          <Text style={styles.subtitle}>This usually takes about a minute</Text>
+        </>
+      )}
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: SPACING.xl,
+  },
+  errorText: {
+    ...TYPE.bodyMd,
+    color: COLORS.error,
+    textAlign: 'center',
+    marginBottom: SPACING['2xl'],
+  },
+  retryButton: {
+    height: COMPONENT.buttonHeight,
+    paddingHorizontal: SPACING['3xl'],
+    backgroundColor: COLORS.ctaNavigation,
+    borderRadius: RADIUS.button,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  retryButtonText: {
+    fontFamily: FONTS.semiBold,
+    fontSize: 16,
+    color: COLORS.navy,
+  },
+  statusText: {
+    ...TYPE.headingMd,
+    color: COLORS.textPrimary,
+    textAlign: 'center',
+    marginBottom: SPACING.sm,
+  },
+  progressText: {
+    ...TYPE.bodyMd,
+    color: COLORS.tealBright,
+    textAlign: 'center',
+    marginBottom: SPACING.md,
+  },
+  subtitle: {
+    ...TYPE.bodySm,
+    color: COLORS.gray400,
+    textAlign: 'center',
+  },
+});

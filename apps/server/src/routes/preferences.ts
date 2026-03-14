@@ -10,7 +10,7 @@ const router: Router = Router();
 // ─── Zod Schema ─────────────────────────────────────
 
 const preferencesSchema = z.object({
-  budgetRange: z.enum(['BUDGET', 'MID', 'PREMIUM', 'LUXURY']).optional(),
+  budgetRange: z.enum(['BUDGET', 'MID', 'PREMIUM', 'LUXURY']).nullish(),
   fashionStyles: z.array(z.string()).optional(),
   preferredPlatforms: z
     .array(z.enum(['AMAZON', 'SHEIN', 'ZARA', 'ZALORA', 'ZALANDO', 'TAOBAO', 'ASOS']))

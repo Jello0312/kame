@@ -173,6 +173,27 @@
 **Workaround used:** Read files via  tool (works fine), then use  scripts via Bash to programmatically transform and write files ( + string manipulation + ). This bypasses the Edit/Write tools entirely.
 **Rule:** For projects on OneDrive paths with spaces, prefer the Bash + Node.js  workaround for file writes. Better yet, create a Windows junction:  and use the junction path as project root. This eliminates the issue for all tools.
 
+
+### 2026-03-14 — StatusBar style must match screen background
+**What happened:** Root _layout.tsx used `<StatusBar style="light" />` globally. After switching auth screens from dark navy to light pastel (#F0FAFB) background, the white status bar icons became invisible on iOS/Android.
+**Root cause:** StatusBar style was hardcoded to 'light' (white icons) for the dark-themed app. When auth screens switched to light background, no one updated the StatusBar style.
+**Rule:** When changing screen backgrounds between light and dark themes, ALWAYS check StatusBar compatibility. Use dynamic style based on current route: `style={segments[0] === 'auth' ? 'dark' : 'light'}`. Never hardcode StatusBar style in multi-theme apps.
+
+### 2026-03-14 — Zod .optional() does NOT accept null from JSON
+**What happened:** PreferencesStep could send `budgetRange: null` or `budgetRange: ''` to the backend when user skipped budget selection. Backend Zod schema `z.enum([...]).optional()` rejected both — .optional() only accepts `undefined`, not `null`.
+**Root cause:** In JSON, `null` values are preserved (`JSON.stringify({a: null})` = `'{"a":null}'`), but `undefined` values are omitted (`JSON.stringify({a: undefined})` = `'{}'`). Frontend Zustand stores hold `null` as initial state, which becomes explicit null in the JSON body. Zod `.optional()` matches undefined (absent), not null (present but empty).
+**Rule:** For optional fields that may come from frontend as null, use `.nullish()` (accepts both null and undefined) instead of `.optional()`. Also check the Prisma service layer — if the DB field is non-nullable with a default, use `!= null` (loose inequality) to skip both null and undefined in update logic.
+
+### 2026-03-14 — PreferencesStep initializes budgetRange as empty string, not null
+**What happened:** PreferencesStep used `useState('')` for budgetRange. When user tapped a style chip without selecting budget, the empty string was synced to onboardingStore and sent to the API. Empty string fails Zod enum validation.
+**Root cause:** React `useState('')` is a common default for text inputs but wrong for optional enum selections where "not selected" should be null, not empty string.
+**Rule:** For optional selection state (chips, dropdowns, radio buttons), always initialize with `null` — not empty string. `useState<string | null>(null)`. Empty string is a string value that fails enum validation; null clearly represents "not selected".
+
+### 2026-03-14 — Always audit the full data flow before declaring a feature complete
+**What happened:** Auth background was changed from dark navy to light pastel, but the StatusBar and Zod validation issues were not caught until a full end-to-end audit was performed across frontend to API to database.
+**Root cause:** Changes were tested at the component/screen level but not verified against the full data pipeline.
+**Rule:** After completing any feature that touches multiple layers (UI + API + DB), do a complete audit: trace every user action through the frontend store, API endpoint, Zod validation, service layer, Prisma query, database schema. Check for type mismatches, null handling, and cross-platform edge cases (StatusBar, keyboard, permissions).
+
 ---
 
 ## Patterns to Watch For
@@ -281,6 +302,17 @@
 - Metro cache must be cleared after adding new route files — run with `--clear` flag or delete `.expo/` and `node_modules/.cache/`
 - pnpm global install PATH issue on Windows: `npm i -g pnpm` installs to AppData/Roaming/npm/ which may not be in PowerShell PATH. Workaround: `npx pnpm <command>` or restart terminal after install
 - corepack `packageManager` field requires exact version match — `"packageManager": "pnpm@10.30.3"` means you must install that exact version globally
+
+
+### Cross-Platform (iOS / Android / Web)
+- StatusBar style must match screen background — 'dark' for light backgrounds, 'light' for dark backgrounds
+- Dynamic StatusBar: use route segments to determine style
+- Zod .optional() only accepts undefined, .nullish() accepts both null and undefined — use .nullish() for JSON payloads from frontend
+- FormData image upload: web uses File objects, native uses {uri, type, name} pattern
+- ActionSheetIOS only works on iOS — always provide Alert.alert fallback for Android/web
+- expo-image-picker camera: works on all platforms but requires permissions
+- KeyboardAvoidingView: behavior='padding' on iOS, undefined on Android (handles natively)
+- GestureHandlerRootView background: set to match the dominant theme, not a single-screen color
 
 ### General
 - affiliateUrl is intentionally null in MVP — do NOT populate with fake URLs

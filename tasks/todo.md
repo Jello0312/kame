@@ -283,6 +283,50 @@
 
 ---
 
+## ✅
+## Sprint 3.5 — Onboarding Wizard + Auth Background Redesign + Audit
+
+### Onboarding Wizard (completed)
+- [x] Convert 4 separate onboarding route files into single-page wizard (OnboardingWizard.tsx)
+- [x] Create StepIndicator.tsx — progress dots with labels, connecting lines, animated progress
+- [x] Create MeasurementsStep.tsx — gender cards, body shape chips, measurement inputs with validation
+- [x] Create PhotosStep.tsx — white cards with dashed borders, ImagePlus icon, camera + gallery upload
+- [x] Create PreferencesStep.tsx — budget chips, style multi-select, platform multi-select
+- [x] Create GeneratingStep.tsx — sequential API calls (profile, avatar, preferences, tryon batch), polling
+- [x] Animated step transitions (slide + opacity) via react-native-reanimated
+- [x] Delete old route files (measurements.tsx, photos.tsx, preferences.tsx, generating.tsx)
+- [x] Update onboarding _layout.tsx and _layout.tsx redirect path
+- [x] TypeScript: zero errors
+
+### Auth Background Redesign (completed)
+- [x] Create AuthBackground.tsx — light pastel flowing gradient with 5 animated color blobs (mint, peach, lavender, blue, warm peach)
+- [x] Update login.tsx — replace FloatingParticles with AuthBackground, dark-to-light theme (navy text, white glass card, teal links)
+- [x] Update register.tsx — same light theme changes
+- [x] Update auth _layout.tsx — contentStyle bg from COLORS.navy to #F0FAFB
+- [x] TypeScript: zero errors
+
+### End-to-End Audit (completed)
+- [x] Audit auth flow: register -> login -> token storage -> protected routes -> navigation routing
+- [x] Audit onboarding flow: measurements -> photos -> preferences -> generation -> API -> database
+- [x] Audit main app flow: explore/swipe -> favorites -> profile -> logout
+- [x] Audit all API endpoints vs frontend calls (9 route files, 5 service files)
+- [x] Audit database schema alignment (7 models, all field mappings verified)
+- [x] Cross-platform verification (iOS, Android, Web): StatusBar, keyboard, permissions, FormData
+
+### Bugs Fixed During Audit
+- [x] Fix: StatusBar invisible on light auth screens — dynamic style based on route segment (dark for auth, light for rest)
+- [x] Fix: budgetRange null/empty string fails Zod validation — changed .optional() to .nullish() in preferences route
+- [x] Fix: PreferenceService null safety — update path skips null budgetRange (uses != null loose check)
+- [x] Fix: PreferencesStep initializes budgetRange as null instead of empty string
+
+### Review — End-to-End Audit (2026-03-14)
+- **Auth flow:** Fully wired. register/login -> JWT -> SecureStore/localStorage -> checkAuth probes /api/profile -> _layout.tsx routing. No issues.
+- **Onboarding flow:** 4-step wizard -> GeneratingStep makes 4 sequential API calls (profile, avatar, preferences, tryon/batch). All endpoints verified. Data types match Zod schemas and Prisma models.
+- **Main app flow:** Explore (infinite feed query), SwipeDeck (fire-and-forget swipe API), Favorites (LIKE query + product join), Profile (4 parallel queries). All working.
+- **Schema alignment:** All 7 DB models (User, UserProfile, UserAvatar, StylePreference, Product, TryOnResult, SwipeAction) match their API routes and Zod schemas. OutfitPairing and AnalyticsClick also verified.
+- **Cross-platform:** StatusBar dynamic, KeyboardAvoidingView platform-aware, FormData web/native, ActionSheet iOS/Alert Android, expo-secure-store/localStorage.
+- **Bugs found and fixed:** 2 validation bugs (StatusBar, budgetRange null) caught by tracing full data flow from UI to DB.
+
 ---
 
 ## Backlog (Post-MVP)
