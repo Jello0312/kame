@@ -1,18 +1,27 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   View,
   Text,
-  TextInput,
   TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
   ActivityIndicator,
+  StyleSheet,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  Easing,
+} from 'react-native-reanimated';
+
 import { useAuthStore } from '../../stores/authStore';
 import { KameLogo } from '../../components/KameLogo';
+import { FloatingParticles } from '../../components/FloatingParticles';
+import { FloatingLabelInput } from '../../components/FloatingLabelInput';
 import {
   COLORS,
   FONTS,
@@ -32,8 +41,28 @@ export default function RegisterScreen() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [focusedField, setFocusedField] = useState<string | null>(null);
 
+  // ── Form card entrance animation ────────────────────────────
+  const formOpacity = useSharedValue(0);
+  const formTranslateY = useSharedValue(30);
+
+  useEffect(() => {
+    formOpacity.value = withTiming(1, {
+      duration: 600,
+      easing: Easing.out(Easing.ease),
+    });
+    formTranslateY.value = withTiming(0, {
+      duration: 600,
+      easing: Easing.out(Easing.ease),
+    });
+  }, [formOpacity, formTranslateY]);
+
+  const formAnimatedStyle = useAnimatedStyle(() => ({
+    opacity: formOpacity.value,
+    transform: [{ translateY: formTranslateY.value }],
+  }));
+
+  // ── Handlers ────────────────────────────────────────────────
   const handleRegister = async () => {
     if (!name.trim() || !email.trim() || !password) {
       setError('Please fill in all fields.');
@@ -63,249 +92,90 @@ export default function RegisterScreen() {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.background }}>
+    <SafeAreaView style={styles.safeArea}>
+      {/* Animated background particles */}
+      <FloatingParticles />
+
       <KeyboardAvoidingView
-        style={{ flex: 1 }}
+        style={styles.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
         <ScrollView
-          contentContainerStyle={{
-            flexGrow: 1,
-            justifyContent: 'center',
-            paddingHorizontal: COMPONENT.screenPadding,
-          }}
+          contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
         >
           {/* Logo */}
-          <View style={{ alignItems: 'center', marginBottom: SPACING['2xl'] }}>
-            <KameLogo size={40} />
+          <View style={styles.logoContainer}>
+            <KameLogo size={48} />
           </View>
 
           {/* Heading */}
-          <Text
-            style={{
-              ...TYPE.headingXl,
-              color: COLORS.textPrimary,
-              textAlign: 'center',
-              marginBottom: SPACING.sm,
-            }}
-          >
-            Create your account
-          </Text>
+          <Text style={styles.heading}>Create your account</Text>
 
           {/* Subtitle */}
-          <Text
-            style={{
-              ...TYPE.bodyMd,
-              color: COLORS.gray400,
-              textAlign: 'center',
-              marginBottom: SPACING['3xl'],
-            }}
-          >
-            Join Kame to discover your style
-          </Text>
+          <Text style={styles.subtitle}>Join Kame to discover your style</Text>
 
-          {/* Name Label */}
-          <Text
-            style={{
-              ...TYPE.bodySm,
-              color: COLORS.gray400,
-              marginBottom: SPACING.xs,
-            }}
-          >
-            Name
-          </Text>
+          {/* Form Card */}
+          <Animated.View style={[styles.formCard, formAnimatedStyle]}>
+            {/* Name */}
+            <FloatingLabelInput
+              label="Name"
+              value={name}
+              onChangeText={setName}
+              autoCapitalize="words"
+              autoComplete="name"
+            />
 
-          {/* Name Input */}
-          <TextInput
-            value={name}
-            onChangeText={setName}
-            placeholder="Your name"
-            placeholderTextColor={COLORS.gray400}
-            autoCapitalize="words"
-            autoComplete="name"
-            onFocus={() => setFocusedField('name')}
-            onBlur={() => setFocusedField(null)}
-            style={{
-              height: COMPONENT.inputHeight,
-              backgroundColor: COLORS.inputBg,
-              borderWidth: 1,
-              borderColor:
-                focusedField === 'name'
-                  ? COLORS.inputBorderFocus
-                  : COLORS.inputBorder,
-              borderRadius: RADIUS.input,
-              paddingHorizontal: SPACING.lg,
-              fontFamily: FONTS.regular,
-              fontSize: TYPE.bodyLg.fontSize,
-              color: COLORS.gray700,
-            }}
-          />
+            {/* Email */}
+            <FloatingLabelInput
+              label="Email Address"
+              value={email}
+              onChangeText={setEmail}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              autoComplete="email"
+            />
 
-          {/* Spacer */}
-          <View style={{ height: SPACING.lg }} />
+            {/* Password */}
+            <FloatingLabelInput
+              label="Password"
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry
+              autoComplete="new-password"
+              showToggle
+            />
 
-          {/* Email Label */}
-          <Text
-            style={{
-              ...TYPE.bodySm,
-              color: COLORS.gray400,
-              marginBottom: SPACING.xs,
-            }}
-          >
-            Email
-          </Text>
+            {/* Password Helper */}
+            <Text style={styles.helperText}>Min 8 characters</Text>
 
-          {/* Email Input */}
-          <TextInput
-            value={email}
-            onChangeText={setEmail}
-            placeholder="you@example.com"
-            placeholderTextColor={COLORS.gray400}
-            autoCapitalize="none"
-            keyboardType="email-address"
-            autoComplete="email"
-            onFocus={() => setFocusedField('email')}
-            onBlur={() => setFocusedField(null)}
-            style={{
-              height: COMPONENT.inputHeight,
-              backgroundColor: COLORS.inputBg,
-              borderWidth: 1,
-              borderColor:
-                focusedField === 'email'
-                  ? COLORS.inputBorderFocus
-                  : COLORS.inputBorder,
-              borderRadius: RADIUS.input,
-              paddingHorizontal: SPACING.lg,
-              fontFamily: FONTS.regular,
-              fontSize: TYPE.bodyLg.fontSize,
-              color: COLORS.gray700,
-            }}
-          />
+            {/* Error Text */}
+            {error ? (
+              <Text style={styles.errorText}>{error}</Text>
+            ) : null}
 
-          {/* Spacer */}
-          <View style={{ height: SPACING.lg }} />
-
-          {/* Password Label */}
-          <Text
-            style={{
-              ...TYPE.bodySm,
-              color: COLORS.gray400,
-              marginBottom: SPACING.xs,
-            }}
-          >
-            Password
-          </Text>
-
-          {/* Password Input */}
-          <TextInput
-            value={password}
-            onChangeText={setPassword}
-            placeholder="Create a password"
-            placeholderTextColor={COLORS.gray400}
-            secureTextEntry
-            autoComplete="new-password"
-            onFocus={() => setFocusedField('password')}
-            onBlur={() => setFocusedField(null)}
-            style={{
-              height: COMPONENT.inputHeight,
-              backgroundColor: COLORS.inputBg,
-              borderWidth: 1,
-              borderColor:
-                focusedField === 'password'
-                  ? COLORS.inputBorderFocus
-                  : COLORS.inputBorder,
-              borderRadius: RADIUS.input,
-              paddingHorizontal: SPACING.lg,
-              fontFamily: FONTS.regular,
-              fontSize: TYPE.bodyLg.fontSize,
-              color: COLORS.gray700,
-            }}
-          />
-
-          {/* Password Helper */}
-          <Text
-            style={{
-              ...TYPE.bodySm,
-              color: COLORS.gray400,
-              marginTop: SPACING.xs,
-            }}
-          >
-            Min 8 characters
-          </Text>
-
-          {/* Error Text */}
-          {error ? (
-            <Text
-              style={{
-                ...TYPE.bodySm,
-                color: COLORS.error,
-                marginTop: SPACING.sm,
-              }}
+            {/* Create Account Button */}
+            <TouchableOpacity
+              onPress={handleRegister}
+              disabled={loading}
+              activeOpacity={0.8}
+              style={[styles.createButton, loading && styles.createButtonDisabled]}
             >
-              {error}
-            </Text>
-          ) : null}
-
-          {/* Spacer */}
-          <View style={{ height: SPACING['2xl'] }} />
-
-          {/* Create Account Button */}
-          <TouchableOpacity
-            onPress={handleRegister}
-            disabled={loading}
-            activeOpacity={0.8}
-            style={{
-              height: COMPONENT.buttonHeight,
-              backgroundColor: COLORS.ctaNavigation,
-              borderRadius: RADIUS.button,
-              alignItems: 'center',
-              justifyContent: 'center',
-              ...SHADOWS.tealButton,
-              opacity: loading ? 0.7 : 1,
-            }}
-          >
-            {loading ? (
-              <ActivityIndicator color={COLORS.navy} />
-            ) : (
-              <Text
-                style={{
-                  fontFamily: FONTS.semiBold,
-                  fontSize: 16,
-                  color: COLORS.navy,
-                }}
-              >
-                Create Account
-              </Text>
-            )}
-          </TouchableOpacity>
+              {loading ? (
+                <ActivityIndicator color={COLORS.navy} />
+              ) : (
+                <Text style={styles.createButtonText}>Create Account</Text>
+              )}
+            </TouchableOpacity>
+          </Animated.View>
 
           {/* Log In Link */}
-          <View
-            style={{
-              flexDirection: 'row',
-              justifyContent: 'center',
-              marginTop: SPACING['2xl'],
-            }}
-          >
-            <Text
-              style={{
-                ...TYPE.bodyMd,
-                color: COLORS.gray400,
-              }}
-            >
+          <View style={styles.loginRow}>
+            <Text style={styles.loginPrompt}>
               Already have an account?{' '}
             </Text>
             <TouchableOpacity onPress={() => router.push('/auth/login')}>
-              <Text
-                style={{
-                  ...TYPE.bodyMd,
-                  color: COLORS.tealBright,
-                  fontFamily: FONTS.semiBold,
-                }}
-              >
-                Log In
-              </Text>
+              <Text style={styles.loginLink}>Log In</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>
@@ -313,3 +183,98 @@ export default function RegisterScreen() {
     </SafeAreaView>
   );
 }
+
+// ── Styles ────────────────────────────────────────────────────
+
+const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: COLORS.background,
+  },
+  flex: {
+    flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    paddingHorizontal: COMPONENT.screenPadding,
+  },
+
+  // Logo & header
+  logoContainer: {
+    alignItems: 'center',
+    marginBottom: SPACING['2xl'],
+  },
+  heading: {
+    ...TYPE.headingXl,
+    color: COLORS.textPrimary,
+    textAlign: 'center',
+    marginBottom: SPACING.sm,
+  },
+  subtitle: {
+    ...TYPE.bodyMd,
+    color: COLORS.gray400,
+    textAlign: 'center',
+    marginBottom: SPACING['3xl'],
+  },
+
+  // Form card
+  formCard: {
+    backgroundColor: 'rgba(3, 33, 59, 0.6)',
+    borderWidth: 1,
+    borderColor: 'rgba(72, 230, 205, 0.12)',
+    borderRadius: RADIUS.card,
+    padding: SPACING.xl,
+    marginBottom: SPACING.xl,
+  },
+
+  // Helper text
+  helperText: {
+    ...TYPE.bodySm,
+    color: COLORS.gray400,
+    marginTop: -SPACING.md,
+    marginBottom: SPACING.lg,
+    marginLeft: SPACING.xs,
+  },
+
+  // Error
+  errorText: {
+    ...TYPE.bodySm,
+    color: COLORS.error,
+    marginBottom: SPACING.md,
+  },
+
+  // Create Account button
+  createButton: {
+    height: COMPONENT.buttonHeight,
+    backgroundColor: COLORS.ctaNavigation,
+    borderRadius: RADIUS.button,
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...SHADOWS.tealButton,
+  },
+  createButtonDisabled: {
+    opacity: 0.7,
+  },
+  createButtonText: {
+    fontFamily: FONTS.semiBold,
+    fontSize: 16,
+    color: COLORS.navy,
+  },
+
+  // Log In link
+  loginRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginTop: SPACING.md,
+  },
+  loginPrompt: {
+    ...TYPE.bodyMd,
+    color: COLORS.gray400,
+  },
+  loginLink: {
+    ...TYPE.bodyMd,
+    color: COLORS.tealBright,
+    fontFamily: FONTS.semiBold,
+  },
+});

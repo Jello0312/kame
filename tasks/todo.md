@@ -263,6 +263,26 @@
 - [ ] Set up Expo project on expo.dev, test on iOS + Android via Expo Go
 - [ ] Distribute to 10-20 beta testers, monitor logs + FASHN usage
 
+## ✅ Sprint 3.4 — UI Enhancements (Visual Redesign) ✅
+- [x] SwipeCard: Replace LIKE/NOPE text stamps with inner glow overlay + centered icon (Heart/X) ✅
+- [x] Auth screens: Redesign login.tsx + register.tsx with floating particles bg, floating label inputs, form card entrance animation ✅
+- [x] New component: FloatingParticles.tsx — animated teal dot background for auth screens ✅
+- [x] New component: FloatingLabelInput.tsx — reusable animated input with floating label + password toggle ✅
+- [x] Tab bar: Replace flat tab bar with floating pill-style CustomTabBar — animated pill indicator, spring physics, reference color scheme ✅
+- [x] New component: CustomTabBar.tsx — floating white pill container, Flame/Heart/User icons, red active Explore, gray Favorites/Profile ✅
+- [x] Tab layout: Updated _layout.tsx to use custom tabBar prop ✅
+- [x] Added @react-navigation/bottom-tabs as direct dependency for type safety ✅
+- [x] Theme: Added glowLike/glowDislike gradient tokens to constants.ts ✅
+- [x] TypeScript: zero type errors ✅
+
+### Review — UI Enhancements (2026-03-14)
+- **SwipeCard glow:** Two LinearGradient overlays (green like / red dislike) at bottom 60% of card. Opacity driven by interpolate(translationX). Centered icon overlays (Heart/X) in 72px colored circles with animated opacity + scale. Replaced bulky text stamps with elegant visual feedback.
+- **Auth redesign:** FloatingParticles (20 teal dots, seeded pseudo-random, withRepeat drift). FloatingLabelInput (animated label position + size, Eye/EyeOff toggle, error states). Form cards with glass-morph style (rgba bg + teal border glow), 600ms entrance animation.
+- **Tab bar redesign:** Floating white pill container (borderRadius 40, shadow, 16px margin). Animated pill indicator slides between tabs via withSpring (damping 20, stiffness 230, mass 1.2). Reference color scheme: red-500/red-50 for Explore, gray-700/gray-100 for Favorites+Profile. Uppercase labels, Plus Jakarta Sans SemiBold. Flame icon filled when active.
+- **No new runtime dependencies:** All animations use existing react-native-reanimated. Only added @react-navigation/bottom-tabs (already transitive via expo-router) as direct dep for TypeScript type resolution.
+
+---
+
 ---
 
 ## Backlog (Post-MVP)

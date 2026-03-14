@@ -2,7 +2,7 @@
 // SwipeCard — Pure presentational card for the swipe feed
 // ═══════════════════════════════════════════════════════════════
 // Renders a single outfit/dress card with product info overlay,
-// platform badge, and animated LIKE/NOPE stamps during drag.
+// platform badge, and animated glow + icon feedback during drag.
 // ═══════════════════════════════════════════════════════════════
 
 import { useEffect, useState } from 'react';
@@ -14,8 +14,9 @@ import Animated, {
   type SharedValue,
   useAnimatedStyle,
 } from 'react-native-reanimated';
+import { Heart, X } from 'lucide-react-native';
 
-import { COLORS, FONTS, GRADIENTS, RADIUS, SPACING } from '../src/theme/constants';
+import { COLORS, FONTS, GRADIENTS, RADIUS, SPACING, SWIPE } from '../src/theme/constants';
 import type { FeedCard } from '../types/feed';
 
 // ── Props ─────────────────────────────────────────────────────
@@ -51,36 +52,71 @@ function getBadgeColor(platform: string): string {
   return COLORS.gray500;
 }
 
-// ── LIKE / NOPE Stamps ────────────────────────────────────────
+// ── Swipe Glow Overlay ──────────────────────────────────────
 
-function LikeStamp({ translationX }: { translationX: SharedValue<number> }) {
-  const animatedStyle = useAnimatedStyle(() => ({
-    opacity: interpolate(translationX.value, [0, 120], [0, 1], 'clamp'),
+function SwipeGlowOverlay({ translationX }: { translationX: SharedValue<number> }) {
+  const likeGlowStyle = useAnimatedStyle(() => ({
+    opacity: interpolate(translationX.value, [0, SWIPE.threshold], [0, 1], 'clamp'),
+  }));
+
+  const dislikeGlowStyle = useAnimatedStyle(() => ({
+    opacity: interpolate(translationX.value, [-SWIPE.threshold, 0], [1, 0], 'clamp'),
   }));
 
   return (
-    <Animated.View style={[styles.stamp, styles.stampLike, animatedStyle]}>
-      <Text style={[styles.stampText, { color: COLORS.green, borderColor: COLORS.green }]}>
-        LIKE
-      </Text>
-    </Animated.View>
+    <>
+      <Animated.View style={[styles.glowContainer, likeGlowStyle]} pointerEvents="none">
+        <LinearGradient
+          colors={GRADIENTS.glowLike as unknown as [string, string]}
+          start={{ x: 0.5, y: 1 }}
+          end={{ x: 0.5, y: 0.3 }}
+          style={StyleSheet.absoluteFillObject}
+        />
+      </Animated.View>
+      <Animated.View style={[styles.glowContainer, dislikeGlowStyle]} pointerEvents="none">
+        <LinearGradient
+          colors={GRADIENTS.glowDislike as unknown as [string, string]}
+          start={{ x: 0.5, y: 1 }}
+          end={{ x: 0.5, y: 0.3 }}
+          style={StyleSheet.absoluteFillObject}
+        />
+      </Animated.View>
+    </>
   );
 }
 
-function NopeStamp({ translationX }: { translationX: SharedValue<number> }) {
-  const animatedStyle = useAnimatedStyle(() => ({
-    opacity: interpolate(translationX.value, [-120, 0], [1, 0], 'clamp'),
+// ── Swipe Icon Overlay ──────────────────────────────────────
+
+function SwipeIconOverlay({ translationX }: { translationX: SharedValue<number> }) {
+  const likeIconStyle = useAnimatedStyle(() => ({
+    opacity: interpolate(translationX.value, [0, 80], [0, 1], 'clamp'),
+    transform: [
+      { scale: interpolate(translationX.value, [0, SWIPE.threshold], [0.5, 1], 'clamp') },
+    ],
+  }));
+
+  const dislikeIconStyle = useAnimatedStyle(() => ({
+    opacity: interpolate(translationX.value, [-80, 0], [1, 0], 'clamp'),
+    transform: [
+      { scale: interpolate(translationX.value, [-SWIPE.threshold, 0], [1, 0.5], 'clamp') },
+    ],
   }));
 
   return (
-    <Animated.View style={[styles.stamp, styles.stampNope, animatedStyle]}>
-      <Text style={[styles.stampText, { color: COLORS.red, borderColor: COLORS.red }]}>
-        NOPE
-      </Text>
-    </Animated.View>
+    <>
+      <Animated.View style={[styles.iconOverlay, likeIconStyle]} pointerEvents="none">
+        <View style={[styles.iconCircle, { backgroundColor: 'rgba(40, 155, 98, 0.85)' }]}>
+          <Heart size={32} color={COLORS.white} fill={COLORS.white} />
+        </View>
+      </Animated.View>
+      <Animated.View style={[styles.iconOverlay, dislikeIconStyle]} pointerEvents="none">
+        <View style={[styles.iconCircle, { backgroundColor: 'rgba(227, 57, 60, 0.85)' }]}>
+          <X size={32} color={COLORS.white} strokeWidth={2.5} />
+        </View>
+      </Animated.View>
+    </>
   );
 }
-
 // ── Product Info: Outfit Pair ─────────────────────────────────
 
 function OutfitPairInfo({ card }: { card: FeedCard }) {
@@ -199,11 +235,11 @@ export function SwipeCard({ card, isTop, translationX }: SwipeCardProps) {
         )}
       </View>
 
-      {/* 6. LIKE / NOPE Stamps */}
+      {/* 6. Swipe Glow + Icon Feedback */}
       {isTop && translationX != null && (
         <>
-          <LikeStamp translationX={translationX} />
-          <NopeStamp translationX={translationX} />
+          <SwipeGlowOverlay translationX={translationX} />
+          <SwipeIconOverlay translationX={translationX} />
         </>
       )}
     </Animated.View>
@@ -309,27 +345,42 @@ const styles = StyleSheet.create({
     fontSize: 20,
   },
 
-  // Stamp shared
-  stamp: {
+  // Glow overlay (covers bottom 60% of card)
+  glowContainer: {
     position: 'absolute',
-    top: 40,
-    zIndex: 5,
-  },
-  stampLike: {
-    left: SPACING.xl,
-    transform: [{ rotate: '-15deg' }],
-  },
-  stampNope: {
-    right: SPACING.xl,
-    transform: [{ rotate: '15deg' }],
-  },
-  stampText: {
-    fontFamily: FONTS.bold,
-    fontSize: 32,
-    borderWidth: 3,
-    borderRadius: RADIUS.badge,
-    paddingHorizontal: 12,
-    paddingVertical: 4,
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: '60%',
+    zIndex: 2,
+    borderBottomLeftRadius: RADIUS.card,
+    borderBottomRightRadius: RADIUS.card,
     overflow: 'hidden',
+  },
+
+  // Icon overlay (centered in card)
+  iconOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 6,
+  },
+
+  // Circular icon background
+  iconCircle: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
   },
 });

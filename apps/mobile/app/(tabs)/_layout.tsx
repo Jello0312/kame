@@ -1,52 +1,15 @@
 import { Tabs } from 'expo-router';
-import { Compass, Heart, User } from 'lucide-react-native';
-import { COLORS, FONTS } from '../../src/theme/constants';
+import { CustomTabBar } from '../../components/CustomTabBar';
 
 export default function TabLayout() {
   return (
     <Tabs
-      screenOptions={{
-        headerShown: false,
-        tabBarActiveTintColor: COLORS.tabActive,
-        tabBarInactiveTintColor: COLORS.tabInactive,
-        tabBarStyle: {
-          backgroundColor: COLORS.white,
-          borderTopColor: COLORS.gray200,
-          borderTopWidth: 0.5,
-        },
-        tabBarLabelStyle: {
-          fontFamily: FONTS.medium,
-          fontSize: 10,
-        },
-      }}
+      screenOptions={{ headerShown: false }}
+      tabBar={(props) => <CustomTabBar {...props} />}
     >
-      <Tabs.Screen
-        name="explore"
-        options={{
-          title: 'Explore',
-          tabBarIcon: ({ color, size }) => (
-            <Compass color={color} size={size} strokeWidth={1.5} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="favorites"
-        options={{
-          title: 'Favorites',
-          tabBarIcon: ({ color, size }) => (
-            <Heart color={color} size={size} strokeWidth={1.5} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="profile"
-        options={{
-          title: 'Profile',
-          tabBarIcon: ({ color, size }) => (
-            <User color={color} size={size} strokeWidth={1.5} />
-          ),
-        }}
-      />
+      <Tabs.Screen name="explore" />
+      <Tabs.Screen name="favorites" />
+      <Tabs.Screen name="profile" />
     </Tabs>
   );
 }

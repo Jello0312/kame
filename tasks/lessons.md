@@ -167,6 +167,12 @@
 **Root cause:** Monorepo packages have build dependencies (server depends on shared-types dist/). Nixpacks sees root package.json and doesn't traverse workspace build order.
 **Rule:** Use `railway.json` with explicit `buildCommand` that chains: `pnpm install → build shared-types → build server`. And `startCommand` that chains: `prisma migrate deploy → node dist/index.js`. Always build dependencies before dependents.
 
+### 2026-03-14 — OneDrive paths break Claude Code Edit/Write tools
+**What happened:** The  and  tools failed with  on every file modification attempt. The project path contains spaces and special characters () which confuses the tools' internal directory creation logic.
+**Root cause:** Claude Code's Edit/Write tools call  on parent directories before writing. OneDrive's virtual filesystem (cloud-synced paths with spaces) causes  to throw EEXIST because OneDrive reports the directory as both existing and needing creation simultaneously.
+**Workaround used:** Read files via  tool (works fine), then use  scripts via Bash to programmatically transform and write files ( + string manipulation + ). This bypasses the Edit/Write tools entirely.
+**Rule:** For projects on OneDrive paths with spaces, prefer the Bash + Node.js  workaround for file writes. Better yet, create a Windows junction:  and use the junction path as project root. This eliminates the issue for all tools.
+
 ---
 
 ## Patterns to Watch For
@@ -290,3 +296,9 @@
 **What happened:** Server logs flooded with `ReplyError: ERR max requests limit exceeded. Limit: 500000, Usage: 500002`. Try-on worker crashed.
 **Root cause:** BullMQ workers continuously poll Redis via BRPOPLPUSH even when idle. Upstash is serverless — every command counts as a request. Default settings (~10-20 commands/sec) exhaust the 500k/day free tier in hours.
 **Rule:** When using BullMQ with Upstash free tier, set `drainDelay: 60` (1min idle poll), `stalledInterval: 300_000` (5min stalled checks), `lockDuration: 600_000` (10min locks). This reduces idle usage to ~15k req/day. Tradeoff: jobs may wait up to 1min to be picked up — acceptable for MVP.
+
+### 2026-03-14 — OneDrive paths break Claude Code Edit/Write tools
+**What happened:** The Edit and Write tools failed with EEXIST: file already exists, mkdir on every file modification attempt. The project path contains spaces and special characters (OneDrive - The Boston Consulting Group, Inc) which confuses the tools' internal directory creation logic.
+**Root cause:** Claude Code's Edit/Write tools call mkdir on parent directories before writing. OneDrive's virtual filesystem (cloud-synced paths with spaces) causes mkdir to throw EEXIST because OneDrive reports the directory as both existing and needing creation simultaneously.
+**Workaround used:** Read files via Read tool (works fine), then use node -e scripts via Bash to programmatically transform and write files (fs.readFileSync + string manipulation + fs.writeFileSync). This bypasses the Edit/Write tools entirely.
+**Rule:** For projects on OneDrive paths with spaces, prefer the Bash + Node.js fs workaround for file writes. Better yet, create a Windows junction: New-Item -ItemType Junction -Path C:\dev\KAME -Target <OneDrive path> and use the junction path as project root. This eliminates the issue for all tools.

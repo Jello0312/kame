@@ -1,8 +1,8 @@
 # Kame — Development Roadmap
 
-> Last updated: 2026-03-10
+> Last updated: 2026-03-14
 > Current phase: **MVP Sprint (Weeks 1-3)**
-> Current step: **Sprint 3.3 — Deploy + Beta**
+> Current step: **Sprint 3.4 — UI Enhancements** (complete)
 
 ## Progress Tracking Convention
 - `[ ]` = Todo
@@ -175,6 +175,17 @@
 - [ ] Set up Expo project on expo.dev (npx expo login)
 - [ ] Test on iOS + Android via Expo Go
 - [ ] Distribute to 10-20 beta testers
+
+
+### Sprint 3.4 — UI Enhancements (Visual Redesign) ✅ COMPLETE
+- [x] SwipeCard glow overlay — replace LIKE/NOPE text stamps with inner glow + centered icon ✅
+- [x] Auth screen redesign — floating particles background, floating label inputs, form card entrance animation ✅
+- [x] FloatingParticles.tsx component — animated teal dot background (20 particles, seeded random) ✅
+- [x] FloatingLabelInput.tsx component — animated floating label + Eye/EyeOff password toggle ✅
+- [x] Floating pill tab bar — CustomTabBar.tsx with animated pill indicator, spring physics ✅
+- [x] Tab layout updated to use custom tabBar prop ✅
+- [x] Glow gradient tokens added to theme constants ✅
+- [x] TypeScript: zero type errors ✅
 
 ---
 

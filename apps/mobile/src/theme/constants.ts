@@ -68,6 +68,8 @@ export const GRADIENTS = {
   cardOverlay: ['transparent', 'rgba(17,40,54,0.85)'] as const,
   premium: ['#744DA6', '#9B6BC7'] as const,
   tealGlow: ['#1AA39C', '#48E6CD'] as const,
+  glowLike: ['rgba(40, 155, 98, 0.70)', 'transparent'] as const,
+  glowDislike: ['rgba(227, 57, 60, 0.70)', 'transparent'] as const,
 } as const;
 
 export const FONTS = {
