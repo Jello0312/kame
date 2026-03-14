@@ -1,9 +1,12 @@
 import { useState, useCallback } from 'react';
 import { View, Pressable, StyleSheet } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withSpring,
+  withTiming,
+  Easing,
   runOnJS,
   interpolate,
   SharedValue,
@@ -15,6 +18,9 @@ import { SwipeCard } from './SwipeCard';
 import { api } from '../services/api';
 import { COLORS, SWIPE, COMPONENT, SHADOWS, SPACING } from '../src/theme/constants';
 import type { FeedCard } from '../types/feed';
+
+// Tab bar height constant (matches CustomTabBar: 60px bar + 8px margin)
+const TAB_BAR_HEIGHT = 68;
 
 // ─── Props ───────────────────────────────────────────────────────────
 interface SwipeDeckProps {
@@ -60,6 +66,7 @@ async function fireSwipeApi(
 // ─── Component ───────────────────────────────────────────────────────
 export function SwipeDeck({ cards, onSwipe, onNeedMore, onEmpty }: SwipeDeckProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const insets = useSafeAreaInsets();
 
   // Shared animation values for the top card
   const translateX = useSharedValue(0);
@@ -79,13 +86,22 @@ export function SwipeDeck({ cards, onSwipe, onNeedMore, onEmpty }: SwipeDeckProp
   // ─── Animated Styles ─────────────────────────────────────────────
 
   // Top card: translate + rotate with the gesture
-  const topCardStyle = useAnimatedStyle(() => ({
-    transform: [
-      { translateX: translateX.value },
-      { translateY: translateY.value },
-      { rotate: `${translateX.value * SWIPE.rotationFactor}deg` },
-    ],
-  }));
+  const topCardStyle = useAnimatedStyle(() => {
+    const absX = Math.abs(translateX.value);
+    return {
+      transform: [
+        { translateX: translateX.value },
+        { translateY: translateY.value },
+        { rotate: `${translateX.value * SWIPE.rotationFactor}deg` },
+      ],
+      opacity: interpolate(
+        absX,
+        [0, SWIPE.exitX * 0.5, SWIPE.exitX],
+        [1, 0.8, 0],
+        'clamp',
+      ),
+    };
+  });
 
   // Second card: scales from 0.95 -> 1 as the top card moves away
   const secondCardStyle = useAnimatedStyle(() => {
@@ -183,14 +199,20 @@ export function SwipeDeck({ cards, onSwipe, onNeedMore, onEmpty }: SwipeDeckProp
     .onEnd((event) => {
       if (translateX.value > SWIPE.threshold) {
         // Swipe RIGHT -> LIKE
-        translateX.value = withSpring(SWIPE.exitX, springConfig);
         translateY.value = withSpring(event.translationY, springConfig);
-        runOnJS(handleSwipeComplete)('right');
+        translateX.value = withSpring(SWIPE.exitX, springConfig, (finished) => {
+          if (finished) {
+            runOnJS(handleSwipeComplete)('right');
+          }
+        });
       } else if (translateX.value < -SWIPE.threshold) {
         // Swipe LEFT -> DISLIKE
-        translateX.value = withSpring(-SWIPE.exitX, springConfig);
         translateY.value = withSpring(event.translationY, springConfig);
-        runOnJS(handleSwipeComplete)('left');
+        translateX.value = withSpring(-SWIPE.exitX, springConfig, (finished) => {
+          if (finished) {
+            runOnJS(handleSwipeComplete)('left');
+          }
+        });
       } else {
         // Snap back to center
         translateX.value = withSpring(0, springConfig);
@@ -202,29 +224,32 @@ export function SwipeDeck({ cards, onSwipe, onNeedMore, onEmpty }: SwipeDeckProp
 
   const handleLikePress = useCallback(() => {
     if (!topCard) return;
-    translateX.value = withSpring(
+    translateX.value = withTiming(
       SWIPE.exitX,
-      springConfig,
+      { duration: 300, easing: Easing.out(Easing.cubic) },
       (finished) => {
         if (finished) {
           runOnJS(handleSwipeComplete)('right');
         }
       },
     );
-  }, [topCard, handleSwipeComplete, translateX, springConfig]);
+  }, [topCard, handleSwipeComplete, translateX]);
 
   const handleDislikePress = useCallback(() => {
     if (!topCard) return;
-    translateX.value = withSpring(
+    translateX.value = withTiming(
       -SWIPE.exitX,
-      springConfig,
+      { duration: 300, easing: Easing.out(Easing.cubic) },
       (finished) => {
         if (finished) {
           runOnJS(handleSwipeComplete)('left');
         }
       },
     );
-  }, [topCard, handleSwipeComplete, translateX, springConfig]);
+  }, [topCard, handleSwipeComplete, translateX]);
+
+  // Bottom padding: tab bar height + safe area
+  const bottomPad = TAB_BAR_HEIGHT + insets.bottom;
 
   // ─── Render ──────────────────────────────────────────────────────
 
@@ -261,7 +286,7 @@ export function SwipeDeck({ cards, onSwipe, onNeedMore, onEmpty }: SwipeDeckProp
       </View>
 
       {/* Action Buttons Row */}
-      <View style={styles.buttonsRow}>
+      <View style={[styles.buttonsRow, { paddingBottom: bottomPad }]}>
         <Pressable
           style={[styles.actionButton, styles.dislikeButton]}
           onPress={handleDislikePress}
@@ -304,7 +329,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     gap: 40,
-    paddingVertical: SPACING.lg,
+    paddingTop: SPACING.lg,
   },
   actionButton: {
     width: COMPONENT.swipeButtonSize,
