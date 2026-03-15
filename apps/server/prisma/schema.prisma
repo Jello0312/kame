@@ -177,6 +177,7 @@ model Product {
   outfitTops      OutfitPairing[]  @relation("OutfitTop")
   outfitBottoms   OutfitPairing[]  @relation("OutfitBottom")
   analyticsClicks AnalyticsClick[]
+  baseImage       BaseProductImage?
 
   @@unique([externalId, platform])
   @@map("products")
@@ -240,4 +241,17 @@ model AnalyticsClick {
   product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@map("analytics_clicks")
+}
+
+model BaseProductImage {
+  id          String   @id @default(cuid())
+  productId   String   @unique @map("product_id") @db.Uuid
+  imageUrl    String   @map("image_url")
+  prompt      String
+  status      String   @default("PENDING")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  product     Product  @relation(fields: [productId], references: [id])
+
+  @@map("base_product_images")
 }

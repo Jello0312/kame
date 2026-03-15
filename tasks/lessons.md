@@ -369,3 +369,23 @@
 **What happened:** Beta tester on Windows PowerShell ran `git clone ... && cd kame && pnpm install && ...`. PowerShell rejected `&&` as "not a valid statement separator".
 **Root cause:** `&&` is bash syntax. PowerShell uses `;` (run regardless) or requires PowerShell 7+ for `&&`.
 **Rule:** When giving commands for Windows users, always provide them one-per-line. Never chain with `&&`. Assume PowerShell, not bash.
+
+### 2026-03-16 — Railway ephemeral storage deletes uploads on every deploy
+**What happened:** ~100/120 FASHN try-on API calls failed. Only ~20 succeeded (those processed before the next deploy wiped local files).
+**Root cause:** Body photos are saved to `/uploads/avatars/{userId}/body.jpg` on Railway's ephemeral filesystem. Every deploy wipes all local files. `resolveToPublicUrl()` converts to `https://railway.app/uploads/...` but the file no longer exists → FASHN gets 404 → prediction fails.
+**Rule:** NEVER rely on local filesystem for persistent storage on Railway (or any ephemeral platform). Configure S3 (or R2) for ALL user uploads — body photos, try-on results, avatars. Verify S3 env vars are set before deploying features that depend on persistent file storage.
+
+### 2026-03-16 — FeedService must resolve relative URLs before returning to mobile
+**What happened:** Successful try-on images (stored as `/uploads/tryon/...` relative paths in DB) were never shown on Explore tab. Mobile app received relative paths it couldn't load.
+**Root cause:** `FeedService.getTryOnImageForFeed()` returned `result.resultImageUrl` as-is from the database. When S3 is not configured, these are relative paths (e.g., `/uploads/tryon/user123/combined.jpg`). Mobile app needs absolute `https://` URLs.
+**Rule:** Always resolve URLs to absolute before returning to mobile clients. Use `resolveToPublicUrl()` on any URL field that may be a relative path. Check at the service layer (not route layer) so ALL consumers get absolute URLs.
+
+### 2026-03-16 — Reanimated card flash: cancel animation before resetting shared values
+**What happened:** After swiping a card, the next card briefly appeared at the exit position then snapped to center — a visible flash/bounce.
+**Root cause:** `handleSwipeComplete` called `setCurrentIndex(nextIndex)` (async React state) and `translateX.value = 0` (sync Reanimated). The new card mounted while the exit spring was still in-flight, inheriting the non-zero translateX value before the reset took effect.
+**Rule:** When cycling animated cards: (1) `cancelAnimation()` on all shared values first, (2) reset shared values to 0 synchronously, (3) defer React state update with `setTimeout(() => setCurrentIndex(...), 0)` so the reset processes before the new card mounts.
+
+### 2026-03-16 — TypeScript: cast through unknown for accessing untyped fields on SDK types
+**What happened:** `(prediction as Record<string, unknown>).error` failed with TS2352 — the FASHN SDK's `PredictionSubscribeResponse` type doesn't have an index signature, so direct cast to `Record<string, unknown>` is rejected.
+**Root cause:** TypeScript requires overlapping types for `as` casts. SDK response types are closed (no index signature) so they don't overlap with `Record<string, unknown>`.
+**Rule:** Use double cast `(obj as unknown as Record<string, unknown>).field` when accessing fields that exist at runtime but aren't in the type definition. This is safe for logging/debugging where you want to inspect the full response object.

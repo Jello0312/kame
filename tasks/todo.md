@@ -1,6 +1,6 @@
 # Kame — Active Sprint Tasks
 
-> Updated: 2026-03-15 (Sprint 3.6 favorites redesign complete)
+> Updated: 2026-03-16 (Sprint 3.8 beta v2 debug complete)
 > See ROADMAP.md for full multi-week plan.
 
 ---
@@ -363,6 +363,34 @@
 - **API resilience:** Mobile API client now reads response as text first, then safely parses JSON. Catches network errors separately. Validates `EXPO_PUBLIC_API_URL` at module load.
 - **Fresh clone:** `apps/mobile/.env` committed with `git add -f` (contains only public URL, no secrets). Expo `EXPO_PUBLIC_*` vars baked at Metro build time — must `npx expo start --clear` after changes.
 - **Windows:** All beta setup commands provided one-per-line (no `&&` chaining — PowerShell doesn't support it).
+
+---
+
+## ✅ Sprint 3.8 — Beta v2 Debug Fixes ✅
+- [x] Enhanced FASHN error logging — log full prediction details (status, error, logs, input URLs) on failure ✅
+- [x] Fix feed returning relative URLs — apply `resolveToPublicUrl()` in FeedService `getTryOnImageForFeed()` and `getSoloTryOnImageForFeed()` ✅
+- [x] Extract shared `resolveToPublicUrl()` utility — `apps/server/src/utils/url.ts` (used by FeedService + generateTryOn) ✅
+- [x] Fix SwipeDeck card flash — `cancelAnimation()` + reset shared values + `setTimeout` deferred state update ✅
+- [x] Rewrite FavoriteCard — CheckoutItem layout (72x96 thumbnail, brand, platform badge, coral gradient Shop button, swipe-to-delete) ✅
+- [x] Favorites: remove ProductDetailModal + CheckoutModal — direct product links via WebBrowser + analytics ✅
+- [x] Favorites: "Proceed to Checkout" → Alert.alert "Single-Click Checkout Coming Soon" ✅
+- [x] TypeScript typecheck — server clean, mobile clean (2 pre-existing route type warnings unrelated to changes) ✅
+
+### Review — Beta v2 Debug (2026-03-16)
+- **FASHN failures (~100/120):** Root cause is Railway ephemeral storage — body photos at `/uploads/` are deleted on every deploy. S3 is NOT configured. Enhanced logging now shows exact input URLs and FASHN error details in Railway logs. **User must configure AWS S3 to fix permanently.**
+- **Try-on images not on Explore:** FeedService was returning relative `/uploads/tryon/...` paths. Mobile app can't load relative server paths. Fixed by applying `resolveToPublicUrl()` which uses `RAILWAY_PUBLIC_DOMAIN` env var.
+- **Card flash:** Race condition — React state update (async) and Reanimated shared value reset (sync) executed in wrong order. New card mounted before animation values reset → brief flash at exit position. Fix: `cancelAnimation()` kills in-flight spring, immediate reset to 0, then `setTimeout` defers `setCurrentIndex` to next tick.
+- **Favorites redesign:** FavoriteCard rewritten from scratch. 72x96 portrait thumbnail | name+badge+brand | price+Shop button. Swipeable wrapper for swipe-left-to-delete (red 80px panel with trash icon). Shop button uses coral gradient with ExternalLink icon.
+- **Direct product links:** Removed ProductDetailModal (3-tap flow: card→modal→Buy Now). Now 1-tap: Shop button → `WebBrowser.openBrowserAsync(item.productPageUrl)` + analytics click tracking.
+- **Checkout:** CheckoutModal replaced with simple `Alert.alert()` — "Single-Click Checkout Coming Soon" with guidance to use per-item Shop buttons.
+
+---
+
+## 🔲 Remaining Tasks (User Action Required)
+
+- [ ] **Configure AWS S3 on Railway** — Set env vars: `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_S3_BUCKET`, `AWS_REGION`. Without this, body photos are deleted on every deploy and ~100% of FASHN try-on calls fail.
+- [ ] **Re-upload body photo + re-trigger try-on** — After S3 is configured, user must re-upload body photo (old local file is gone) and re-trigger try-on batch via re-onboarding.
+- [ ] **Provide virtual try-on logic change guide** — User will provide detailed guide on changing virtual try-on logic (face-swap or alternative approach). Skipped in Sprint 3.8.
 
 ---
 
