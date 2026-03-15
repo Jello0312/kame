@@ -1,4 +1,11 @@
-const BASE_URL = process.env.EXPO_PUBLIC_API_URL!;
+const BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? '';
+
+if (!BASE_URL) {
+  console.error(
+    '[Kame API] EXPO_PUBLIC_API_URL is not set! ' +
+    'Make sure apps/mobile/.env exists and restart Expo with --clear.',
+  );
+}
 
 interface ApiResponse<T = unknown> {
   success: boolean;
@@ -16,6 +23,20 @@ export class ApiError extends Error {
     this.name = 'ApiError';
     this.status = status;
     this.response = response;
+  }
+}
+
+async function parseJsonSafe<T>(response: Response): Promise<ApiResponse<T>> {
+  const text = await response.text();
+  try {
+    return JSON.parse(text) as ApiResponse<T>;
+  } catch {
+    // Server returned non-JSON (e.g. Railway 502 HTML page)
+    throw new ApiError(
+      `Server error (${response.status}). Please try again.`,
+      response.status,
+      { success: false, error: `Non-JSON response from server` },
+    );
   }
 }
 
@@ -50,16 +71,47 @@ class ApiClient {
     return headers;
   }
 
-  async get<T>(path: string, tokenOverride?: string | null): Promise<ApiResponse<T>> {
+  private async request<T>(
+    method: 'GET' | 'POST',
+    path: string,
+    body?: unknown,
+    tokenOverride?: string | null,
+  ): Promise<ApiResponse<T>> {
+    if (!BASE_URL) {
+      throw new ApiError(
+        'API not configured. Restart Expo with: npx expo start --clear',
+        0,
+        { success: false, error: 'EXPO_PUBLIC_API_URL is not set' },
+      );
+    }
+
     const url = `${BASE_URL}${path}`;
-    const headers = this.buildHeaders(undefined, tokenOverride);
+    const headers = this.buildHeaders(body, tokenOverride);
 
-    const response = await fetch(url, {
-      method: 'GET',
-      headers,
-    });
+    let response: Response;
+    try {
+      response = await fetch(url, {
+        method,
+        headers,
+        body:
+          method === 'POST'
+            ? body instanceof FormData
+              ? body
+              : body
+                ? JSON.stringify(body)
+                : undefined
+            : undefined,
+      });
+    } catch (err) {
+      // Network-level failure (DNS, timeout, no internet, etc.)
+      throw new ApiError(
+        'Cannot connect to server. Check your internet connection.',
+        0,
+        { success: false, error: 'Network request failed' },
+      );
+    }
 
-    const json: ApiResponse<T> = await response.json();
+    const json = await parseJsonSafe<T>(response);
 
     if (response.status === 401) {
       await this.handleUnauthorized();
@@ -81,43 +133,16 @@ class ApiClient {
     return json;
   }
 
+  async get<T>(path: string, tokenOverride?: string | null): Promise<ApiResponse<T>> {
+    return this.request<T>('GET', path, undefined, tokenOverride);
+  }
+
   async post<T>(
     path: string,
     body?: unknown,
     tokenOverride?: string | null,
   ): Promise<ApiResponse<T>> {
-    const url = `${BASE_URL}${path}`;
-    const headers = this.buildHeaders(body, tokenOverride);
-
-    const requestBody =
-      body instanceof FormData ? body : body ? JSON.stringify(body) : undefined;
-
-    const response = await fetch(url, {
-      method: 'POST',
-      headers,
-      body: requestBody,
-    });
-
-    const json: ApiResponse<T> = await response.json();
-
-    if (response.status === 401) {
-      await this.handleUnauthorized();
-      throw new ApiError(
-        json.error ?? 'Unauthorized',
-        response.status,
-        json,
-      );
-    }
-
-    if (!response.ok || !json.success) {
-      throw new ApiError(
-        json.error ?? json.message ?? `Request failed with status ${response.status}`,
-        response.status,
-        json,
-      );
-    }
-
-    return json;
+    return this.request<T>('POST', path, body, tokenOverride);
   }
 }
 
