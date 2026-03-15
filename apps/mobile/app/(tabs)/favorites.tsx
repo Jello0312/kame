@@ -168,24 +168,26 @@ export default function FavoritesScreen() {
 
   const renderFooter = () => (
     <View style={styles.footerContainer}>
-      {/* Total Bar */}
-      <View style={styles.totalBar}>
+      {/* Total */}
+      <View style={styles.totalRow}>
         <Text style={styles.totalLabel}>Total</Text>
         <Text style={styles.totalAmount}>{formatPrice(total, totalCurrency)}</Text>
       </View>
 
       {/* Proceed to Checkout */}
-      <Pressable
-        onPress={handleCheckout}
-        disabled={itemCount === 0}
-        style={({ pressed }) => [
-          styles.checkoutButton,
-          pressed && { opacity: 0.85 },
-          itemCount === 0 && { opacity: 0.5 },
-        ]}
-      >
-        <Text style={styles.checkoutText}>Proceed to Checkout</Text>
-      </Pressable>
+      <View style={styles.checkoutWrapper}>
+        <Pressable
+          onPress={handleCheckout}
+          disabled={itemCount === 0}
+          style={({ pressed }) => [
+            styles.checkoutButton,
+            pressed && { opacity: 0.85 },
+            itemCount === 0 && { opacity: 0.5 },
+          ]}
+        >
+          <Text style={styles.checkoutText}>Proceed to Checkout</Text>
+        </Pressable>
+      </View>
     </View>
   );
 
@@ -277,7 +279,7 @@ const styles = StyleSheet.create({
   listContent: {
     paddingHorizontal: COMPONENT.screenPadding,
     paddingTop: SPACING.sm,
-    paddingBottom: SPACING['4xl'],
+    paddingBottom: 120,
     gap: SPACING.md,
   },
 
@@ -286,24 +288,27 @@ const styles = StyleSheet.create({
     marginTop: SPACING.xl,
     gap: SPACING.md,
   },
-  totalBar: {
+  totalRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: COLORS.tealBright,
-    borderRadius: RADIUS.input,
-    paddingHorizontal: SPACING.xl,
-    paddingVertical: SPACING.lg,
+    paddingHorizontal: SPACING.sm,
+    paddingVertical: SPACING.md,
   },
   totalLabel: {
     fontFamily: FONTS.bold,
     fontSize: 18,
-    color: COLORS.navy,
+    color: COLORS.gray500,
   },
   totalAmount: {
     fontFamily: FONTS.bold,
     fontSize: 18,
-    color: COLORS.navy,
+    color: COLORS.gray500,
+  },
+  checkoutWrapper: {
+    backgroundColor: COLORS.tealBright,
+    borderRadius: RADIUS.button,
+    padding: 3,
   },
   checkoutButton: {
     backgroundColor: COLORS.tealBright,
@@ -311,7 +316,6 @@ const styles = StyleSheet.create({
     borderRadius: RADIUS.button,
     justifyContent: 'center',
     alignItems: 'center',
-    ...SHADOWS.tealButton,
   },
   checkoutText: {
     fontFamily: FONTS.semiBold,

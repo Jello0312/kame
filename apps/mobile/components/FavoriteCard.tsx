@@ -57,13 +57,10 @@ export function FavoriteCard({ item, onPress, onRemove }: FavoriteCardProps) {
         transition={200}
       />
 
-      {/* Center: Name + per-item price + badge */}
+      {/* Center: Name + badge */}
       <View style={styles.info}>
         <Text style={styles.productName} numberOfLines={2}>
           {item.name}
-        </Text>
-        <Text style={styles.perItemPrice}>
-          {formatPrice(item.price, item.currency)} per item
         </Text>
         {item.platform !== '' && (
           <View style={[styles.badge, { backgroundColor: getBadgeColor(item.platform) }]}>
@@ -112,15 +109,15 @@ const styles = StyleSheet.create({
   },
 
   thumbnail: {
-    width: 80,
-    height: 80,
+    width: 60,
+    height: 60,
     borderRadius: RADIUS.badge,
     backgroundColor: COLORS.gray100,
   },
 
   info: {
     flex: 1,
-    gap: 2,
+    gap: 4,
   },
   productName: {
     fontFamily: FONTS.medium,
@@ -128,13 +125,6 @@ const styles = StyleSheet.create({
     color: COLORS.navy,
     lineHeight: 20,
   },
-  perItemPrice: {
-    fontFamily: FONTS.regular,
-    fontSize: 13,
-    color: COLORS.gray500,
-    marginTop: 2,
-  },
-
   badge: {
     alignSelf: 'flex-start',
     borderRadius: RADIUS.badge,
@@ -151,12 +141,13 @@ const styles = StyleSheet.create({
 
   rightColumn: {
     alignItems: 'flex-end',
-    gap: SPACING.sm,
+    alignSelf: 'stretch',
+    justifyContent: 'space-between',
   },
   price: {
     fontFamily: FONTS.bold,
     fontSize: 16,
-    color: COLORS.navy,
+    color: COLORS.coral,
   },
   deleteButton: {
     padding: 4,

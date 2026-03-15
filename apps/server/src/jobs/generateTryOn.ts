@@ -99,6 +99,20 @@ export function startTryOnWorker(): Worker<TryOnJobData> | null {
   return worker;
 }
 
+// ─── URL Resolution ────────────────────────────────
+
+const SERVER_BASE_URL = process.env.RAILWAY_PUBLIC_DOMAIN
+  ? `https://${process.env.RAILWAY_PUBLIC_DOMAIN}`
+  : `http://localhost:${process.env.PORT || 3001}`;
+
+/** Convert relative paths (e.g. /uploads/...) to absolute public URLs for FASHN */
+function resolveToPublicUrl(url: string): string {
+  if (url.startsWith('/')) {
+    return `${SERVER_BASE_URL}${url}`;
+  }
+  return url;
+}
+
 // ─── Helpers ────────────────────────────────────────
 
 async function processOutfitPairing(data: TryOnJobData): Promise<string> {
@@ -125,8 +139,8 @@ async function processOutfitPairing(data: TryOnJobData): Promise<string> {
   // Pass 1: Top garment on user's body
   const topS3Key = `tryon/${userId}/${outfitPairingId}/top.jpg`;
   const topResultUrl = await generateTryOn(
-    bodyPhotoUrl,
-    topGarmentUrl,
+    resolveToPublicUrl(bodyPhotoUrl),
+    resolveToPublicUrl(topGarmentUrl),
     topCategory,
     topS3Key,
   );
@@ -134,8 +148,8 @@ async function processOutfitPairing(data: TryOnJobData): Promise<string> {
   // Pass 2: Bottom garment on the result of pass 1
   const combinedS3Key = `tryon/${userId}/${outfitPairingId}/combined.jpg`;
   const combinedResultUrl = await generateTryOn(
-    topResultUrl,
-    bottomGarmentUrl,
+    resolveToPublicUrl(topResultUrl),
+    resolveToPublicUrl(bottomGarmentUrl),
     bottomCategory,
     combinedS3Key,
   );
@@ -151,5 +165,5 @@ async function processSoloDress(data: TryOnJobData): Promise<string> {
   }
 
   const s3Key = `tryon/${userId}/${productId}/solo.jpg`;
-  return generateTryOn(bodyPhotoUrl, garmentUrl, garmentCategory, s3Key);
+  return generateTryOn(resolveToPublicUrl(bodyPhotoUrl), resolveToPublicUrl(garmentUrl), garmentCategory, s3Key);
 }

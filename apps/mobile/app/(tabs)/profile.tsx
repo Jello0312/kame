@@ -8,10 +8,9 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Image } from 'expo-image';
 import * as WebBrowser from 'expo-web-browser';
 import { useQuery } from '@tanstack/react-query';
-import { MessageSquare, LogOut, User } from 'lucide-react-native';
+import { MessageSquare, LogOut } from 'lucide-react-native';
 
 import { AuthBackground } from '../../components/AuthBackground';
 import { ProfileSection } from '../../components/ProfileSection';
@@ -28,7 +27,6 @@ import {
 import type {
   UserMe,
   UserProfile,
-  UserAvatar,
   StylePreferences,
 } from '../../types/profile';
 
@@ -125,14 +123,6 @@ export default function ProfileScreen() {
     queryKey: ['profile'],
     queryFn: async () => {
       const res = await api.get<UserProfile>('/api/profile');
-      return res.data!;
-    },
-  });
-
-  const avatarQuery = useQuery<UserAvatar>({
-    queryKey: ['avatar'],
-    queryFn: async () => {
-      const res = await api.get<UserAvatar>('/api/avatar');
       return res.data!;
     },
   });
@@ -241,48 +231,7 @@ export default function ProfileScreen() {
           ) : null}
         </ProfileSection>
 
-        {/* ── 5. Your Photos ──────────────────────────────── */}
-        <ProfileSection title="Your Photos">
-          {avatarQuery.isLoading ? (
-            <ActivityIndicator color={COLORS.tealBright} size="small" />
-          ) : avatarQuery.data ? (
-            <View style={styles.photosRow}>
-              {/* Face photo */}
-              <View style={styles.facePhotoContainer}>
-                {avatarQuery.data.facePhotoUrl ? (
-                  <Image
-                    source={{ uri: avatarQuery.data.facePhotoUrl }}
-                    style={styles.facePhoto}
-                    contentFit="cover"
-                    transition={200}
-                  />
-                ) : (
-                  <View style={styles.photoPlaceholder}>
-                    <User size={32} color={COLORS.gray500} />
-                  </View>
-                )}
-              </View>
-
-              {/* Body photo */}
-              <View style={styles.bodyPhotoContainer}>
-                {avatarQuery.data.bodyPhotoUrl ? (
-                  <Image
-                    source={{ uri: avatarQuery.data.bodyPhotoUrl }}
-                    style={styles.bodyPhoto}
-                    contentFit="cover"
-                    transition={200}
-                  />
-                ) : (
-                  <View style={styles.photoPlaceholder}>
-                    <User size={32} color={COLORS.gray500} />
-                  </View>
-                )}
-              </View>
-            </View>
-          ) : null}
-        </ProfileSection>
-
-        {/* ── 6. Style Preferences ────────────────────────── */}
+        {/* ── 5. Style Preferences ────────────────────────── */}
         <ProfileSection title="Style Preferences">
           {prefsQuery.isLoading ? (
             <ActivityIndicator color={COLORS.tealBright} size="small" />
@@ -355,7 +304,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#F0FAFB',
   },
   scrollContent: {
-    paddingBottom: SPACING['4xl'],
+    paddingBottom: 120,
   },
 
   // Header
@@ -433,39 +382,6 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.semiBold,
     color: COLORS.navy,
     marginTop: SPACING.xs,
-  },
-
-  // Photos
-  photosRow: {
-    flexDirection: 'row',
-    gap: SPACING.lg,
-  },
-  facePhotoContainer: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    overflow: 'hidden',
-    backgroundColor: COLORS.gray100,
-  },
-  facePhoto: {
-    width: 80,
-    height: 80,
-  },
-  bodyPhotoContainer: {
-    width: 80,
-    height: 107,
-    borderRadius: RADIUS.input,
-    overflow: 'hidden',
-    backgroundColor: COLORS.gray100,
-  },
-  bodyPhoto: {
-    width: 80,
-    height: 107,
-  },
-  photoPlaceholder: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
 
   // Preferences

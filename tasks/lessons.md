@@ -349,3 +349,23 @@
 **Root cause:** Claude Code's Edit/Write tools call mkdir on parent directories before writing. OneDrive's virtual filesystem (cloud-synced paths with spaces) causes mkdir to throw EEXIST because OneDrive reports the directory as both existing and needing creation simultaneously.
 **Workaround used:** Read files via Read tool (works fine), then use node -e scripts via Bash to programmatically transform and write files (fs.readFileSync + string manipulation + fs.writeFileSync). This bypasses the Edit/Write tools entirely.
 **Rule:** For projects on OneDrive paths with spaces, prefer the Bash + Node.js fs workaround for file writes. Better yet, create a Windows junction: New-Item -ItemType Junction -Path C:\dev\KAME -Target <OneDrive path> and use the junction path as project root. This eliminates the issue for all tools.
+
+### 2026-03-15 — Unhandled Redis error events crash the Node.js process
+**What happened:** Railway deploy logs showed `ReplyError: ERR max requests limit exceeded` from Upstash. Server process crashed, Railway served its HTML 502 page. Mobile app received HTML instead of JSON, showing "Unexpected token '<'" on login.
+**Root cause:** IORedis connections in `queue.ts` and `generateTryOn.ts` were created without `.on('error')` handlers. In Node.js, an unhandled `error` event on an EventEmitter crashes the process.
+**Rule:** ALWAYS attach `.on('error', (err) => console.error(...))` to every IORedis connection. This prevents Redis errors from crashing the server. Auth endpoints don't use Redis and should never be affected by Redis issues.
+
+### 2026-03-15 — Public .env files must be committed for fresh clones
+**What happened:** Mobile app showed "Network request failed" on a fresh clone. `apps/mobile/.env` was `.gitignored`, so `EXPO_PUBLIC_API_URL` was undefined. `fetch("undefined/auth/login")` failed differently per platform: native = "Network request failed", web = relative URL → HTML response → "Unexpected token '<'".
+**Root cause:** `.gitignore` excluded ALL `.env` files. The mobile `.env` only contains `EXPO_PUBLIC_API_URL` (a public URL, no secrets).
+**Rule:** If a `.env` file contains ONLY public values (no secrets/keys), commit it with `git add -f`. Always verify fresh clones have all needed env files. For Expo specifically, `EXPO_PUBLIC_*` vars are baked in at Metro build time — missing at first start = permanently undefined until `npx expo start --clear`.
+
+### 2026-03-15 — API client must handle non-JSON responses and missing config
+**What happened:** `response.json()` was called without try-catch. When server returned HTML (502 page), it threw a raw SyntaxError with cryptic message "Unexpected token '<'". Also, no validation that BASE_URL was defined.
+**Root cause:** API client assumed server always returns JSON. No defensive coding for infrastructure failures.
+**Rule:** Always wrap `response.json()` — read as `response.text()` first, then `JSON.parse()` in a try-catch. Validate BASE_URL at module load and throw a clear error. Catch `fetch()` network errors separately from parse errors. Show user-friendly messages, not raw JS errors.
+
+### 2026-03-15 — PowerShell does not support && command chaining
+**What happened:** Beta tester on Windows PowerShell ran `git clone ... && cd kame && pnpm install && ...`. PowerShell rejected `&&` as "not a valid statement separator".
+**Root cause:** `&&` is bash syntax. PowerShell uses `;` (run regardless) or requires PowerShell 7+ for `&&`.
+**Rule:** When giving commands for Windows users, always provide them one-per-line. Never chain with `&&`. Assume PowerShell, not bash.
