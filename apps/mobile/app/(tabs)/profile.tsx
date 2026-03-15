@@ -13,6 +13,7 @@ import * as WebBrowser from 'expo-web-browser';
 import { useQuery } from '@tanstack/react-query';
 import { MessageSquare, LogOut, User } from 'lucide-react-native';
 
+import { AuthBackground } from '../../components/AuthBackground';
 import { ProfileSection } from '../../components/ProfileSection';
 import { KameLogo } from '../../components/KameLogo';
 import { api } from '../../services/api';
@@ -159,6 +160,7 @@ export default function ProfileScreen() {
 
   return (
     <SafeAreaView style={styles.screen} edges={['top']}>
+      <AuthBackground />
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
@@ -350,7 +352,7 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: COLORS.navy,
+    backgroundColor: '#F0FAFB',
   },
   scrollContent: {
     paddingBottom: SPACING['4xl'],
@@ -367,33 +369,33 @@ const styles = StyleSheet.create({
   namePlaceholder: {
     height: 28,
     width: 160,
-    backgroundColor: COLORS.navyDeep,
+    backgroundColor: COLORS.gray200,
     borderRadius: 8,
   },
   emailPlaceholder: {
     height: 16,
     width: 200,
-    backgroundColor: COLORS.navyDeep,
+    backgroundColor: COLORS.gray200,
     borderRadius: 6,
     marginTop: SPACING.sm,
   },
   userName: {
     fontSize: 28,
     fontFamily: FONTS.bold,
-    color: COLORS.white,
+    color: COLORS.navy,
     marginTop: SPACING.xl,
   },
   userEmail: {
     fontSize: 14,
     fontFamily: FONTS.regular,
-    color: COLORS.gray400,
+    color: COLORS.gray500,
     marginTop: SPACING.xs,
   },
 
   // Divider
   divider: {
     height: 1,
-    backgroundColor: COLORS.gray700,
+    backgroundColor: COLORS.gray200,
     marginVertical: SPACING.xl,
     marginHorizontal: COMPONENT.screenPadding,
   },
@@ -415,19 +417,21 @@ const styles = StyleSheet.create({
   },
   measurementCard: {
     flex: 1,
-    backgroundColor: COLORS.navyDeep,
+    backgroundColor: COLORS.white,
     borderRadius: RADIUS.cardSm,
     padding: SPACING.lg,
+    borderWidth: 1,
+    borderColor: COLORS.gray200,
   },
   measurementLabel: {
     fontSize: 12,
     fontFamily: FONTS.medium,
-    color: COLORS.gray400,
+    color: COLORS.gray500,
   },
   measurementValue: {
     fontSize: 16,
     fontFamily: FONTS.semiBold,
-    color: COLORS.white,
+    color: COLORS.navy,
     marginTop: SPACING.xs,
   },
 
@@ -441,7 +445,7 @@ const styles = StyleSheet.create({
     height: 80,
     borderRadius: 40,
     overflow: 'hidden',
-    backgroundColor: COLORS.navyDeep,
+    backgroundColor: COLORS.gray100,
   },
   facePhoto: {
     width: 80,
@@ -452,7 +456,7 @@ const styles = StyleSheet.create({
     height: 107,
     borderRadius: RADIUS.input,
     overflow: 'hidden',
-    backgroundColor: COLORS.navyDeep,
+    backgroundColor: COLORS.gray100,
   },
   bodyPhoto: {
     width: 80,
@@ -468,13 +472,13 @@ const styles = StyleSheet.create({
   prefLabel: {
     fontSize: 12,
     fontFamily: FONTS.medium,
-    color: COLORS.gray400,
+    color: COLORS.gray500,
     marginBottom: SPACING.sm,
   },
   prefLabelSpaced: {
     fontSize: 12,
     fontFamily: FONTS.medium,
-    color: COLORS.gray400,
+    color: COLORS.gray500,
     marginTop: SPACING.lg,
     marginBottom: SPACING.sm,
   },

@@ -24,7 +24,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 18,
     fontFamily: FONTS.semiBold,
-    color: COLORS.white,
+    color: COLORS.navy,
     marginBottom: SPACING.md,
   },
 });

@@ -3,6 +3,7 @@ import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useInfiniteQuery } from '@tanstack/react-query';
 
+import { AuthBackground } from '../../components/AuthBackground';
 import { SwipeDeck } from '../../components/SwipeDeck';
 import { KameLogo } from '../../components/KameLogo';
 import { SkeletonSwipeCard } from '../../components/SkeletonCard';
@@ -73,6 +74,7 @@ export default function ExploreScreen() {
   if (isLoading) {
     return (
       <SafeAreaView style={styles.screen} edges={['top']}>
+        <AuthBackground />
         <View style={styles.header}>
           <KameLogo />
         </View>
@@ -86,6 +88,7 @@ export default function ExploreScreen() {
   if (isError) {
     return (
       <SafeAreaView style={styles.screen} edges={['top']}>
+        <AuthBackground />
         <View style={styles.header}>
           <KameLogo />
         </View>
@@ -106,6 +109,7 @@ export default function ExploreScreen() {
   if (isEmpty || allCards.length === 0) {
     return (
       <SafeAreaView style={styles.screen} edges={['top']}>
+        <AuthBackground />
         <View style={styles.header}>
           <KameLogo />
         </View>
@@ -126,6 +130,7 @@ export default function ExploreScreen() {
 
   return (
     <SafeAreaView style={styles.screen} edges={['top']}>
+      <AuthBackground />
       <View style={styles.header}>
         <KameLogo />
       </View>
@@ -144,7 +149,7 @@ export default function ExploreScreen() {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: COLORS.navy,
+    backgroundColor: '#F0FAFB',
   },
   header: {
     paddingHorizontal: SPACING.xl,
@@ -164,13 +169,13 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.xl,
   },
   emptyTitle: {
-    color: COLORS.white,
+    color: COLORS.navy,
     fontFamily: FONTS.bold,
     fontSize: 24,
     marginBottom: SPACING.sm,
   },
   emptySubtitle: {
-    color: COLORS.textSecondary,
+    color: COLORS.gray500,
     fontFamily: FONTS.regular,
     fontSize: 16,
     textAlign: 'center',

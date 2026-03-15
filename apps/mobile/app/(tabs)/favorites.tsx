@@ -7,7 +7,6 @@
 // ═══════════════════════════════════════════════════════════════
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import * as WebBrowser from 'expo-web-browser';
 import { Heart, ShoppingCart as ShoppingCartIcon } from 'lucide-react-native';
 import { useCallback, useState } from 'react';
 import {
@@ -20,10 +19,10 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AuthBackground } from '../../components/AuthBackground';
+import { CheckoutModal } from '../../components/CheckoutModal';
 import { FavoriteCard } from '../../components/FavoriteCard';
 import { ProductDetailModal } from '../../components/ProductDetailModal';
 import { SkeletonFavoriteCard } from '../../components/SkeletonCard';
-import { useAnalyticsClick } from '../../hooks/useAnalyticsClick';
 import { api } from '../../services/api';
 import {
   COLORS,
@@ -47,7 +46,6 @@ function formatPrice(price: number, currency: string): string {
 
 export default function FavoritesScreen() {
   const queryClient = useQueryClient();
-  const trackClick = useAnalyticsClick();
 
   const {
     data,
@@ -65,6 +63,7 @@ export default function FavoritesScreen() {
   });
 
   const [selectedProduct, setSelectedProduct] = useState<FavoriteItem | null>(null);
+  const [showCheckout, setShowCheckout] = useState(false);
 
   // ─── Unfavorite Mutation ─────────────────────────────────────
 
@@ -84,15 +83,12 @@ export default function FavoritesScreen() {
     [unfavoriteMutation],
   );
 
-  // ─── Checkout: open all links ────────────────────────────────
+  // ─── Checkout: show modal with all product links ─────────────
 
-  const handleCheckout = useCallback(async () => {
+  const handleCheckout = useCallback(() => {
     if (!data || data.length === 0) return;
-    for (const item of data) {
-      trackClick(item.id, item.platform);
-      await WebBrowser.openBrowserAsync(item.productPageUrl);
-    }
-  }, [data, trackClick]);
+    setShowCheckout(true);
+  }, [data]);
 
   // ─── Computed values ─────────────────────────────────────────
 
@@ -232,6 +228,13 @@ export default function FavoritesScreen() {
       <ProductDetailModal
         product={selectedProduct}
         onClose={() => setSelectedProduct(null)}
+      />
+
+      {/* Checkout Modal — all product links */}
+      <CheckoutModal
+        visible={showCheckout}
+        items={data ?? []}
+        onClose={() => setShowCheckout(false)}
       />
     </SafeAreaView>
   );
