@@ -5,9 +5,9 @@
     "buildCommand": "pnpm --filter @kame/shared-types run build && pnpm --filter @kame/server run build"
   },
   "deploy": {
-    "startCommand": "cd apps/server && pnpm run db:deploy || echo 'Migration skipped — DB may be unavailable' && pnpm run start",
+    "startCommand": "cd apps/server && (pnpm run db:deploy || true) && pnpm run start",
     "healthcheckPath": "/health",
-    "healthcheckTimeout": 30,
+    "healthcheckTimeout": 60,
     "restartPolicyType": "ON_FAILURE",
     "restartPolicyMaxRetries": 3
   }
