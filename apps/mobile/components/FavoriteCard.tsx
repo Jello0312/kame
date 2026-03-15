@@ -1,19 +1,19 @@
 // ═══════════════════════════════════════════════════════════════
-// FavoriteCard — Pure presentational card for the favorites grid
+// FavoriteCard — Horizontal product card for favorites list
 // ═══════════════════════════════════════════════════════════════
-// Renders a single favorite product as a compact 2-column card
-// with image, product info, price (coral), and platform badge.
+// Shopping-cart-style row: thumbnail | name + price + badge | price + delete.
+// White card on light background. Tap opens ProductDetailModal,
+// delete button triggers unfavorite callback.
 // ═══════════════════════════════════════════════════════════════
 
 import { Image } from 'expo-image';
-import { Pressable, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import { Trash2 } from 'lucide-react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import {
   COLORS,
-  COMPONENT,
   FONTS,
   RADIUS,
-  SHADOWS,
   SPACING,
 } from '../src/theme/constants';
 import type { FavoriteItem } from '../types/profile';
@@ -23,6 +23,7 @@ import type { FavoriteItem } from '../types/profile';
 interface FavoriteCardProps {
   item: FavoriteItem;
   onPress: (item: FavoriteItem) => void;
+  onRemove: (item: FavoriteItem) => void;
 }
 
 // ── Helpers ───────────────────────────────────────────────────
@@ -39,49 +40,53 @@ function getBadgeColor(platform: string): string {
 
 // ── Component ─────────────────────────────────────────────────
 
-export function FavoriteCard({ item, onPress }: FavoriteCardProps) {
-  const { width: screenWidth } = useWindowDimensions();
-  const cardWidth = (screenWidth - COMPONENT.screenPadding * 2 - SPACING.md) / 2;
-
+export function FavoriteCard({ item, onPress, onRemove }: FavoriteCardProps) {
   return (
     <Pressable
       onPress={() => onPress(item)}
       style={({ pressed }) => [
         styles.card,
-        { width: cardWidth },
-        pressed && { opacity: 0.85 },
+        pressed && { opacity: 0.9 },
       ]}
     >
-      {/* Product Image */}
+      {/* Product Thumbnail */}
       <Image
         source={{ uri: item.imageUrl }}
-        style={[styles.image, { width: cardWidth }]}
+        style={styles.thumbnail}
         contentFit="cover"
         transition={200}
-        placeholder={{ blurhash: undefined }}
-        placeholderContentFit="cover"
       />
 
-      {/* Platform Badge */}
-      {item.platform !== '' && (
-        <View style={[styles.badge, { backgroundColor: getBadgeColor(item.platform) }]}>
-          <Text style={styles.badgeText}>{item.platform}</Text>
-        </View>
-      )}
-
-      {/* Card Footer */}
-      <View style={styles.footer}>
+      {/* Center: Name + per-item price + badge */}
+      <View style={styles.info}>
         <Text style={styles.productName} numberOfLines={2}>
           {item.name}
         </Text>
-        {item.brand != null && (
-          <Text style={styles.brand} numberOfLines={1}>
-            {item.brand}
-          </Text>
+        <Text style={styles.perItemPrice}>
+          {formatPrice(item.price, item.currency)} per item
+        </Text>
+        {item.platform !== '' && (
+          <View style={[styles.badge, { backgroundColor: getBadgeColor(item.platform) }]}>
+            <Text style={styles.badgeText}>{item.platform}</Text>
+          </View>
         )}
+      </View>
+
+      {/* Right: Price + Delete */}
+      <View style={styles.rightColumn}>
         <Text style={styles.price}>
           {formatPrice(item.price, item.currency)}
         </Text>
+        <Pressable
+          onPress={() => onRemove(item)}
+          hitSlop={8}
+          style={({ pressed }) => [
+            styles.deleteButton,
+            pressed && { opacity: 0.7 },
+          ]}
+        >
+          <Trash2 size={20} color={COLORS.coral} />
+        </Pressable>
       </View>
     </Pressable>
   );
@@ -91,25 +96,51 @@ export function FavoriteCard({ item, onPress }: FavoriteCardProps) {
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: RADIUS.cardSm,
-    overflow: 'hidden',
-    backgroundColor: COLORS.navyDeep,
-    ...SHADOWS.card,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.white,
+    borderRadius: RADIUS.input,
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.08)',
+    padding: SPACING.md,
+    gap: SPACING.md,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 2,
   },
 
-  image: {
-    aspectRatio: 3 / 4,
-    backgroundColor: COLORS.navyDeep,
+  thumbnail: {
+    width: 80,
+    height: 80,
+    borderRadius: RADIUS.badge,
+    backgroundColor: COLORS.gray100,
   },
 
-  // Platform badge
+  info: {
+    flex: 1,
+    gap: 2,
+  },
+  productName: {
+    fontFamily: FONTS.medium,
+    fontSize: 15,
+    color: COLORS.navy,
+    lineHeight: 20,
+  },
+  perItemPrice: {
+    fontFamily: FONTS.regular,
+    fontSize: 13,
+    color: COLORS.gray500,
+    marginTop: 2,
+  },
+
   badge: {
-    position: 'absolute',
-    top: SPACING.sm,
-    right: SPACING.sm,
+    alignSelf: 'flex-start',
     borderRadius: RADIUS.badge,
     paddingHorizontal: 8,
-    paddingVertical: 3,
+    paddingVertical: 2,
+    marginTop: 4,
   },
   badgeText: {
     color: COLORS.white,
@@ -118,26 +149,16 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
   },
 
-  // Footer
-  footer: {
-    backgroundColor: COLORS.navyDeep,
-    padding: SPACING.md,
-  },
-  productName: {
-    fontFamily: FONTS.medium,
-    fontSize: 13,
-    color: COLORS.white,
-  },
-  brand: {
-    fontFamily: FONTS.regular,
-    fontSize: 11,
-    color: COLORS.gray400,
-    marginTop: 2,
+  rightColumn: {
+    alignItems: 'flex-end',
+    gap: SPACING.sm,
   },
   price: {
     fontFamily: FONTS.bold,
-    fontSize: 15,
-    color: COLORS.coral,
-    marginTop: SPACING.xs,
+    fontSize: 16,
+    color: COLORS.navy,
+  },
+  deleteButton: {
+    padding: 4,
   },
 });

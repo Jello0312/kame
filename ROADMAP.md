@@ -1,8 +1,8 @@
 # Kame — Development Roadmap
 
-> Last updated: 2026-03-14
+> Last updated: 2026-03-15
 > Current phase: **MVP Sprint (Weeks 1-3)**
-> Current step: **Sprint 3.4 — UI Enhancements** (complete)
+> Current step: **Sprint 3.6 — Favorites Redesign** (complete)
 
 ## Progress Tracking Convention
 - `[ ]` = Todo
@@ -191,8 +191,19 @@
 
 ## Post-MVP Roadmap
 
+### Sprint 3.6 — Favorites Redesign (Shopping Cart Style) ✅ COMPLETE
+- [x] Redesign favorites from 2-column grid to horizontal shopping-cart-style list ✅
+- [x] FavoriteCard — horizontal row layout (thumbnail | name + price + badge | price + delete) ✅
+- [x] Add unfavorite/remove functionality (trash button → DISLIKE mutation) ✅
+- [x] Add total price bar (teal) + "Proceed to Checkout" button ✅
+- [x] Light background (#F0FAFB) with white product cards ✅
+- [x] SkeletonFavoriteCard updated to match new horizontal layout ✅
+- [x] Shopping cart icon header replacing KameLogo ✅
+
+---
+
 ### v1.1 — Cart & Affiliate Revenue (Weeks 4-5)
-- [ ] Unified cart screen (liked items grouped by platform)
+- [x] Unified cart screen (liked items grouped by platform) ✅ (partially — cart-style favorites done)
 - [ ] Auto size selection from user profile + brand size charts
 - [ ] Affiliate link integration (populate affiliate_url for all products)
 - [ ] "Buy Now" switches from product_page_url to affiliate_url

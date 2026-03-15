@@ -8,7 +8,7 @@
 // ═══════════════════════════════════════════════════════════════
 
 import { useEffect } from 'react';
-import { StyleSheet, View, useWindowDimensions } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -53,22 +53,23 @@ export function SkeletonSwipeCard() {
 }
 
 // ── SkeletonFavoriteCard ──────────────────────────────────────
-// Matches FavoriteCard: half-screen width, 3:4 aspect image + footer.
+// Matches FavoriteCard: horizontal row with thumbnail + text bars.
 
 export function SkeletonFavoriteCard() {
-  const { width: screenWidth } = useWindowDimensions();
-  const cardWidth = (screenWidth - COMPONENT.screenPadding * 2 - SPACING.md) / 2;
   const pulseStyle = usePulse();
 
   return (
-    <Animated.View style={[styles.favCard, { width: cardWidth }, pulseStyle]}>
-      {/* Image placeholder */}
-      <View style={[styles.favImage, { width: cardWidth }]} />
-      {/* Footer text placeholders */}
-      <View style={styles.favFooter}>
+    <Animated.View style={[styles.favCard, pulseStyle]}>
+      {/* Thumbnail placeholder */}
+      <View style={styles.favThumbnail} />
+      {/* Text bars */}
+      <View style={styles.favInfo}>
         <View style={styles.favBarName} />
         <View style={styles.favBarPrice} />
+        <View style={styles.favBarBadge} />
       </View>
+      {/* Right price placeholder */}
+      <View style={styles.favBarRight} />
     </Animated.View>
   );
 }
@@ -105,28 +106,47 @@ const styles = StyleSheet.create({
 
   // ── Favorite skeleton ──
   favCard: {
-    backgroundColor: COLORS.navyDeep,
-    borderRadius: RADIUS.cardSm,
-    overflow: 'hidden',
-  },
-  favImage: {
-    aspectRatio: 3 / 4,
-    backgroundColor: COLORS.gray700,
-  },
-  favFooter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.white,
+    borderRadius: RADIUS.input,
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.08)',
     padding: SPACING.md,
+    gap: SPACING.md,
+  },
+  favThumbnail: {
+    width: 80,
+    height: 80,
+    borderRadius: RADIUS.badge,
+    backgroundColor: COLORS.gray200,
+  },
+  favInfo: {
+    flex: 1,
     gap: SPACING.xs,
   },
   favBarName: {
-    width: '70%',
-    height: 12,
-    borderRadius: 6,
-    backgroundColor: COLORS.gray700,
+    width: '80%',
+    height: 14,
+    borderRadius: 7,
+    backgroundColor: COLORS.gray200,
   },
   favBarPrice: {
-    width: '40%',
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: COLORS.gray700,
+    width: '50%',
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: COLORS.gray200,
+  },
+  favBarBadge: {
+    width: 50,
+    height: 16,
+    borderRadius: RADIUS.badge,
+    backgroundColor: COLORS.gray200,
+  },
+  favBarRight: {
+    width: 60,
+    height: 14,
+    borderRadius: 7,
+    backgroundColor: COLORS.gray200,
   },
 });

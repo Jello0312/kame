@@ -1,6 +1,6 @@
 # Kame — Active Sprint Tasks
 
-> Updated: 2026-03-10 (Sprint 3.3 infrastructure complete)
+> Updated: 2026-03-15 (Sprint 3.6 favorites redesign complete)
 > See ROADMAP.md for full multi-week plan.
 
 ---
@@ -326,6 +326,24 @@
 - **Schema alignment:** All 7 DB models (User, UserProfile, UserAvatar, StylePreference, Product, TryOnResult, SwipeAction) match their API routes and Zod schemas. OutfitPairing and AnalyticsClick also verified.
 - **Cross-platform:** StatusBar dynamic, KeyboardAvoidingView platform-aware, FormData web/native, ActionSheet iOS/Alert Android, expo-secure-store/localStorage.
 - **Bugs found and fixed:** 2 validation bugs (StatusBar, budgetRange null) caught by tracing full data flow from UI to DB.
+
+---
+
+## ✅ Sprint 3.6 — Favorites Redesign (Shopping Cart Style) ✅
+- [x] Redesign favorites.tsx from 2-column grid to shopping-cart-style list ✅
+- [x] Redesign FavoriteCard.tsx — vertical card → horizontal row (thumbnail | info | price + delete) ✅
+- [x] Add unfavorite mutation (trash button → POST /api/swipe DISLIKE → invalidate favorites query) ✅
+- [x] Add total price bar (teal) + "Proceed to Checkout" button (opens all product links) ✅
+- [x] Light background (#F0FAFB) + white cards + AuthBackground ✅
+- [x] Update SkeletonFavoriteCard to match new horizontal layout ✅
+- [x] Replace KameLogo header with ShoppingCart icon + "Favorites" title ✅
+
+### Review — Favorites Redesign (2026-03-15)
+- **Layout:** Switched from 2-column FlatList (numColumns=2) to single-column list with horizontal FavoriteCard rows. Each card: 80x80 thumbnail | product name + per-item price + platform badge | bold price + coral trash button.
+- **Unfavorite:** useMutation sends POST /api/swipe with DISLIKE action, then invalidates favorites query. Reuses existing swipe endpoint (upsert changes LIKE→DISLIKE).
+- **Checkout:** "Proceed to Checkout" iterates all favorites, opens each product URL via expo-web-browser, fires analytics click for each. Total bar shows sum of all item prices.
+- **Theme:** Light background (#F0FAFB) with AuthBackground blobs, white cards with subtle border/shadow. Matches auth screen light theme from Sprint 3.5.
+- **Skeleton:** SkeletonFavoriteCard now renders horizontal row with thumbnail placeholder + 3 text bars + right-side price bar, matching the real card layout.
 
 ---
 
