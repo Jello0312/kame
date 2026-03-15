@@ -1,7 +1,7 @@
 import '../global.css';
 
-import { useEffect } from 'react';
-import { Stack, useSegments, useRouter, type Href } from 'expo-router';
+import { useEffect, useState } from 'react';
+import { Stack, useSegments, useRouter, useNavigationContainerRef, type Href } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
@@ -34,6 +34,19 @@ export default function RootLayout() {
   const { isAuthenticated, isLoading, hasCompletedOnboarding, checkAuth } = useAuthStore();
   const segments = useSegments();
   const router = useRouter();
+  const navigationRef = useNavigationContainerRef();
+  const [navReady, setNavReady] = useState(false);
+
+  // Track when navigation container is ready
+  useEffect(() => {
+    if (navigationRef?.isReady()) {
+      setNavReady(true);
+    }
+    const unsubscribe = navigationRef?.addListener?.('state', () => {
+      if (navigationRef.isReady()) setNavReady(true);
+    });
+    return () => unsubscribe?.();
+  }, [navigationRef]);
 
   // Check auth on mount
   useEffect(() => {
@@ -47,9 +60,9 @@ export default function RootLayout() {
     }
   }, [fontsLoaded, isLoading]);
 
-  // Auth-based navigation routing
+  // Auth-based navigation routing — only after navigator is mounted
   useEffect(() => {
-    if (isLoading || !fontsLoaded) return;
+    if (isLoading || !fontsLoaded || !navReady) return;
 
     const inAuthGroup = segments[0] === 'auth';
     const inOnboardingGroup = segments[0] === 'onboarding';
@@ -61,7 +74,7 @@ export default function RootLayout() {
     } else if (isAuthenticated && hasCompletedOnboarding && (inAuthGroup || inOnboardingGroup)) {
       router.replace('/(tabs)/explore');
     }
-  }, [isAuthenticated, hasCompletedOnboarding, isLoading, fontsLoaded, segments]);
+  }, [isAuthenticated, hasCompletedOnboarding, isLoading, fontsLoaded, navReady, segments]);
 
   if (!fontsLoaded || isLoading) {
     return null;
