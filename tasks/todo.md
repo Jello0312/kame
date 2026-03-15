@@ -339,11 +339,30 @@
 - [x] Replace KameLogo header with ShoppingCart icon + "Favorites" title ✅
 
 ### Review — Favorites Redesign (2026-03-15)
-- **Layout:** Switched from 2-column FlatList (numColumns=2) to single-column list with horizontal FavoriteCard rows. Each card: 80x80 thumbnail | product name + per-item price + platform badge | bold price + coral trash button.
+- **Layout:** Switched from 2-column FlatList (numColumns=2) to single-column list with horizontal FavoriteCard rows. Each card: 60x60 thumbnail | product name + platform badge | coral price + trash button.
 - **Unfavorite:** useMutation sends POST /api/swipe with DISLIKE action, then invalidates favorites query. Reuses existing swipe endpoint (upsert changes LIKE→DISLIKE).
-- **Checkout:** "Proceed to Checkout" iterates all favorites, opens each product URL via expo-web-browser, fires analytics click for each. Total bar shows sum of all item prices.
+- **Checkout:** "Proceed to Checkout" opens CheckoutModal with all product links. Total row uses gray text (no teal bar). Checkout button wrapped in teal container.
 - **Theme:** Light background (#F0FAFB) with AuthBackground blobs, white cards with subtle border/shadow. Matches auth screen light theme from Sprint 3.5.
 - **Skeleton:** SkeletonFavoriteCard now renders horizontal row with thumbnail placeholder + 3 text bars + right-side price bar, matching the real card layout.
+- **Scroll fix:** paddingBottom increased to 120px to prevent tab bar overlap.
+
+---
+
+## ✅ Sprint 3.7 — Beta Debug Fixes ✅
+- [x] Fix FASHN try-on silent failure — resolve relative `/uploads/...` URLs to absolute `https://` URLs using `RAILWAY_PUBLIC_DOMAIN` ✅
+- [x] Fix FavoriteCard layout — 60x60 thumbnail, coral price on right, badge below product name ✅
+- [x] Fix favorites footer — gray total text, teal checkout wrapper, 120px paddingBottom ✅
+- [x] Fix profile — remove "Your Photos" section, 120px paddingBottom for tab bar ✅
+- [x] Fix Redis crash — add `.on('error')` handlers to all IORedis connections ✅
+- [x] Fix mobile API client — handle non-JSON responses, validate BASE_URL ✅
+- [x] Fix fresh clone setup — commit `apps/mobile/.env` with public API URL ✅
+
+### Review — Beta Debug Fixes (2026-03-15)
+- **FASHN:** Body photos stored locally at `/uploads/avatars/{userId}/body.jpg`. FASHN API can't access relative URLs. Added `resolveToPublicUrl()` using `RAILWAY_PUBLIC_DOMAIN` env var (auto-set by Railway) to convert to full `https://` URLs.
+- **Redis stability:** IORedis connections without `.on('error')` handlers crash Node.js process. Added handlers to both `queue.ts` and `generateTryOn.ts`. Also tuned BullMQ settings for Upstash free tier: `drainDelay: 60`, `stalledInterval: 300_000`.
+- **API resilience:** Mobile API client now reads response as text first, then safely parses JSON. Catches network errors separately. Validates `EXPO_PUBLIC_API_URL` at module load.
+- **Fresh clone:** `apps/mobile/.env` committed with `git add -f` (contains only public URL, no secrets). Expo `EXPO_PUBLIC_*` vars baked at Metro build time — must `npx expo start --clear` after changes.
+- **Windows:** All beta setup commands provided one-per-line (no `&&` chaining — PowerShell doesn't support it).
 
 ---
 

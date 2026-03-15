@@ -2,6 +2,7 @@ import { Worker, Job } from 'bullmq';
 import IORedis from 'ioredis';
 import { prisma } from '../lib/prisma.js';
 import { generateTryOn } from '../integrations/fashn.js';
+import { resolveToPublicUrl } from '../utils/url.js';
 
 // ─── Types ──────────────────────────────────────────
 
@@ -97,20 +98,6 @@ export function startTryOnWorker(): Worker<TryOnJobData> | null {
 
   console.log('Try-on worker started (concurrency: 2)');
   return worker;
-}
-
-// ─── URL Resolution ────────────────────────────────
-
-const SERVER_BASE_URL = process.env.RAILWAY_PUBLIC_DOMAIN
-  ? `https://${process.env.RAILWAY_PUBLIC_DOMAIN}`
-  : `http://localhost:${process.env.PORT || 3001}`;
-
-/** Convert relative paths (e.g. /uploads/...) to absolute public URLs for FASHN */
-function resolveToPublicUrl(url: string): string {
-  if (url.startsWith('/')) {
-    return `${SERVER_BASE_URL}${url}`;
-  }
-  return url;
 }
 
 // ─── Helpers ────────────────────────────────────────

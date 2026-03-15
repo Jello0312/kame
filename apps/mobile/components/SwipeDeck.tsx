@@ -6,6 +6,7 @@ import Animated, {
   useAnimatedStyle,
   withSpring,
   withTiming,
+  cancelAnimation,
   Easing,
   runOnJS,
   interpolate,
@@ -177,26 +178,27 @@ export function SwipeDeck({ cards, onSwipe, onNeedMore, onEmpty }: SwipeDeckProp
       // Fire API (fire-and-forget, non-blocking)
       fireSwipeApi(card, direction);
 
-      // Advance to next card
-      const nextIndex = currentIndex + 1;
-      setCurrentIndex(nextIndex);
+      // 1. Cancel any in-flight exit animation
+      cancelAnimation(translateX);
+      cancelAnimation(translateY);
 
-      // Reset animation values for the new top card
+      // 2. Reset animation values BEFORE advancing index
       translateX.value = 0;
       translateY.value = 0;
 
-      // Notify parent
-      onSwipe(card, direction);
+      // 3. Defer state update to next tick so the reset is processed first
+      const nextIndex = currentIndex + 1;
+      setTimeout(() => {
+        setCurrentIndex(nextIndex);
+        onSwipe(card, direction);
 
-      // Prefetch trigger when <3 cards remain
-      if (cards.length - nextIndex < 3) {
-        onNeedMore();
-      }
-
-      // Empty check
-      if (nextIndex >= cards.length) {
-        onEmpty();
-      }
+        if (cards.length - nextIndex < 3) {
+          onNeedMore();
+        }
+        if (nextIndex >= cards.length) {
+          onEmpty();
+        }
+      }, 0);
     },
     [currentIndex, cards, onSwipe, onNeedMore, onEmpty, translateX, translateY],
   );

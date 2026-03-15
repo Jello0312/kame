@@ -45,8 +45,16 @@ export async function generateTryOn(
       });
 
       if (prediction.status !== 'completed' || !prediction.output?.[0]) {
+        const detail = {
+          status: prediction.status,
+          id: prediction.id,
+          error: (prediction as unknown as Record<string, unknown>).error,
+          logs: (prediction as unknown as Record<string, unknown>).logs,
+          inputs: { personImageUrl, garmentImageUrl, category },
+        };
+        console.error('[FASHN] Prediction failed:', JSON.stringify(detail, null, 2));
         throw new Error(
-          `FASHN prediction failed with status "${prediction.status}"`,
+          `FASHN prediction failed: status="${prediction.status}"`,
         );
       }
 
@@ -67,10 +75,10 @@ export async function generateTryOn(
       return s3Url;
     } catch (err) {
       lastError = err instanceof Error ? err : new Error(String(err));
-      console.error(
-        `[FASHN] Attempt ${attempt}/${MAX_RETRIES} failed:`,
-        lastError.message,
-      );
+      console.error(`[FASHN] Attempt ${attempt}/${MAX_RETRIES} failed:`, {
+        message: lastError.message,
+        inputs: { personImageUrl, garmentImageUrl, category, s3Key },
+      });
 
       if (attempt < MAX_RETRIES) {
         await delay(RETRY_DELAY_MS * attempt);

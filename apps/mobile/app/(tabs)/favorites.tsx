@@ -1,15 +1,16 @@
 // ═══════════════════════════════════════════════════════════════
 // FavoritesScreen — Shopping-cart-style list of liked products
 // ═══════════════════════════════════════════════════════════════
-// Light background with white product cards, teal total bar,
-// and "Proceed to Checkout" button that opens all product links.
-// Tap any card to view details + individual "Buy Now" link.
+// Product cards with "Shop" buttons that open retailer links.
+// Swipe left to delete. "Proceed to Checkout" shows coming soon.
 // ═══════════════════════════════════════════════════════════════
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import * as WebBrowser from 'expo-web-browser';
 import { Heart, ShoppingCart as ShoppingCartIcon } from 'lucide-react-native';
-import { useCallback, useState } from 'react';
+import { useCallback } from 'react';
 import {
+  Alert,
   FlatList,
   Pressable,
   StyleSheet,
@@ -19,17 +20,15 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AuthBackground } from '../../components/AuthBackground';
-import { CheckoutModal } from '../../components/CheckoutModal';
 import { FavoriteCard } from '../../components/FavoriteCard';
-import { ProductDetailModal } from '../../components/ProductDetailModal';
 import { SkeletonFavoriteCard } from '../../components/SkeletonCard';
+import { useAnalyticsClick } from '../../hooks/useAnalyticsClick';
 import { api } from '../../services/api';
 import {
   COLORS,
   COMPONENT,
   FONTS,
   RADIUS,
-  SHADOWS,
   SPACING,
 } from '../../src/theme/constants';
 import type { FavoriteItem } from '../../types/profile';
@@ -46,6 +45,7 @@ function formatPrice(price: number, currency: string): string {
 
 export default function FavoritesScreen() {
   const queryClient = useQueryClient();
+  const trackClick = useAnalyticsClick();
 
   const {
     data,
@@ -61,9 +61,6 @@ export default function FavoritesScreen() {
       return res.data!;
     },
   });
-
-  const [selectedProduct, setSelectedProduct] = useState<FavoriteItem | null>(null);
-  const [showCheckout, setShowCheckout] = useState(false);
 
   // ─── Unfavorite Mutation ─────────────────────────────────────
 
@@ -83,11 +80,25 @@ export default function FavoritesScreen() {
     [unfavoriteMutation],
   );
 
-  // ─── Checkout: show modal with all product links ─────────────
+  // ─── Shop: open product link directly ─────────────────────────
+
+  const handleShop = useCallback(
+    async (item: FavoriteItem) => {
+      trackClick(item.id, item.platform);
+      await WebBrowser.openBrowserAsync(item.productPageUrl);
+    },
+    [trackClick],
+  );
+
+  // ─── Checkout: coming soon alert ──────────────────────────────
 
   const handleCheckout = useCallback(() => {
     if (!data || data.length === 0) return;
-    setShowCheckout(true);
+    Alert.alert(
+      'Single-Click Checkout Coming Soon',
+      'Please tap "Shop" on each item to order directly from the retailer.',
+      [{ text: 'OK' }],
+    );
   }, [data]);
 
   // ─── Computed values ─────────────────────────────────────────
@@ -215,7 +226,7 @@ export default function FavoritesScreen() {
         renderItem={({ item }) => (
           <FavoriteCard
             item={item}
-            onPress={setSelectedProduct}
+            onShop={handleShop}
             onRemove={handleRemove}
           />
         )}
@@ -224,19 +235,6 @@ export default function FavoritesScreen() {
         onRefresh={refetch}
         showsVerticalScrollIndicator={false}
         ListFooterComponent={renderFooter}
-      />
-
-      {/* Product Detail Modal */}
-      <ProductDetailModal
-        product={selectedProduct}
-        onClose={() => setSelectedProduct(null)}
-      />
-
-      {/* Checkout Modal — all product links */}
-      <CheckoutModal
-        visible={showCheckout}
-        items={data ?? []}
-        onClose={() => setShowCheckout(false)}
       />
     </SafeAreaView>
   );

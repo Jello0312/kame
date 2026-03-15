@@ -1,6 +1,7 @@
 import type { Decimal } from '@prisma/client/runtime/library';
 import { prisma } from '../lib/prisma.js';
 import { NotFoundError } from '../utils/errors.js';
+import { resolveToPublicUrl } from '../utils/url.js';
 
 // ─── Interfaces ─────────────────────────────────────────
 
@@ -99,7 +100,7 @@ export async function getTryOnImageForFeed(
     },
   });
 
-  return result?.resultImageUrl ?? null;
+  return result?.resultImageUrl ? resolveToPublicUrl(result.resultImageUrl) : null;
 }
 
 export async function getSoloTryOnImageForFeed(
@@ -114,7 +115,7 @@ export async function getSoloTryOnImageForFeed(
       layer: 'solo',
     },
   });
-  return result?.resultImageUrl ?? null;
+  return result?.resultImageUrl ? resolveToPublicUrl(result.resultImageUrl) : null;
 }
 
 // ═══════════════════════════════════════════════════════

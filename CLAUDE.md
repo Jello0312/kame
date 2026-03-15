@@ -251,6 +251,17 @@ pnpm db:studio        # Prisma Studio
 - **Never use ngrok, localtunnel, or any tunnel.**
 - **Never hardcode localhost in mobile API config.**
 - Beta testing: `npx expo start` — testers scan QR code with Expo Go.
+- **Windows Terminal (PowerShell)**: Does NOT support `&&` chaining. Always provide commands one-per-line when targeting Windows users.
+
+### Beta Testing Setup (Windows — other laptop)
+Run these commands one at a time in Windows Terminal/PowerShell:
+```
+cd ~\Desktop\Claude\KAME
+git pull
+cd apps\mobile
+npx expo start --clear
+```
+**Important**: `--clear` is required after any env var or code changes to bust Metro cache.
 
 ---
 

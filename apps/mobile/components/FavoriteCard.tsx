@@ -1,19 +1,29 @@
 // ═══════════════════════════════════════════════════════════════
-// FavoriteCard — Horizontal product card for favorites list
+// FavoriteCard — Product card matching CheckoutItem layout
 // ═══════════════════════════════════════════════════════════════
-// Shopping-cart-style row: thumbnail | name + price + badge | price + delete.
-// White card on light background. Tap opens ProductDetailModal,
-// delete button triggers unfavorite callback.
+// Thumbnail | name + badge + brand | price + Shop button.
+// Swipe left to reveal delete action. Tap Shop to open link.
 // ═══════════════════════════════════════════════════════════════
 
+import { useRef } from 'react';
 import { Image } from 'expo-image';
-import { Trash2 } from 'lucide-react-native';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { ExternalLink, Trash2 } from 'lucide-react-native';
+import {
+  Animated,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
+import { Swipeable } from 'react-native-gesture-handler';
 
 import {
   COLORS,
   FONTS,
+  GRADIENTS,
   RADIUS,
+  SHADOWS,
   SPACING,
 } from '../src/theme/constants';
 import type { FavoriteItem } from '../types/profile';
@@ -22,7 +32,7 @@ import type { FavoriteItem } from '../types/profile';
 
 interface FavoriteCardProps {
   item: FavoriteItem;
-  onPress: (item: FavoriteItem) => void;
+  onShop: (item: FavoriteItem) => void;
   onRemove: (item: FavoriteItem) => void;
 }
 
@@ -40,52 +50,83 @@ function getBadgeColor(platform: string): string {
 
 // ── Component ─────────────────────────────────────────────────
 
-export function FavoriteCard({ item, onPress, onRemove }: FavoriteCardProps) {
-  return (
+export function FavoriteCard({ item, onShop, onRemove }: FavoriteCardProps) {
+  const swipeableRef = useRef<Swipeable>(null);
+
+  const renderRightActions = () => (
     <Pressable
-      onPress={() => onPress(item)}
-      style={({ pressed }) => [
-        styles.card,
-        pressed && { opacity: 0.9 },
-      ]}
+      onPress={() => {
+        swipeableRef.current?.close();
+        onRemove(item);
+      }}
+      style={styles.deleteAction}
     >
-      {/* Product Thumbnail */}
-      <Image
-        source={{ uri: item.imageUrl }}
-        style={styles.thumbnail}
-        contentFit="cover"
-        transition={200}
-      />
-
-      {/* Center: Name + badge */}
-      <View style={styles.info}>
-        <Text style={styles.productName} numberOfLines={2}>
-          {item.name}
-        </Text>
-        {item.platform !== '' && (
-          <View style={[styles.badge, { backgroundColor: getBadgeColor(item.platform) }]}>
-            <Text style={styles.badgeText}>{item.platform}</Text>
-          </View>
-        )}
-      </View>
-
-      {/* Right: Price + Delete */}
-      <View style={styles.rightColumn}>
-        <Text style={styles.price}>
-          {formatPrice(item.price, item.currency)}
-        </Text>
-        <Pressable
-          onPress={() => onRemove(item)}
-          hitSlop={8}
-          style={({ pressed }) => [
-            styles.deleteButton,
-            pressed && { opacity: 0.7 },
-          ]}
-        >
-          <Trash2 size={20} color={COLORS.coral} />
-        </Pressable>
-      </View>
+      <Trash2 size={22} color={COLORS.white} />
+      <Text style={styles.deleteText}>Delete</Text>
     </Pressable>
+  );
+
+  return (
+    <Swipeable
+      ref={swipeableRef}
+      renderRightActions={renderRightActions}
+      overshootRight={false}
+      friction={2}
+    >
+      <View style={styles.card}>
+        {/* Thumbnail */}
+        <Image
+          source={{ uri: item.imageUrl }}
+          style={styles.thumbnail}
+          contentFit="cover"
+          transition={200}
+        />
+
+        {/* Info */}
+        <View style={styles.info}>
+          <View style={styles.topRow}>
+            <Text style={styles.itemName} numberOfLines={2}>
+              {item.name}
+            </Text>
+            {item.platform !== '' && (
+              <View style={[styles.badge, { backgroundColor: getBadgeColor(item.platform) }]}>
+                <Text style={styles.badgeText}>{item.platform}</Text>
+              </View>
+            )}
+          </View>
+
+          {item.brand != null && item.brand !== '' && (
+            <Text style={styles.brand} numberOfLines={1}>
+              {item.brand}
+            </Text>
+          )}
+
+          <View style={styles.bottomRow}>
+            <Text style={styles.price}>
+              {formatPrice(item.price, item.currency)}
+            </Text>
+
+            <Pressable
+              onPress={() => onShop(item)}
+              style={({ pressed }) => [
+                styles.shopButton,
+                pressed && { opacity: 0.85 },
+              ]}
+            >
+              <LinearGradient
+                colors={GRADIENTS.cta as unknown as [string, string]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.shopGradient}
+              >
+                <Text style={styles.shopText}>Shop</Text>
+                <ExternalLink size={14} color={COLORS.white} />
+              </LinearGradient>
+            </Pressable>
+          </View>
+        </View>
+      </View>
+    </Swipeable>
   );
 }
 
@@ -94,43 +135,63 @@ export function FavoriteCard({ item, onPress, onRemove }: FavoriteCardProps) {
 const styles = StyleSheet.create({
   card: {
     flexDirection: 'row',
-    alignItems: 'center',
     backgroundColor: COLORS.white,
     borderRadius: RADIUS.input,
-    borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.08)',
     padding: SPACING.md,
-    gap: SPACING.md,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
     elevation: 2,
   },
 
   thumbnail: {
-    width: 60,
-    height: 60,
+    width: 72,
+    height: 96,
     borderRadius: RADIUS.badge,
     backgroundColor: COLORS.gray100,
   },
 
   info: {
     flex: 1,
-    gap: 4,
+    marginLeft: SPACING.md,
+    justifyContent: 'space-between',
   },
-  productName: {
-    fontFamily: FONTS.medium,
+  topRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    gap: SPACING.sm,
+  },
+  itemName: {
+    flex: 1,
     fontSize: 15,
+    fontFamily: FONTS.semiBold,
     color: COLORS.navy,
-    lineHeight: 20,
   },
+  brand: {
+    fontSize: 13,
+    fontFamily: FONTS.regular,
+    color: COLORS.gray500,
+    marginTop: 2,
+  },
+  bottomRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: SPACING.sm,
+  },
+  price: {
+    fontSize: 17,
+    fontFamily: FONTS.bold,
+    color: COLORS.coral,
+  },
+
+  // Badge
   badge: {
-    alignSelf: 'flex-start',
     borderRadius: RADIUS.badge,
     paddingHorizontal: 8,
-    paddingVertical: 2,
-    marginTop: 4,
+    paddingVertical: 3,
   },
   badgeText: {
     color: COLORS.white,
@@ -139,17 +200,40 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
   },
 
-  rightColumn: {
-    alignItems: 'flex-end',
-    alignSelf: 'stretch',
-    justifyContent: 'space-between',
+  // Shop button
+  shopButton: {
+    borderRadius: RADIUS.button,
+    overflow: 'hidden',
   },
-  price: {
-    fontFamily: FONTS.bold,
-    fontSize: 16,
-    color: COLORS.coral,
+  shopGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.sm,
+    borderRadius: RADIUS.button,
+    gap: 6,
+    ...SHADOWS.ctaButton,
   },
-  deleteButton: {
-    padding: 4,
+  shopText: {
+    color: COLORS.white,
+    fontFamily: FONTS.semiBold,
+    fontSize: 13,
+  },
+
+  // Swipe-to-delete action
+  deleteAction: {
+    backgroundColor: COLORS.coral,
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: 80,
+    borderTopRightRadius: RADIUS.input,
+    borderBottomRightRadius: RADIUS.input,
+    paddingHorizontal: SPACING.md,
+  },
+  deleteText: {
+    color: COLORS.white,
+    fontFamily: FONTS.semiBold,
+    fontSize: 11,
+    marginTop: 4,
   },
 });
