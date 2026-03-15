@@ -248,15 +248,16 @@
 - `pnpm.onlyBuiltDependencies` in root package.json — add sharp (and any future native deps)
 
 ### Feed / Swipe / Favorites
-- Feed gender filtering: query OutfitPairing where `gender IN [userGender, 'U']` (string match, not Prisma enum)
-- Product.gender uses Prisma enum (MALE/FEMALE/UNISEX) but OutfitPairing.gender and UserProfile.gender use plain strings (M/W/U)
-- Solo dress cards: only for female users, query Product where `fashnCategory: 'one-pieces'` AND `gender: 'FEMALE'`
-- Swiped exclusion: only exclude pairings where BOTH top AND bottom products are swiped (not just one)
+- Feed gender filtering: query Product where `gender IN [mappedGender, 'UNISEX']`. Map profile.gender 'M'→'MALE', 'W'→'FEMALE'
+- Product.gender uses Prisma enum (MALE/FEMALE/UNISEX), UserProfile.gender uses plain strings (M/W)
+- FeedCard is per-product: `{ productId, tryOnImageUrl, product: ProductSummary }` — no outfit pairings
+- Swiped exclusion: exclude products where id IN swipedIds
 - SwipeAction upsert: compound unique `userId_productId` — upsert handles re-swipe without error
-- Feed cursor: uses outfitPairingId for pairings, soloProduct.id for solo cards
-- TryOnResult query: status must be `'COMPLETED'` (not "ready") and layer `'combined'`
+- Feed cursor: uses productId
+- TryOnResult query: status must be `'COMPLETED'` (no layer filter needed — face-swap uses 'single')
 - Favorites: query SwipeAction WHERE action='LIKE', join product, map to flat summary
 - `req.query as unknown as z.infer<typeof schema>` — double cast required for Zod coerced queries
+- BaseProductImage lookup: use `findFirst` (not `findUnique`) when filtering by productId + status — `findUnique` only accepts unique key fields in `where`
 
 ### BullMQ / Job Queue
 - ioredis must match BullMQ's peer dep version exactly — pin `ioredis@5.9.3`

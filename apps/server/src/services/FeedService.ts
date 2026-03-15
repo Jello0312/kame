@@ -17,13 +17,9 @@ export interface ProductSummary {
 }
 
 export interface FeedCard {
-  outfitPairingId: string | null;
+  productId: string;
   tryOnImageUrl: string | null;
-  topProduct: ProductSummary | null;
-  bottomProduct: ProductSummary | null;
-  soloProduct: ProductSummary | null;
-  totalPrice: number;
-  isSolo: boolean;
+  product: ProductSummary;
 }
 
 export interface FeedResult {
@@ -87,23 +83,7 @@ function shuffleArray<T>(array: T[], random: () => number): T[] {
 
 // ─── Try-On Image Lookup ────────────────────────────────
 
-export async function getTryOnImageForFeed(
-  userId: string,
-  outfitPairingId: string,
-): Promise<string | null> {
-  const result = await prisma.tryOnResult.findFirst({
-    where: {
-      userId,
-      outfitPairingId,
-      status: 'COMPLETED',
-      layer: 'combined',
-    },
-  });
-
-  return result?.resultImageUrl ? resolveToPublicUrl(result.resultImageUrl) : null;
-}
-
-export async function getSoloTryOnImageForFeed(
+export async function getTryOnImageForProduct(
   userId: string,
   productId: string,
 ): Promise<string | null> {
@@ -112,20 +92,16 @@ export async function getSoloTryOnImageForFeed(
       userId,
       productId,
       status: 'COMPLETED',
-      layer: 'solo',
     },
   });
+
   return result?.resultImageUrl ? resolveToPublicUrl(result.resultImageUrl) : null;
 }
 
 // ═══════════════════════════════════════════════════════
-// FUTURE v1.2 — Option C Migration (85% cost reduction)
-// Replace the above with:
-// const shared = await prisma.sharedTryOn.findFirst({
-//   where: { outfitPairingId, modelId: user.selectedModelId }
-// });
-// return shared?.resultImageUrl ?? null;
-// This is the ONLY method that changes. Zero frontend changes.
+// FUTURE v1.2 — Optimization
+// Base images are already shared. Face-swap results could be cached
+// across sessions for returning users (skip re-generation if unchanged).
 // ═══════════════════════════════════════════════════════
 
 // ─── Feed Generation ────────────────────────────────────
@@ -156,117 +132,60 @@ export async function getFeedForUser(
   });
   const swipedIds = new Set(swipedRows.map((r) => r.productId));
 
-  // 4. Query outfit pairings matching user gender
-  const pairings = await prisma.outfitPairing.findMany({
+  // 4. Map profile gender to Product gender enum and query products
+  const genderFilter: Array<'MALE' | 'FEMALE' | 'UNISEX'> =
+    profile.gender === 'M' ? ['MALE', 'UNISEX'] : ['FEMALE', 'UNISEX'];
+
+  const products = await prisma.product.findMany({
     where: {
-      gender: { in: [profile.gender, 'U'] },
-    },
-    include: {
-      topProduct: true,
-      bottomProduct: true,
+      gender: { in: genderFilter },
+      id: { notIn: [...swipedIds] },
     },
   });
 
-  // 5. Filter out pairings where BOTH products have been swiped
-  const unseenPairings = pairings.filter(
-    (p) => !(swipedIds.has(p.topProductId) && swipedIds.has(p.bottomProductId)),
-  );
-
-  // 6. Filter by fashion style preferences (if user has them)
+  // 5. Filter by fashion style preferences (if user has them)
   const userStyles = stylePref?.fashionStyles ?? [];
-  const styledPairings =
+  const styledProducts =
     userStyles.length > 0
-      ? unseenPairings.filter((p) =>
+      ? products.filter((p) =>
           p.styleTags.some((tag) => userStyles.includes(tag)),
         )
-      : unseenPairings;
+      : products;
 
-  // 7. Build solo dress cards for female users
-  let soloProducts: Array<
-    Awaited<ReturnType<typeof prisma.product.findMany>>[number]
-  > = [];
-
-  if (profile.gender === 'W') {
-    const allSoloDresses = await prisma.product.findMany({
-      where: {
-        fashnCategory: 'one-pieces',
-        gender: 'FEMALE',
-      },
-    });
-
-    // Filter out already-swiped solo products
-    const unseenSolo = allSoloDresses.filter((p) => !swipedIds.has(p.id));
-
-    // Apply style tag filtering if preferences exist
-    soloProducts =
-      userStyles.length > 0
-        ? unseenSolo.filter((p) =>
-            p.styleTags.some((tag) => userStyles.includes(tag)),
-          )
-        : unseenSolo;
-  }
-
-  // 8. Build FeedCard array
-  const pairingCards: FeedCard[] = await Promise.all(
-    styledPairings.map(async (pairing) => {
-      const tryOnImageUrl = await getTryOnImageForFeed(userId, pairing.id);
+  // 6. Build FeedCard array
+  const allCards: FeedCard[] = await Promise.all(
+    styledProducts.map(async (product) => {
+      const tryOnImageUrl = await getTryOnImageForProduct(userId, product.id);
       return {
-        outfitPairingId: pairing.id,
+        productId: product.id,
         tryOnImageUrl,
-        topProduct: toProductSummary(pairing.topProduct),
-        bottomProduct: toProductSummary(pairing.bottomProduct),
-        soloProduct: null,
-        totalPrice:
-          Number(pairing.topProduct.price) +
-          Number(pairing.bottomProduct.price),
-        isSolo: false,
+        product: toProductSummary(product),
       };
     }),
   );
 
-  const soloCards: FeedCard[] = await Promise.all(
-    soloProducts.map(async (product) => {
-      const tryOnImageUrl = await getSoloTryOnImageForFeed(userId, product.id);
-      return {
-        outfitPairingId: null,
-        tryOnImageUrl,
-        topProduct: null,
-        bottomProduct: null,
-        soloProduct: toProductSummary(product),
-        totalPrice: Number(product.price),
-        isSolo: true,
-      };
-    }),
-  );
-
-  // 9. Deterministic shuffle (seeded by userId + date for stable pagination)
+  // 7. Deterministic shuffle (seeded by userId + date for stable pagination)
   const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
   const seed = seedFromString(userId + today);
   const random = mulberry32(seed);
-  const allCards = shuffleArray([...pairingCards, ...soloCards], random);
+  const shuffled = shuffleArray(allCards, random);
 
-  // 10. Cursor pagination
+  // 8. Cursor pagination
   let startIndex = 0;
   if (cursor) {
-    const cursorIndex = allCards.findIndex(
-      (card) =>
-        card.outfitPairingId === cursor || card.soloProduct?.id === cursor,
-    );
+    const cursorIndex = shuffled.findIndex((card) => card.productId === cursor);
     if (cursorIndex !== -1) {
       startIndex = cursorIndex + 1;
     }
   }
 
-  // 11. Take `limit` items
-  const page = allCards.slice(startIndex, startIndex + limit);
+  // 9. Take `limit` items
+  const page = shuffled.slice(startIndex, startIndex + limit);
 
-  // 12. Set nextCursor
+  // 10. Set nextCursor
   const lastCard = page[page.length - 1];
-  const nextCursor =
-    page.length < limit
-      ? null
-      : lastCard?.outfitPairingId ?? lastCard?.soloProduct?.id ?? null;
+  const nextCursor = page.length < limit ? null : lastCard?.productId ?? null;
 
-  // 13. Return result
+  // 11. Return result
   return { cards: page, nextCursor };
 }

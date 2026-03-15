@@ -410,9 +410,15 @@
 - **generateTryOn.ts rewrite:** Deleted `processOutfitPairing()` (two-pass top→bottom) and `processSoloDress()`. Replaced with single-path worker: `generateModelSwap(baseImageUrl, facePhotoUrl, s3Key)`. New `TryOnJobData` interface: `tryOnResultId`, `userId`, `facePhotoUrl`, `productId`, `baseImageUrl`. All BullMQ config preserved (concurrency 2, drainDelay 60, stalledInterval 300k, lockDuration 600k — Upstash tuning).
 - **tryon.ts (temporary):** Removed `TryOnJobData` type import to avoid compile error. Routes still use old outfit-pairing shape with untyped `const jobData = {...}`. Will be fully rewritten in Session 3.
 
-### Session 3: Routes + FeedService Rewrite
-- [ ] Rewrite POST /api/tryon/batch (face photo required, body photo optional, individual products not pairings)
-- [ ] Rewrite FeedService (individual products, single getTryOnImageForProduct method)
+### Session 3: Routes + FeedService Rewrite ✅
+- [x] Rewrite POST /api/tryon/batch (face photo required, individual products, BaseProductImage lookup) ✅
+- [x] Rewrite FeedService (individual products, single getTryOnImageForProduct method) ✅
+- [x] TypeScript typecheck passes, server boots with zero errors ✅
+
+### Review — Session 3 (2026-03-16)
+- **tryon.ts rewrite:** Removed all OutfitPairing logic and solo dress section. POST /batch now requires face photo (not body photo), queries individual Products filtered by gender (mapped M→MALE, W→FEMALE + UNISEX) and style preferences, excludes products with existing TryOnResults. For each product, looks up BaseProductImage (status=COMPLETED) via `findFirst`, creates TryOnResult with `layer: 'single'`, queues typed `TryOnJobData` job. Single `MAX_CARDS = 20` constant replaces old gender-split caps. BatchResult simplified to `{ totalQueued }`. GET /status unchanged.
+- **FeedService.ts rewrite:** FeedCard simplified from `{ outfitPairingId, topProduct, bottomProduct, soloProduct, totalPrice, isSolo }` to `{ productId, tryOnImageUrl, product }`. Replaced `getTryOnImageForFeed` + `getSoloTryOnImageForFeed` with single `getTryOnImageForProduct` (no layer filter). `getFeedForUser` queries Products directly instead of OutfitPairing, with gender mapping and style tag filtering. Removed solo dress section. Cursor pagination now uses productId. All PRNG helpers preserved (seedFromString, mulberry32, shuffleArray).
+- **Breaking change:** FeedCard shape change breaks mobile frontend — SwipeCard/SwipeDeck expect old fields. Will be updated in Session 4.
 
 ### Session 4: Mobile Frontend Updates
 - [ ] Update SwipeCard (single product per card, not outfit pairs)
