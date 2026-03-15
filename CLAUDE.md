@@ -244,6 +244,16 @@ pnpm db:studio        # Prisma Studio
 
 ---
 
+## Infrastructure
+
+- **RAILWAY_DEPLOYED = true** — The backend is deployed on Railway.
+- **API_BASE_URL**: always use `process.env.EXPO_PUBLIC_API_URL` (set in `apps/mobile/.env`).
+- **Never use ngrok, localtunnel, or any tunnel.**
+- **Never hardcode localhost in mobile API config.**
+- Beta testing: `npx expo start` — testers scan QR code with Expo Go.
+
+---
+
 ## Environment Variables
 ```
 # Server
@@ -257,7 +267,7 @@ AWS_S3_BUCKET=kame-uploads
 AWS_REGION=us-east-1
 
 # Mobile
-EXPO_PUBLIC_API_URL=http://localhost:3001
+EXPO_PUBLIC_API_URL=https://<your-railway-url>.railway.app
 ```
 
 ---

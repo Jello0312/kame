@@ -298,7 +298,7 @@
 - Prisma uses directUrl for migrations, not DATABASE_URL — so DIRECT_URL being wrong causes `prisma migrate deploy` to fail even if DATABASE_URL is correct
 
 ### Windows / Local Dev
-- Windows Firewall blocks Expo dev server ports — iOS Expo Go cannot reach Metro bundler. Use `expo start --tunnel` (ngrok tunneling) to bypass instead of opening firewall ports (which requires admin elevation)
+- Railway is the live backend. Never use ngrok, localtunnel, or any tunnel. Mobile must always use EXPO_PUBLIC_API_URL env var (set in apps/mobile/.env), not localhost. Beta testing: `npx expo start` — testers scan QR code with Expo Go.
 - Metro cache must be cleared after adding new route files — run with `--clear` flag or delete `.expo/` and `node_modules/.cache/`
 - pnpm global install PATH issue on Windows: `npm i -g pnpm` installs to AppData/Roaming/npm/ which may not be in PowerShell PATH. Workaround: `npx pnpm <command>` or restart terminal after install
 - corepack `packageManager` field requires exact version match — `"packageManager": "pnpm@10.30.3"` means you must install that exact version globally
