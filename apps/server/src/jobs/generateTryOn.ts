@@ -37,6 +37,9 @@ export function startTryOnWorker(): Worker<TryOnJobData> | null {
     enableReadyCheck: false,
     tls: {},
   });
+  connection.on('error', (err) => {
+    console.error('Redis connection error (worker):', err.message);
+  });
 
   const worker = new Worker<TryOnJobData>(
     'tryon',
