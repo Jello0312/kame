@@ -6,7 +6,11 @@ import IORedis from 'ioredis';
 const REDIS_URL = process.env.REDIS_URL;
 
 export const redisConnection = REDIS_URL
-  ? new IORedis(REDIS_URL, { maxRetriesPerRequest: null })
+  ? new IORedis(REDIS_URL, {
+      maxRetriesPerRequest: null,
+      enableReadyCheck: false,
+      tls: {},
+    })
   : null;
 
 export const tryonQueue = redisConnection

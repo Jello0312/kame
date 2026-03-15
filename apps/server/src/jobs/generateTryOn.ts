@@ -32,7 +32,11 @@ export function startTryOnWorker(): Worker<TryOnJobData> | null {
   }
 
   // BullMQ requires separate Redis connections for Queue and Worker
-  const connection = new IORedis(redisUrl, { maxRetriesPerRequest: null });
+  const connection = new IORedis(redisUrl, {
+    maxRetriesPerRequest: null,
+    enableReadyCheck: false,
+    tls: {},
+  });
 
   const worker = new Worker<TryOnJobData>(
     'tryon',
