@@ -386,11 +386,50 @@
 
 ---
 
-## 🔲 Remaining Tasks (User Action Required)
+## [-] Sprint 4.0 — Face-Swap Architecture Migration 🏗️
 
-- [ ] **Configure AWS S3 on Railway** — Set env vars: `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_S3_BUCKET`, `AWS_REGION`. Without this, body photos are deleted on every deploy and ~100% of FASHN try-on calls fail.
-- [ ] **Re-upload body photo + re-trigger try-on** — After S3 is configured, user must re-upload body photo (old local file is gone) and re-trigger try-on batch via re-onboarding.
-- [ ] **Provide virtual try-on logic change guide** — User will provide detailed guide on changing virtual try-on logic (face-swap or alternative approach). Skipped in Sprint 3.8.
+### Session 1: Schema + FASHN Client ✅
+- [x] Add BaseProductImage model to Prisma schema (product_id unique, image_url, prompt, status) ✅
+- [x] Add migration SQL (20260316170000_add_base_product_image) — auto-applies on Railway deploy ✅
+- [x] Add generateProductToModel() — raw fetch to FASHN REST API (product-to-model endpoint) ✅
+- [x] Add generateModelSwap() — raw fetch to FASHN REST API (model-swap endpoint with face_reference) ✅
+- [x] Add pollForCompletion() helper — polls GET /v1/status/{id} every 2s, 120s timeout ✅
+- [x] Keep existing generateTryOn() using SDK (tryon-v1.6 — unchanged) ✅
+- [x] TypeScript typecheck passes, server boots with zero errors ✅
+- [x] Pushed to master, Railway auto-deploys ✅
+
+### Session 2: Admin Script + Worker Rewrite ✅
+- [x] Create scripts/generate-base-images.ts (standalone, concurrency 3, --dry-run flag) ✅
+- [x] Rewrite src/jobs/generateTryOn.ts (single-pass face-swap via generateModelSwap, no outfit pairing logic) ✅
+- [x] Add "generate-base-images" script to server package.json ✅
+- [x] Temporarily untype tryon route job data (routes use legacy shape, will be rewritten Session 3) ✅
+- [x] TypeScript typecheck passes, dry-run verified (141 products detected) ✅
+
+### Review — Session 2 (2026-03-16)
+- **generate-base-images.ts:** Standalone admin script using `dotenv/config` + Prisma + `generateProductToModel`. Fetches products without COMPLETED BaseProductImage (OR: missing record / non-COMPLETED status). Concurrency-3 promise pool (track active, await on pool full). Upsert pattern for idempotent re-runs. `--dry-run` logs plan without calling FASHN. Progress counter + final summary.
+- **generateTryOn.ts rewrite:** Deleted `processOutfitPairing()` (two-pass top→bottom) and `processSoloDress()`. Replaced with single-path worker: `generateModelSwap(baseImageUrl, facePhotoUrl, s3Key)`. New `TryOnJobData` interface: `tryOnResultId`, `userId`, `facePhotoUrl`, `productId`, `baseImageUrl`. All BullMQ config preserved (concurrency 2, drainDelay 60, stalledInterval 300k, lockDuration 600k — Upstash tuning).
+- **tryon.ts (temporary):** Removed `TryOnJobData` type import to avoid compile error. Routes still use old outfit-pairing shape with untyped `const jobData = {...}`. Will be fully rewritten in Session 3.
+
+### Session 3: Routes + FeedService Rewrite
+- [ ] Rewrite POST /api/tryon/batch (face photo required, body photo optional, individual products not pairings)
+- [ ] Rewrite FeedService (individual products, single getTryOnImageForProduct method)
+
+### Session 4: Mobile Frontend Updates
+- [ ] Update SwipeCard (single product per card, not outfit pairs)
+- [ ] Update SwipeDeck (1 POST per swipe, no outfitGroupId)
+- [ ] Make body photo optional in onboarding
+- [ ] Update generating step text
+
+### Post-Migration (User Action Required)
+- [ ] Run generate-base-images.ts ($10.58 one-time, ~15-20 min)
+- [ ] Test full flow with real user
+- [ ] Configure AWS S3 on Railway (required for persistent storage)
+
+### Review — Session 1 (2026-03-16)
+- **Schema:** BaseProductImage model added with `@db.Uuid` on productId, `@map` annotations, `@@map("base_product_images")` — follows project conventions. Migration SQL created manually (corporate firewall blocks Supabase port 6543). Will auto-apply via `prisma migrate deploy` on next Railway deploy.
+- **FASHN methods:** Used raw fetch to `https://api.fashn.ai/v1/run` + polling `GET /v1/status/{id}` instead of fashn SDK's `client.predictions.subscribe()`. The SDK TypeScript types are outdated — don't include `face_reference` for model-swap or all product-to-model params. Existing `generateTryOn()` still uses SDK (works fine for tryon-v1.6).
+- **Retry logic:** Both new methods use same pattern as generateTryOn — 3 retries with linear backoff (2s × attempt). Guard checks `FASHN_API_KEY` (not `client`) since raw fetch doesn't need SDK client.
+- **Polling:** `pollForCompletion()` polls every 2s with 120s timeout. Returns `{ status, output }` on completion, throws on failure or timeout.
 
 ---
 

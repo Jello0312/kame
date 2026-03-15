@@ -14,7 +14,8 @@
     "db:seed": "tsx prisma/seed.ts",
     "db:studio": "prisma studio",
     "db:generate": "prisma generate",
-    "validate-images": "tsx scripts/validate-images.ts"
+    "validate-images": "tsx scripts/validate-images.ts",
+    "generate-base-images": "tsx scripts/generate-base-images.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1004.0",

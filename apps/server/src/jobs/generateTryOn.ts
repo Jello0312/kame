@@ -1,7 +1,7 @@
 import { Worker, Job } from 'bullmq';
 import IORedis from 'ioredis';
 import { prisma } from '../lib/prisma.js';
-import { generateTryOn } from '../integrations/fashn.js';
+import { generateModelSwap } from '../integrations/fashn.js';
 import { resolveToPublicUrl } from '../utils/url.js';
 
 // ─── Types ──────────────────────────────────────────
@@ -9,18 +9,9 @@ import { resolveToPublicUrl } from '../utils/url.js';
 export interface TryOnJobData {
   tryOnResultId: string;
   userId: string;
-  bodyPhotoUrl: string;
-  type: 'outfit' | 'solo';
-  // Outfit fields
-  outfitPairingId?: string;
-  topGarmentUrl?: string;
-  bottomGarmentUrl?: string;
-  topCategory?: 'tops' | 'bottoms' | 'one-pieces';
-  bottomCategory?: 'tops' | 'bottoms' | 'one-pieces';
-  // Solo fields
-  productId?: string;
-  garmentUrl?: string;
-  garmentCategory?: 'tops' | 'bottoms' | 'one-pieces';
+  facePhotoUrl: string;
+  productId: string;
+  baseImageUrl: string;
 }
 
 // ─── Worker ─────────────────────────────────────────
@@ -45,7 +36,7 @@ export function startTryOnWorker(): Worker<TryOnJobData> | null {
   const worker = new Worker<TryOnJobData>(
     'tryon',
     async (job: Job<TryOnJobData>) => {
-      const { tryOnResultId, type } = job.data;
+      const { tryOnResultId, userId, facePhotoUrl, productId, baseImageUrl } = job.data;
 
       // Mark as PROCESSING
       await prisma.tryOnResult.update({
@@ -54,13 +45,12 @@ export function startTryOnWorker(): Worker<TryOnJobData> | null {
       });
 
       try {
-        let resultUrl: string;
-
-        if (type === 'outfit') {
-          resultUrl = await processOutfitPairing(job.data);
-        } else {
-          resultUrl = await processSoloDress(job.data);
-        }
+        const s3Key = `tryon/${userId}/${productId}/result.jpg`;
+        const resultUrl = await generateModelSwap(
+          resolveToPublicUrl(baseImageUrl),
+          resolveToPublicUrl(facePhotoUrl),
+          s3Key,
+        );
 
         // Mark as COMPLETED with result URL
         await prisma.tryOnResult.update({
@@ -98,59 +88,4 @@ export function startTryOnWorker(): Worker<TryOnJobData> | null {
 
   console.log('Try-on worker started (concurrency: 2)');
   return worker;
-}
-
-// ─── Helpers ────────────────────────────────────────
-
-async function processOutfitPairing(data: TryOnJobData): Promise<string> {
-  const {
-    userId,
-    bodyPhotoUrl,
-    outfitPairingId,
-    topGarmentUrl,
-    bottomGarmentUrl,
-    topCategory,
-    bottomCategory,
-  } = data;
-
-  if (
-    !outfitPairingId ||
-    !topGarmentUrl ||
-    !bottomGarmentUrl ||
-    !topCategory ||
-    !bottomCategory
-  ) {
-    throw new Error('Missing outfit pairing data');
-  }
-
-  // Pass 1: Top garment on user's body
-  const topS3Key = `tryon/${userId}/${outfitPairingId}/top.jpg`;
-  const topResultUrl = await generateTryOn(
-    resolveToPublicUrl(bodyPhotoUrl),
-    resolveToPublicUrl(topGarmentUrl),
-    topCategory,
-    topS3Key,
-  );
-
-  // Pass 2: Bottom garment on the result of pass 1
-  const combinedS3Key = `tryon/${userId}/${outfitPairingId}/combined.jpg`;
-  const combinedResultUrl = await generateTryOn(
-    resolveToPublicUrl(topResultUrl),
-    resolveToPublicUrl(bottomGarmentUrl),
-    bottomCategory,
-    combinedS3Key,
-  );
-
-  return combinedResultUrl;
-}
-
-async function processSoloDress(data: TryOnJobData): Promise<string> {
-  const { userId, bodyPhotoUrl, productId, garmentUrl, garmentCategory } = data;
-
-  if (!productId || !garmentUrl || !garmentCategory) {
-    throw new Error('Missing solo dress data');
-  }
-
-  const s3Key = `tryon/${userId}/${productId}/solo.jpg`;
-  return generateTryOn(resolveToPublicUrl(bodyPhotoUrl), resolveToPublicUrl(garmentUrl), garmentCategory, s3Key);
 }

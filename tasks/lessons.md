@@ -389,3 +389,13 @@
 **What happened:** `(prediction as Record<string, unknown>).error` failed with TS2352 — the FASHN SDK's `PredictionSubscribeResponse` type doesn't have an index signature, so direct cast to `Record<string, unknown>` is rejected.
 **Root cause:** TypeScript requires overlapping types for `as` casts. SDK response types are closed (no index signature) so they don't overlap with `Record<string, unknown>`.
 **Rule:** Use double cast `(obj as unknown as Record<string, unknown>).field` when accessing fields that exist at runtime but aren't in the type definition. This is safe for logging/debugging where you want to inspect the full response object.
+
+### 2026-03-16 — Use raw fetch when SDK types are outdated for newer API endpoints
+**What happened:** The fashn npm SDK's TypeScript types don't include `face_reference` for model-swap or all params for product-to-model. Initial attempt used `client.predictions.subscribe()` with ugly `as unknown as` type casts, which compiled but was fragile and misleading.
+**Root cause:** The SDK was built for tryon-v1.6 and hasn't been updated for newer endpoints (product-to-model, model-swap). The REST API accepts these params but the SDK types don't.
+**Rule:** When an SDK's TypeScript types are outdated for newer API features, use raw fetch to the REST API directly instead of fighting the type system with casts. Keep the SDK for endpoints where it works (tryon-v1.6). Document why raw fetch is used with a comment. Pattern: POST `/v1/run` → get `{ id }` → poll `GET /v1/status/{id}` until terminal state.
+
+### 2026-03-16 — Corporate firewall blocks Prisma migrate — create migration SQL manually
+**What happened:** `npx prisma migrate dev` and `npx prisma migrate dev --create-only` both hung indefinitely — they connect to Supabase to check current DB state, even when only creating the migration file.
+**Root cause:** Corporate firewall blocks port 6543 (Supabase pooler). No workaround on this network — VPN, hotspot, and home WiFi don't help because the corporate laptop enforces the policy.
+**Rule:** When Prisma migrate hangs due to firewall: (1) Create the migration directory manually with timestamp prefix (`YYYYMMDDHHMMSS_name`), (2) Write the SQL file by hand based on the schema diff, (3) Run `npx prisma generate` locally (doesn't need DB), (4) The migration will auto-apply on Railway deploy via `prisma migrate deploy`. This is a valid Prisma workflow — the migration history file just needs to exist with correct SQL.

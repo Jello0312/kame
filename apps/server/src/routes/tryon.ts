@@ -4,8 +4,11 @@ import { prisma } from '../lib/prisma.js';
 import { tryonQueue, isQueueConfigured } from '../lib/queue.js';
 import { isFashnConfigured } from '../integrations/fashn.js';
 import { AppError, NotFoundError } from '../utils/errors.js';
-import type { TryOnJobData } from '../jobs/generateTryOn.js';
 import type { ApiResponse } from '@kame/shared-types';
+
+// NOTE: TryOnJobData changed in Session 2 (face-swap migration).
+// These routes still use the old outfit-pairing shape and will be
+// fully rewritten in Session 3. Using untyped job data for now.
 
 const router: Router = Router();
 
@@ -109,11 +112,12 @@ router.post(
         });
 
         // Add to queue
-        const jobData: TryOnJobData = {
+        // Legacy job data — will be replaced in Session 3
+        const jobData = {
           tryOnResultId: tryOnResult.id,
           userId,
           bodyPhotoUrl: avatar.bodyPhotoUrl,
-          type: 'outfit',
+          type: 'outfit' as const,
           outfitPairingId: pairing.id,
           topGarmentUrl: topImageUrl,
           bottomGarmentUrl: bottomImageUrl,
@@ -159,11 +163,12 @@ router.post(
             },
           });
 
-          const jobData: TryOnJobData = {
+          // Legacy job data — will be replaced in Session 3
+          const jobData = {
             tryOnResultId: tryOnResult.id,
             userId,
             bodyPhotoUrl: avatar.bodyPhotoUrl,
-            type: 'solo',
+            type: 'solo' as const,
             productId: dress.id,
             garmentUrl,
             garmentCategory: (dress.fashnCategory ?? 'one-pieces') as 'tops' | 'bottoms' | 'one-pieces',

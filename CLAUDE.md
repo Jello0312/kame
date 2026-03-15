@@ -286,16 +286,23 @@ EXPO_PUBLIC_API_URL=https://<your-railway-url>.railway.app
 ## FASHN AI Integration
 
 - **Use FASHN direct API** (not fal.ai hosted)
-- **SDK**: fashn-typescript-sdk (npm) or raw REST calls
-- **Endpoint**: tryon-v1.6
-- **Inputs**: model_image (user body photo) + garment_image (product image) — URLs or base64
-- **Parameters**: category ("tops"|"bottoms"|"one-pieces"), garment_photo_type ("auto"|"model"|"flat-lay"), mode ("performance"|"balanced"|"quality")
-- **MVP default**: mode="balanced" (~10 seconds, good quality/speed tradeoff)
+- **SDK**: fashn npm SDK for tryon-v1.6; raw REST fetch for product-to-model & model-swap (SDK types outdated for newer endpoints)
+- **Endpoints**: tryon-v1.6 (legacy), product-to-model (base generation), model-swap (per-user face swap)
+- **Inputs**:
+  - tryon-v1.6: model_image (user body photo) + garment_image (product image)
+  - product-to-model: product_image + prompt + aspect_ratio
+  - model-swap: model_image (base product photo) + face_reference (user face photo)
+- **Base image prompt**: "full body shot, standing, in a daily life setting background (e.g., street, office, cafe)"
+- **Aspect ratio**: 3:4 for all base images
 - **Output**: image URL hosted by FASHN for 72h — download and re-upload to our S3 for persistence
-- **Error handling**: retry failed try-ons up to 3 times, then mark as failed
+- **Error handling**: retry failed calls up to 3 times with linear backoff, then mark as failed
+- **Raw API pattern**: POST `https://api.fashn.ai/v1/run` → get `{ id }` → poll `GET /v1/status/{id}` until completed/failed
 
 ### Try-On Pre-Generation Strategy
-After onboarding, trigger batch try-on for top ~30 products matching user preferences. Store results in S3. Feed serves pre-generated images. If user reaches a product without a pre-generated try-on, show product image with "Generating..." state and generate on-demand.
+Phase 1 (one-time admin): Run `generate-base-images.ts` to create professional model photos
+for all 141 products using product-to-model endpoint. Stored in BaseProductImage table.
+Phase 2 (per-user): After onboarding, run model-swap on 20 products using user's face photo.
+Results stored in TryOnResult. Feed serves from TryOnResult, falls back to product image.
 
 ---
 
@@ -314,6 +321,8 @@ After onboarding, trigger batch try-on for top ~30 products matching user prefer
 **TryOnResult**: id, user_id (FK), product_id (FK), result_image_url, status (queued|processing|ready|failed), created_at
 
 **SwipeAction**: id, user_id (FK), product_id (FK), action (like|dislike), created_at
+
+**BaseProductImage**: id, product_id (FK unique), image_url, prompt, status (PENDING|COMPLETED|FAILED), created_at
 
 ---
 
