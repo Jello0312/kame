@@ -121,15 +121,15 @@ export function OnboardingWizard() {
   const showBackButton = !isStep1 && !isStep4;
   const showNextButton = !isStep4;
 
-  // Step 1 requires gender selection; steps 2 & 3 are always valid
-  const isNextEnabled = isStep1 ? stepValid : true;
+  // Steps 1 & 2 require validation; step 3 is always valid
+  const isNextEnabled = (isStep1 || isStep2) ? stepValid : true;
 
   function renderStepContent() {
     switch (displayStep) {
       case 0:
         return <MeasurementsStep onValidChange={handleValidChange} />;
       case 1:
-        return <PhotosStep />;
+        return <PhotosStep onValidChange={handleValidChange} />;
       case 2:
         return <PreferencesStep />;
       case 3:

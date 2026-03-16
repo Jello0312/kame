@@ -9,7 +9,7 @@ export default function NotFound() {
   }
 
   if (!hasCompletedOnboarding) {
-    return <Redirect href="/onboarding/measurements" />;
+    return <Redirect href="/onboarding" />;
   }
 
   return <Redirect href="/(tabs)/explore" />;

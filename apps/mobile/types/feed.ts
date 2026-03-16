@@ -10,13 +10,9 @@ export interface ProductSummary {
 }
 
 export interface FeedCard {
-  outfitPairingId: string | null;
+  productId: string;
   tryOnImageUrl: string | null;
-  topProduct: ProductSummary | null;
-  bottomProduct: ProductSummary | null;
-  soloProduct: ProductSummary | null;
-  totalPrice: number;
-  isSolo: boolean;
+  product: ProductSummary;
 }
 
 export interface FeedResponse {

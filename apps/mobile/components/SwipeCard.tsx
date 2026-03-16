@@ -1,7 +1,7 @@
 // ═══════════════════════════════════════════════════════════════
 // SwipeCard — Pure presentational card for the swipe feed
 // ═══════════════════════════════════════════════════════════════
-// Renders a single outfit/dress card with product info overlay,
+// Renders a single product card with product info overlay,
 // platform badge, and animated glow + icon feedback during drag.
 // ═══════════════════════════════════════════════════════════════
 
@@ -30,20 +30,11 @@ interface SwipeCardProps {
 // ── Helpers ───────────────────────────────────────────────────
 
 function getCardImageUrl(card: FeedCard): string | null {
-  if (card.tryOnImageUrl) return card.tryOnImageUrl;
-  if (card.isSolo && card.soloProduct) return card.soloProduct.imageUrl;
-  if (!card.isSolo && card.topProduct) return card.topProduct.imageUrl;
-  return null;
+  return card.tryOnImageUrl ?? card.product.imageUrl ?? null;
 }
 
 function formatPrice(price: number, currency: string): string {
   return currency === 'USD' ? `$${price.toFixed(2)}` : `${currency} ${price.toFixed(2)}`;
-}
-
-function getPlatform(card: FeedCard): string {
-  if (card.isSolo && card.soloProduct) return card.soloProduct.platform;
-  if (card.topProduct) return card.topProduct.platform;
-  return '';
 }
 
 function getBadgeColor(platform: string): string {
@@ -117,58 +108,6 @@ function SwipeIconOverlay({ translationX }: { translationX: SharedValue<number> 
     </>
   );
 }
-// ── Product Info: Outfit Pair ─────────────────────────────────
-
-function OutfitPairInfo({ card }: { card: FeedCard }) {
-  const { topProduct, bottomProduct, totalPrice } = card;
-  if (!topProduct || !bottomProduct) return null;
-
-  return (
-    <View>
-      {/* Top product */}
-      <Text style={styles.productName} numberOfLines={1}>
-        {topProduct.name}
-      </Text>
-      <Text style={styles.productPrice}>
-        {formatPrice(topProduct.price, topProduct.currency)}
-      </Text>
-
-      {/* Teal divider */}
-      <View style={styles.divider} />
-
-      {/* Bottom product */}
-      <Text style={styles.productName} numberOfLines={1}>
-        {bottomProduct.name}
-      </Text>
-      <Text style={styles.productPrice}>
-        {formatPrice(bottomProduct.price, bottomProduct.currency)}
-      </Text>
-
-      {/* Total */}
-      <Text style={styles.totalPrice}>
-        Total: ${totalPrice.toFixed(2)}
-      </Text>
-    </View>
-  );
-}
-
-// ── Product Info: Solo Dress ──────────────────────────────────
-
-function SoloProductInfo({ card }: { card: FeedCard }) {
-  const { soloProduct } = card;
-  if (!soloProduct) return null;
-
-  return (
-    <View>
-      <Text style={styles.soloName} numberOfLines={1}>
-        {soloProduct.name}
-      </Text>
-      <Text style={styles.soloPrice}>
-        {formatPrice(soloProduct.price, soloProduct.currency)}
-      </Text>
-    </View>
-  );
-}
 
 // ── Main Component ────────────────────────────────────────────
 
@@ -176,7 +115,7 @@ const GENERATING_TIMEOUT_MS = 30_000;
 
 export function SwipeCard({ card, isTop, translationX }: SwipeCardProps) {
   const imageUrl = getCardImageUrl(card);
-  const platform = getPlatform(card);
+  const platform = card.product.platform;
 
   // Show "Generating..." overlay, but auto-dismiss after timeout
   const [timedOut, setTimedOut] = useState(false);
@@ -228,11 +167,12 @@ export function SwipeCard({ card, isTop, translationX }: SwipeCardProps) {
 
       {/* 5. Product Info */}
       <View style={styles.infoContainer}>
-        {card.isSolo ? (
-          <SoloProductInfo card={card} />
-        ) : (
-          <OutfitPairInfo card={card} />
-        )}
+        <Text style={styles.productName} numberOfLines={1}>
+          {card.product.name}
+        </Text>
+        <Text style={styles.productPrice}>
+          {formatPrice(card.product.price, card.product.currency)}
+        </Text>
       </View>
 
       {/* 6. Swipe Glow + Icon Feedback */}
@@ -309,37 +249,13 @@ const styles = StyleSheet.create({
     zIndex: 4,
   },
 
-  // Outfit pair styles
+  // Product name + price
   productName: {
-    color: COLORS.white,
-    fontFamily: FONTS.regular,
-    fontSize: 15,
-  },
-  productPrice: {
-    color: COLORS.coral,
-    fontFamily: FONTS.bold,
-    fontSize: 15,
-  },
-  divider: {
-    height: 1,
-    width: 40,
-    backgroundColor: COLORS.tealBright,
-    marginVertical: SPACING.sm,
-  },
-  totalPrice: {
-    color: COLORS.tealBright,
-    fontFamily: FONTS.bold,
-    fontSize: 18,
-    marginTop: SPACING.sm,
-  },
-
-  // Solo product styles
-  soloName: {
     color: COLORS.white,
     fontFamily: FONTS.semiBold,
     fontSize: 17,
   },
-  soloPrice: {
+  productPrice: {
     color: COLORS.coral,
     fontFamily: FONTS.bold,
     fontSize: 20,

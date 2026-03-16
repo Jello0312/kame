@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { View, Text, TouchableOpacity, Image, Alert, StyleSheet, ScrollView, ActionSheetIOS, Platform } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { ImagePlus } from 'lucide-react-native';
@@ -16,6 +17,7 @@ type PhotoType = 'face' | 'body';
 
 interface PhotoUploadCardProps {
   label: string;
+  subtitle?: string;
   photoUri: string | null;
   aspectRatio: number;
   onTapUpload: () => void;
@@ -23,10 +25,15 @@ interface PhotoUploadCardProps {
   onRemove: () => void;
 }
 
+interface PhotosStepProps {
+  onValidChange?: (isValid: boolean) => void;
+}
+
 // ── Photo Upload Card ────────────────────────────────────────
 
 function PhotoUploadCard({
   label,
+  subtitle,
   photoUri,
   aspectRatio,
   onTapUpload,
@@ -82,6 +89,9 @@ function PhotoUploadCard({
       {/* Label at top-left */}
       <View style={styles.emptyLabel}>
         <Text style={styles.emptyLabelText}>{label}</Text>
+        {subtitle ? (
+          <Text style={styles.emptySubtitleLabel}>{subtitle}</Text>
+        ) : null}
       </View>
 
       {/* Center content */}
@@ -100,8 +110,13 @@ function PhotoUploadCard({
 
 // ── Main Component ───────────────────────────────────────────
 
-export function PhotosStep() {
+export function PhotosStep({ onValidChange }: PhotosStepProps) {
   const { facePhotoUri, bodyPhotoUri, setPhotos } = useOnboardingStore();
+
+  // Report validity: face photo is required
+  useEffect(() => {
+    onValidChange?.(facePhotoUri != null);
+  }, [facePhotoUri, onValidChange]);
 
   // ── Permission helpers ──
 
@@ -224,13 +239,14 @@ export function PhotosStep() {
       {/* Heading */}
       <Text style={styles.heading}>Your Photos</Text>
       <Text style={styles.subheading}>
-        Upload your photos so we can show how outfits look on you
+        Upload a face photo so we can show how outfits look on you
       </Text>
 
       {/* Photo Cards */}
       <View style={styles.cardRow}>
         <PhotoUploadCard
           label="Face Photo"
+          subtitle="Required"
           photoUri={facePhotoUri}
           aspectRatio={1}
           onTapUpload={() => showSourcePicker('face')}
@@ -240,6 +256,7 @@ export function PhotosStep() {
 
         <PhotoUploadCard
           label="Full Body"
+          subtitle="Optional"
           photoUri={bodyPhotoUri}
           aspectRatio={3 / 4}
           onTapUpload={() => showSourcePicker('body')}
@@ -250,8 +267,8 @@ export function PhotosStep() {
 
       {/* Guidance */}
       <Text style={styles.guidance}>
-        For best results, use a full-body photo with a plain background.
-        Body photo should be at least 576×864 pixels.
+        Face photo is used to personalize your try-on experience.{'\n'}
+        Body photo is optional — for future sizing features.
       </Text>
     </ScrollView>
   );
@@ -339,6 +356,12 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.medium,
     fontSize: 12,
     color: COLORS.gray500,
+  },
+  emptySubtitleLabel: {
+    fontFamily: FONTS.medium,
+    fontSize: 10,
+    color: COLORS.tealBright,
+    marginTop: 2,
   },
 
   // ── Filled Card ──

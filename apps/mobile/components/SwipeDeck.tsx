@@ -31,18 +31,6 @@ interface SwipeDeckProps {
   onEmpty: () => void;
 }
 
-/** Safe UUID v4 generator — uses crypto.randomUUID when available, Math.random fallback */
-function generateUUID(): string {
-  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
-    return crypto.randomUUID();
-  }
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-    const r = (Math.random() * 16) | 0;
-    const v = c === 'x' ? r : (r & 0x3) | 0x8;
-    return v.toString(16);
-  });
-}
-
 // ─── Fire-and-forget API call (module-level, no component deps) ──────
 async function fireSwipeApi(
   card: FeedCard,
@@ -51,26 +39,10 @@ async function fireSwipeApi(
   const action = direction === 'right' ? 'LIKE' : 'DISLIKE';
 
   try {
-    if (card.isSolo && card.soloProduct) {
-      await api.post('/api/swipe', {
-        productId: card.soloProduct.id,
-        action,
-      });
-    } else if (card.topProduct && card.bottomProduct) {
-      const outfitGroupId = generateUUID();
-      await Promise.all([
-        api.post('/api/swipe', {
-          productId: card.topProduct.id,
-          action,
-          outfitGroupId,
-        }),
-        api.post('/api/swipe', {
-          productId: card.bottomProduct.id,
-          action,
-          outfitGroupId,
-        }),
-      ]);
-    }
+    await api.post('/api/swipe', {
+      productId: card.product.id,
+      action,
+    });
   } catch (error) {
     console.warn('Swipe API failed:', error);
   }
