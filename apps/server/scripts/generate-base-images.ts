@@ -5,7 +5,8 @@ import { generateProductToModel } from '../src/integrations/fashn.js';
 // ─── Config ──────────────────────────────────────────
 
 const DRY_RUN = process.argv.includes('--dry-run');
-const CONCURRENCY = 3;
+const CONCURRENCY = 1;
+const DELAY_BETWEEN_MS = 10000; // 10s cooldown between products to avoid 429s
 const PROMPT = 'full body shot, standing, in a daily life setting background (e.g., street, office, cafe)';
 const ASPECT_RATIO = '3:4';
 
@@ -115,6 +116,11 @@ async function main(): Promise<void> {
         ]);
         if (settled) active.splice(i, 1);
       }
+    }
+
+    // Cooldown between products to avoid FASHN 429 rate limits
+    if (!DRY_RUN && DELAY_BETWEEN_MS > 0) {
+      await new Promise((r) => setTimeout(r, DELAY_BETWEEN_MS));
     }
   }
 

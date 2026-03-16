@@ -84,7 +84,7 @@ Kame is a mobile-first fashion shopping app where users create a personal avatar
 | Mobile | React Native + Expo SDK 54 | expo-router for navigation |
 | Backend | Node.js + Express + TypeScript | Single server for MVP |
 | Database | PostgreSQL via Prisma ORM | Supabase/Neon hosting |
-| Cache/Queue | Redis + BullMQ | Upstash hosting; async try-on jobs |
+| Job Processing | In-memory queue | No external dependency; add Redis at 10K+ users |
 | AI Try-On | FASHN AI API v1.6 (direct, not fal.ai) | REST API; ~$0.075/image |
 | Storage | Cloudflare R2 | User photos + try-on results |
 | State Mgmt | Zustand | Lightweight, TypeScript-first |
@@ -133,7 +133,7 @@ kame/
 │       │   ├── routes/          # auth, profile, products, feed, swipe, tryon
 │       │   ├── middleware/       # auth.ts, validate.ts
 │       │   ├── services/        # Business logic (AuthService, FeedService, TryOnService, ProfileService)
-│       │   ├── jobs/            # BullMQ workers (generateTryOn.ts)
+│       │   ├── jobs/            # Async job handlers (generateTryOn.ts)
 │       │   ├── integrations/    # fashn.ts, s3.ts
 │       │   └── utils/           # errors.ts
 │       ├── prisma/              # schema.prisma, migrations/, seed.ts
@@ -169,7 +169,7 @@ Every endpoint returns:
 - Validation middleware wraps Zod and returns 400 with error details.
 
 ### Async Processing
-- Try-on generation is ALWAYS async via BullMQ. Never block the request.
+- Try-on generation is async via in-memory job processor. Never block the request.
 - Flow: POST /api/tryon/batch → queue jobs → client polls GET /api/tryon/status/:id
 
 ### Separation of Concerns
@@ -269,7 +269,6 @@ npx expo start --clear
 ```
 # Server
 DATABASE_URL=postgresql://...
-REDIS_URL=redis://...
 JWT_SECRET=<random-32-char-string>
 FASHN_API_KEY=<from-fashn.ai-settings>
 R2_ENDPOINT=https://<account-id>.r2.cloudflarestorage.com

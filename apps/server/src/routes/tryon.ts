@@ -1,11 +1,11 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { authenticate } from '../middleware/auth.js';
 import { prisma } from '../lib/prisma.js';
-import { tryonQueue, isQueueConfigured } from '../lib/queue.js';
+import { tryonProcessor } from '../lib/jobProcessor.js';
+import { processModelSwap } from '../jobs/generateTryOn.js';
 import { isFashnConfigured } from '../integrations/fashn.js';
 import { AppError, NotFoundError } from '../utils/errors.js';
 import type { ApiResponse } from '@kame/shared-types';
-import type { TryOnJobData } from '../jobs/generateTryOn.js';
 
 const router: Router = Router();
 
@@ -34,10 +34,6 @@ router.post(
   authenticate,
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      if (!isQueueConfigured()) {
-        throw new AppError('Try-on queue is not configured (missing REDIS_URL)', 503);
-      }
-
       if (!isFashnConfigured()) {
         throw new AppError('FASHN API is not configured (missing FASHN_API_KEY)', 503);
       }
@@ -117,16 +113,16 @@ router.post(
           },
         });
 
-        // Queue face-swap job matching worker interface
-        const jobData: TryOnJobData = {
-          tryOnResultId: tryOnResult.id,
-          userId,
-          facePhotoUrl: avatar.facePhotoUrl,
-          productId: product.id,
-          baseImageUrl: baseImage.imageUrl,
-        };
-
-        await tryonQueue!.add('face-swap', jobData);
+        // Queue face-swap job via in-memory processor
+        tryonProcessor.add(tryOnResult.id, () =>
+          processModelSwap({
+            tryOnResultId: tryOnResult.id,
+            userId,
+            facePhotoUrl: avatar.facePhotoUrl!,
+            productId: product.id,
+            baseImageUrl: baseImage.imageUrl,
+          }),
+        );
         totalQueued++;
       }
 

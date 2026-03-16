@@ -12,6 +12,7 @@ import { favoritesRouter } from './routes/favorites.js';
 import { analyticsRouter } from './routes/analytics.js';
 import { tryonRouter } from './routes/tryon.js';
 import { isS3Configured } from './integrations/s3.js';
+import { prisma } from './lib/prisma.js';
 import { AppError, ValidationError } from './utils/errors.js';
 import type { ApiResponse } from '@kame/shared-types';
 
@@ -41,9 +42,9 @@ if (!isS3Configured()) {
 }
 
 // ─── Startup Diagnostics ────────────────────────────
-console.log(`  Storage : ${isS3Configured() ? 'Cloudflare R2' : 'LOCAL (ephemeral)'}`);
-console.log(`  Try-on  : ${process.env.REDIS_URL ? 'Redis / BullMQ' : 'DISABLED (no REDIS_URL)'}`);
-console.log(`  FASHN AI: ${process.env.FASHN_API_KEY ? 'configured' : 'DISABLED (no FASHN_API_KEY)'}`);
+console.log(`  Storage       : ${isS3Configured() ? 'Cloudflare R2' : 'LOCAL (ephemeral)'}`);
+console.log(`  FASHN AI      : ${process.env.FASHN_API_KEY ? 'configured' : 'DISABLED (no FASHN_API_KEY)'}`);
+console.log(`  Job processor : in-memory (concurrency: 2)`);
 
 // ─── Routes ─────────────────────────────────────────
 app.use('/auth', authRouter);
@@ -56,14 +57,33 @@ app.use('/api/favorites', favoritesRouter);
 app.use('/api/analytics', analyticsRouter);
 app.use('/api/tryon', tryonRouter);
 
-// ─── Try-On Worker (when Redis is configured) ───────
-if (process.env.REDIS_URL) {
-  import('./jobs/generateTryOn.js').then(({ startTryOnWorker }) => {
-    startTryOnWorker();
-  }).catch((err) => {
-    console.error('Failed to start try-on worker:', err);
-  });
-}
+// ─── Stale Job Recovery ─────────────────────────────
+// Marks PENDING/PROCESSING jobs older than 10 min as FAILED.
+// Catches jobs stuck from a server restart mid-generation.
+setInterval(async () => {
+  try {
+    const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
+    const staleJobs = await prisma.tryOnResult.findMany({
+      where: {
+        status: { in: ['PENDING', 'PROCESSING'] },
+        createdAt: { lt: tenMinutesAgo },
+      },
+      select: { id: true },
+    });
+
+    if (staleJobs.length > 0) {
+      console.log(`Found ${staleJobs.length} stale try-on jobs, marking as FAILED`);
+      await prisma.tryOnResult.updateMany({
+        where: {
+          id: { in: staleJobs.map((j) => j.id) },
+        },
+        data: { status: 'FAILED' },
+      });
+    }
+  } catch (err) {
+    console.error('Stale job recovery error:', err);
+  }
+}, 5 * 60 * 1000);
 
 // ─── Global Error Handler ───────────────────────────
 app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {

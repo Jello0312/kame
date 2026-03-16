@@ -147,7 +147,7 @@ STEP 3: Verify
 - pnpm typecheck passes
 - Run: npx tsx scripts/generate-base-images.ts --dry-run (should log plan without calling FASHN)
 
-Plan first.
+Plan first. Use sub-agent if helpful
 ```
 
 ---
@@ -222,7 +222,7 @@ STEP 3: Verify
 - Server boots: pnpm dev:server
 - If you can test: GET /api/feed returns simplified FeedCard objects
 
-Plan first.
+Plan first. Use sub-agent if helpful
 ```
 
 ---
