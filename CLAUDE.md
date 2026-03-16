@@ -92,6 +92,7 @@ Kame is a mobile-first fashion shopping app where users create a personal avatar
 | Styling | NativeWind (Tailwind for RN) | Utility-first |
 | Animations | react-native-reanimated + gesture-handler | 60fps swipe cards |
 | Auth | JWT (bcrypt + jsonwebtoken) | Email/password for MVP |
+| Security | helmet + cors + express-rate-limit | Headers, CORS, rate limiting |
 | Hosting | Railway or Render | ~$20/mo for MVP |
 
 ---
@@ -131,7 +132,7 @@ kame/
 │       ├── src/
 │       │   ├── index.ts         # Server entry
 │       │   ├── routes/          # auth, profile, products, feed, swipe, tryon
-│       │   ├── middleware/       # auth.ts, validate.ts
+│       │   ├── middleware/       # auth.ts, validate.ts, rateLimiter.ts
 │       │   ├── services/        # Business logic (AuthService, FeedService, TryOnService, ProfileService)
 │       │   ├── jobs/            # Async job handlers (generateTryOn.ts)
 │       │   ├── integrations/    # fashn.ts, s3.ts
@@ -181,6 +182,19 @@ Every endpoint returns:
 ### Error Handling
 - Custom error classes: AppError, NotFoundError, AuthError, ValidationError.
 - Global error middleware catches all, formats response, never exposes stack traces in production.
+
+### Rate Limiting
+- 4 tiered rate limiters in `src/middleware/rateLimiter.ts`:
+  - Auth: 5 req/15min (login, register) — `skipSuccessfulRequests: true`
+  - Upload: 10 req/15min (avatar, tryon)
+  - Write: 30 req/15min (swipe, profile, preferences)
+  - General: 100 req/15min (all other routes)
+- Applied BEFORE routes in index.ts. Specific limiters override the general catch-all.
+- Returns `{ success: false, error: 'Too many requests...' }` with 429 status.
+
+### Security Headers
+- `helmet` middleware adds 12+ security headers (X-Content-Type-Options, X-Frame-Options, HSTS, etc.)
+- CORS configured: permissive in development, restricted via `ALLOWED_ORIGIN` in production.
 
 ### Authentication
 - JWT in `Authorization: Bearer <token>` header.

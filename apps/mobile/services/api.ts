@@ -72,7 +72,7 @@ class ApiClient {
   }
 
   private async request<T>(
-    method: 'GET' | 'POST',
+    method: 'GET' | 'POST' | 'DELETE',
     path: string,
     body?: unknown,
     tokenOverride?: string | null,
@@ -94,7 +94,7 @@ class ApiClient {
         method,
         headers,
         body:
-          method === 'POST'
+          method !== 'GET'
             ? body instanceof FormData
               ? body
               : body
@@ -143,6 +143,10 @@ class ApiClient {
     tokenOverride?: string | null,
   ): Promise<ApiResponse<T>> {
     return this.request<T>('POST', path, body, tokenOverride);
+  }
+
+  async delete<T>(path: string): Promise<ApiResponse<T>> {
+    return this.request<T>('DELETE', path);
   }
 }
 

@@ -325,6 +325,14 @@
 - KeyboardAvoidingView: behavior='padding' on iOS, undefined on Android (handles natively)
 - GestureHandlerRootView background: set to match the dominant theme, not a single-screen color
 
+### Security / Rate Limiting
+- Rate limiters must be mounted BEFORE route handlers in Express — `app.use('/path', limiter)` then `app.use('/path', router)`
+- Specific limiters override the general catch-all — Express matches the first middleware on a path
+- `skipSuccessfulRequests: true` on auth limiter — only counts failures, so legitimate users aren't locked out after successful logins
+- Account deletion: clean up external storage (S3) BEFORE deleting DB records — cascade deletes remove the URL references
+- Prisma `onDelete: Cascade` handles all child record cleanup — only need explicit cleanup for external resources (S3 files)
+- API client methods (GET/POST/DELETE) should match the HTTP verbs the backend supports — don't assume GET+POST is enough
+
 ### General
 - affiliateUrl is intentionally null in MVP — do NOT populate with fake URLs
 - Tabs are Explore/Favorites/Profile — NEVER add a Cart tab in MVP

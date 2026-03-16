@@ -1,6 +1,6 @@
 # Kame — Active Sprint Tasks
 
-> Updated: 2026-03-16 (Sprint 4.0 Session 4 — mobile frontend migration complete)
+> Updated: 2026-03-17 (Sprint 5.0 — Security Hardening complete)
 > See ROADMAP.md for full multi-week plan.
 
 ---
@@ -465,6 +465,62 @@
 - **FASHN methods:** Used raw fetch to `https://api.fashn.ai/v1/run` + polling `GET /v1/status/{id}` instead of fashn SDK's `client.predictions.subscribe()`. The SDK TypeScript types are outdated — don't include `face_reference` for model-swap or all product-to-model params. Existing `generateTryOn()` still uses SDK (works fine for tryon-v1.6).
 - **Retry logic:** Both new methods use same pattern as generateTryOn — 3 retries with linear backoff (2s × attempt). Guard checks `FASHN_API_KEY` (not `client`) since raw fetch doesn't need SDK client.
 - **Polling:** `pollForCompletion()` polls every 2s with 120s timeout. Returns `{ status, output }` on completion, throws on failure or timeout.
+
+---
+
+## ✅ Sprint 5.0 — Security Hardening for 10K Beta Launch ✅
+
+### Step 1: Rate Limiting ✅
+- [x] Install `express-rate-limit` in apps/server ✅
+- [x] Create `src/middleware/rateLimiter.ts` — 4 tiered limiters (auth/upload/write/general) ✅
+- [x] Wire limiters into `src/index.ts` — specific before general, before routes ✅
+
+### Step 2: Helmet + CORS ✅
+- [x] Install `helmet` in apps/server ✅
+- [x] Add helmet middleware to `src/index.ts` ✅
+- [x] Configure CORS with production origin restriction ✅
+- [x] Add `ALLOWED_ORIGIN` to `.env.example` ✅
+- [x] Remove stale `REDIS_URL` from `.env.example` ✅
+
+### Step 3: Delete Account ✅
+- [x] Add `deleteFilesByPrefix()` to `src/integrations/s3.ts` (ListObjects + DeleteObjects) ✅
+- [x] Create `src/routes/account.ts` — DELETE /api/account with cascade + S3 cleanup ✅
+- [x] Register account route in `src/index.ts` ✅
+- [x] Add DELETE method support to mobile `services/api.ts` ✅
+- [x] Add "Delete Account" button to `profile.tsx` — red text, Trash2 icon ✅
+- [x] Add Alert.alert confirmation dialog with destructive "Delete Everything" ✅
+- [x] On confirm: DELETE /api/account → logout → redirect to auth ✅
+
+### Step 4: Row-Level Access Control Audit ✅
+- [x] GET /api/profile → filters by req.userId ✅
+- [x] POST /api/profile → uses req.userId for upsert ✅
+- [x] GET /api/avatar → filters by req.userId ✅
+- [x] POST /api/avatar → uses req.userId ✅
+- [x] GET /api/preferences → filters by req.userId ✅
+- [x] POST /api/preferences → uses req.userId ✅
+- [x] GET /api/feed → FeedService uses req.userId for exclusions ✅
+- [x] POST /api/swipe → uses req.userId ✅
+- [x] GET /api/favorites → filters by req.userId ✅
+- [x] POST /api/tryon/batch → uses req.userId ✅
+- [x] GET /api/tryon/status → filters by req.userId ✅
+- **Result: ALL CLEAR — no vulnerabilities found**
+
+### Step 5: JWT Expiry ✅
+- [x] Verified: JWT expiry already set to 7d in AuthService.ts ✅
+- [x] Verified: api.ts 401 handler calls logout() → clears token → redirects to login ✅
+- **No changes needed**
+
+### Verification ✅
+- [x] `pnpm --filter @kame/server typecheck` — zero errors ✅
+- [x] `pnpm --filter @kame/mobile typecheck` — zero errors ✅
+- [x] CLAUDE.md updated — Tech Stack + Architecture Rules ✅
+
+### Review — Security Hardening (2026-03-17)
+- **Rate limiting:** 4 tiered limiters via `express-rate-limit`. Auth=5/15min with skipSuccessfulRequests (only counts failures — prevents brute-force while allowing legitimate logins). Upload=10/15min. Write=30/15min. General=100/15min catch-all. All return consistent `{ success: false, error }` JSON with 429 status. Applied via `app.use('/path', limiter)` BEFORE route mounting — specific limiters take precedence over general.
+- **Helmet + CORS:** Helmet adds 12+ security headers (HSTS, X-Content-Type-Options, X-Frame-Options, etc.) with zero config. CORS configured with production origin restriction via `ALLOWED_ORIGIN` env var — permissive in development for Expo Go compatibility.
+- **Delete account:** Single `DELETE /api/account` endpoint. Cleans up S3 files first (avatars + tryon results by prefix), then deletes User record — Prisma cascades ALL 6 child tables (UserProfile, UserAvatar, StylePreference, SwipeAction, TryOnResult, AnalyticsClick). Frontend shows Alert.alert with destructive confirmation. On success, calls logout() which clears SecureStore token and triggers auto-redirect to login.
+- **Access control audit:** All 11 route handlers verified — every one passes `req.userId` to its service layer, and every service filters by `userId` in WHERE clauses. No cross-user data access possible.
+- **API client:** Added DELETE method support to mobile ApiClient (was GET/POST only). Body serialization logic updated from `method === 'POST'` to `method !== 'GET'` to support DELETE with optional body.
 
 ---
 

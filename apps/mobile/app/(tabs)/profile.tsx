@@ -6,11 +6,12 @@ import {
   Pressable,
   StyleSheet,
   ActivityIndicator,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as WebBrowser from 'expo-web-browser';
 import { useQuery } from '@tanstack/react-query';
-import { MessageSquare, LogOut } from 'lucide-react-native';
+import { MessageSquare, LogOut, Trash2 } from 'lucide-react-native';
 
 import { AuthBackground } from '../../components/AuthBackground';
 import { ProfileSection } from '../../components/ProfileSection';
@@ -144,6 +145,28 @@ export default function ProfileScreen() {
 
   const handleFeedback = useCallback(async () => {
     await WebBrowser.openBrowserAsync('https://docs.google.com/forms/d/1s5PfWv4gw-jMEFfzG9KWdt1Cl_EGPIrev4Ua8MX-4Vw/viewform');
+  }, []);
+
+  const handleDeleteAccount = useCallback(() => {
+    Alert.alert(
+      'Delete Account?',
+      'This will permanently delete your account, photos, and all data. This cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete Everything',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await api.delete('/api/account');
+            } catch {
+              // Account deleted — 401 expected if token invalidated
+            }
+            useAuthStore.getState().logout();
+          },
+        },
+      ],
+    );
   }, []);
 
   // ── Render ────────────────────────────────────────────────
@@ -285,6 +308,18 @@ export default function ProfileScreen() {
                 style={styles.buttonIcon}
               />
               <Text style={styles.logoutButtonText}>Log Out</Text>
+            </View>
+          </Pressable>
+
+          {/* Delete Account — destructive text button */}
+          <Pressable onPress={handleDeleteAccount} style={styles.deleteAccountPressable}>
+            <View style={styles.deleteAccountButton}>
+              <Trash2
+                size={16}
+                color={COLORS.red}
+                style={styles.buttonIcon}
+              />
+              <Text style={styles.deleteAccountText}>Delete Account</Text>
             </View>
           </Pressable>
         </View>
@@ -455,6 +490,19 @@ const styles = StyleSheet.create({
   },
   buttonIcon: {
     marginRight: SPACING.sm,
+  },
+  deleteAccountPressable: {
+    marginTop: SPACING['2xl'],
+    alignItems: 'center',
+  },
+  deleteAccountButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  deleteAccountText: {
+    fontFamily: FONTS.medium,
+    fontSize: 14,
+    color: COLORS.red,
   },
 
   // Footer

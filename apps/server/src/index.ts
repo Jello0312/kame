@@ -1,5 +1,6 @@
 import 'dotenv/config';
 import express, { Request, Response, NextFunction } from 'express';
+import helmet from 'helmet';
 import cors from 'cors';
 import path from 'path';
 import { authRouter } from './routes/auth.js';
@@ -11,9 +12,16 @@ import { swipeRouter } from './routes/swipe.js';
 import { favoritesRouter } from './routes/favorites.js';
 import { analyticsRouter } from './routes/analytics.js';
 import { tryonRouter } from './routes/tryon.js';
+import { accountRouter } from './routes/account.js';
 import { isS3Configured } from './integrations/s3.js';
 import { prisma } from './lib/prisma.js';
 import { AppError, ValidationError } from './utils/errors.js';
+import {
+  authLimiter,
+  uploadLimiter,
+  writeLimiter,
+  generalLimiter,
+} from './middleware/rateLimiter.js';
 import type { ApiResponse } from '@kame/shared-types';
 
 // ─── Env validation ─────────────────────────────────
@@ -28,8 +36,30 @@ for (const key of requiredEnv) {
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-app.use(cors());
+// ─── Security Middleware ───────────────────────────
+app.use(helmet());
+app.use(
+  cors({
+    origin:
+      process.env.NODE_ENV === 'production'
+        ? process.env.ALLOWED_ORIGIN || '*'
+        : '*',
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true,
+  }),
+);
 app.use(express.json());
+
+// ─── Rate Limiters (specific before general) ──────
+app.use('/auth/login', authLimiter);
+app.use('/auth/register', authLimiter);
+app.use('/api/avatar', uploadLimiter);
+app.use('/api/tryon', uploadLimiter);
+app.use('/api/swipe', writeLimiter);
+app.use('/api/profile', writeLimiter);
+app.use('/api/preferences', writeLimiter);
+app.use(generalLimiter);
 
 // ─── Health Check ───────────────────────────────────
 app.get('/health', (_req, res) => {
@@ -56,6 +86,7 @@ app.use('/api/swipe', swipeRouter);
 app.use('/api/favorites', favoritesRouter);
 app.use('/api/analytics', analyticsRouter);
 app.use('/api/tryon', tryonRouter);
+app.use('/api/account', accountRouter);
 
 // ─── Stale Job Recovery ─────────────────────────────
 // Marks PENDING/PROCESSING jobs older than 10 min as FAILED.

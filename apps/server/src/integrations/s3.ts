@@ -1,4 +1,9 @@
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import {
+  S3Client,
+  PutObjectCommand,
+  ListObjectsV2Command,
+  DeleteObjectsCommand,
+} from '@aws-sdk/client-s3';
 import fs from 'fs';
 import path from 'path';
 
@@ -60,4 +65,28 @@ export function getPublicUrl(key: string): string {
     return `${R2_PUBLIC_URL}/${key}`;
   }
   return `/uploads/${key}`;
+}
+
+export async function deleteFilesByPrefix(prefix: string): Promise<void> {
+  if (!s3Client) return;
+
+  const listResult = await s3Client.send(
+    new ListObjectsV2Command({
+      Bucket: BUCKET,
+      Prefix: prefix,
+    }),
+  );
+
+  const objects = listResult.Contents;
+  if (!objects || objects.length === 0) return;
+
+  await s3Client.send(
+    new DeleteObjectsCommand({
+      Bucket: BUCKET,
+      Delete: {
+        Objects: objects.map((obj) => ({ Key: obj.Key })),
+        Quiet: true,
+      },
+    }),
+  );
 }
