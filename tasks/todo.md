@@ -258,7 +258,7 @@
 
 ### Manual steps (user performs)
 - [ ] Deploy to Railway — connect repo, set root directory to apps/server
-- [ ] Set production env vars in Railway dashboard (DATABASE_URL, JWT_SECRET, REDIS_URL, FASHN_API_KEY, AWS_*)
+- [ ] Set production env vars in Railway dashboard (DATABASE_URL, JWT_SECRET, FASHN_API_KEY, R2_*)
 - [ ] Update EXPO_PUBLIC_API_URL in mobile .env to deployed server URL
 - [ ] Set up Expo project on expo.dev, test on iOS + Android via Expo Go
 - [ ] Distribute to 10-20 beta testers, monitor logs + FASHN usage
@@ -438,10 +438,27 @@
 - **explore.tsx:** No changes needed — `useInfiniteQuery<FeedResponse>` and `allCards` flatMap already compatible.
 - **GeneratingStep.tsx:** No changes needed — already handles face-only upload (body photo conditional on `store.bodyPhotoUri`).
 
+### Session 5: Remove Redis/BullMQ → In-Memory Job Processor ✅
+- [x] Create src/lib/jobProcessor.ts (in-memory queue, concurrency 2) ✅
+- [x] Rewrite src/jobs/generateTryOn.ts (plain async processModelSwap, no BullMQ) ✅
+- [x] Rewrite src/routes/tryon.ts (tryonProcessor.add instead of tryonQueue.add) ✅
+- [x] Update src/index.ts (remove worker startup, add stale job recovery, update diagnostics) ✅
+- [x] Delete src/lib/queue.ts (BullMQ + Redis connection) ✅
+- [x] Remove bullmq + ioredis from dependencies ✅
+- [x] Remove REDIS_URL from .env + CLAUDE.md ✅
+- [x] TypeScript: zero errors, zero Redis references in src/ ✅
+
+### Review — Session 5 (2026-03-16)
+- **jobProcessor.ts:** Simple class with internal queue array + concurrency counter. `add(id, handler)` pushes to queue and kicks `process()`. `process()` drains queue up to concurrency limit, each job runs async with `.then/.catch/.finally` lifecycle. Singleton `tryonProcessor` exported with concurrency 2.
+- **generateTryOn.ts:** Stripped all BullMQ/IORedis imports, Worker class, Redis connection, startTryOnWorker(). Kept TryOnJobData interface and resolveToPublicUrl import. New `processModelSwap(data)` marks PROCESSING → calls generateModelSwap → marks COMPLETED or FAILED.
+- **tryon.ts:** Replaced `tryonQueue!.add('face-swap', jobData)` with `tryonProcessor.add(tryOnResult.id, () => processModelSwap({...}))`. Removed isQueueConfigured() check (no queue to check). Kept isFashnConfigured() check.
+- **index.ts:** Removed dynamic import of startTryOnWorker + REDIS_URL conditional. Added stale job recovery (setInterval every 5min, marks PENDING/PROCESSING jobs older than 10min as FAILED). Diagnostics now show `Job processor : in-memory (concurrency: 2)`.
+- **Net result:** -330 lines, +132 lines. bullmq + ioredis removed from package.json. No Redis dependency anywhere. API contract unchanged.
+
 ### Post-Migration (User Action Required)
 - [ ] Run generate-base-images.ts ($10.58 one-time, ~15-20 min)
 - [ ] Test full flow with real user
-- [ ] Configure AWS S3 on Railway (required for persistent storage)
+- [ ] Remove REDIS_URL from Railway dashboard env vars
 
 ### Review — Session 1 (2026-03-16)
 - **Schema:** BaseProductImage model added with `@db.Uuid` on productId, `@map` annotations, `@@map("base_product_images")` — follows project conventions. Migration SQL created manually (corporate firewall blocks Supabase port 6543). Will auto-apply via `prisma migrate deploy` on next Railway deploy.

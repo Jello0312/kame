@@ -268,7 +268,7 @@
 |------|--------|-------|-------|
 | FASHN AI API key | [x] Done ✅ | Founder | Key obtained |
 | Database (Supabase) | [x] Done ✅ | CTO | Firewall resolved |
-| Redis (Upstash) | [x] Done ✅ | CTO | Upstash Redis configured |
+| Redis (Upstash) | Removed | CTO | Replaced with in-memory job processor |
 | AWS S3 bucket | [ ] Needed | CTO | For photo + try-on storage (local fallback available) |
 | Product catalog | [x] Done ✅ | CTO | 141 products (67 Amazon + 74 SHEIN) + 42 pairings in catalog.ts |
 | Expo account | [ ] Needed | CTO | expo.dev signup, needed for beta |

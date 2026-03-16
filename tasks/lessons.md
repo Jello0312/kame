@@ -112,20 +112,17 @@
 **Root cause:** In bash, `!` inside double quotes triggers history expansion. This breaks JavaScript expressions like `!c.isSolo`.
 **Rule:** For inline node -e test scripts, use single quotes or write to a .mjs file and execute. Avoid double-quoted strings with `!` in bash.
 
-### 2026-03-11 — Pin ioredis version to match BullMQ peer dependency
-**What happened:** `pnpm add ioredis` installed v5.10.0 but BullMQ internally depends on ioredis@5.9.3. TypeScript errored: `Type 'Redis' is not assignable to type 'ConnectionOptions'` (TS2322).
-**Root cause:** ioredis 5.10.0's `Redis` class has slightly different type signatures than what BullMQ's `ConnectionOptions` expects from 5.9.3.
-**Rule:** Always install ioredis at the exact version BullMQ uses: `pnpm add ioredis@5.9.3`. Check BullMQ's package.json for the ioredis peer dep version before installing.
+### 2026-03-11 — [ARCHIVED] Pin ioredis version to match BullMQ peer dependency
+**Status:** No longer applicable — Redis/BullMQ removed in Session 5 (2026-03-16). Replaced with in-memory job processor.
 
 ### 2026-03-11 — Dynamic import for conditional module loading
 **What happened:** Importing `generateTryOn.ts` at top level in `index.ts` crashed the server when REDIS_URL wasn't configured, because the module creates a Redis connection at import time.
 **Root cause:** Top-level module imports execute immediately. If a module has side effects (like connecting to Redis), importing it unconditionally breaks graceful degradation.
-**Rule:** Use dynamic `import('./path.js').then(...)` for modules that have external dependencies (Redis, third-party APIs). Guard with an env var check: `if (process.env.REDIS_URL) { import(...) }`.
+**Rule:** Use dynamic `import('./path.js').then(...)` for modules that have external dependencies (Redis, third-party APIs). Guard with an env var check before importing.
+**Note:** This specific Redis case was eliminated when BullMQ was removed (Session 5), but the pattern remains valid for any module with side-effecting imports.
 
-### 2026-03-11 — BullMQ requires maxRetriesPerRequest: null
-**What happened:** BullMQ worker threw an error about Redis connection configuration.
-**Root cause:** BullMQ requires `maxRetriesPerRequest: null` on the ioredis connection to disable per-request retry limits and use its own retry logic.
-**Rule:** When creating ioredis connections for BullMQ (both Queue and Worker), always pass `{ maxRetriesPerRequest: null }`. BullMQ also needs separate Redis connections for Queue and Worker — don't share one connection.
+### 2026-03-11 — [ARCHIVED] BullMQ requires maxRetriesPerRequest: null
+**Status:** No longer applicable — Redis/BullMQ removed in Session 5 (2026-03-16). Replaced with in-memory job processor.
 
 ### 2026-03-10 — Run `npx expo install --fix` after adding Expo dependencies
 **What happened:** After installing expo-font, expo-splash-screen, and other deps, Metro bundler failed with version mismatch warnings and missing module errors. 18 packages were out of sync with SDK 54.
@@ -259,15 +256,13 @@
 - `req.query as unknown as z.infer<typeof schema>` — double cast required for Zod coerced queries
 - BaseProductImage lookup: use `findFirst` (not `findUnique`) when filtering by productId + status — `findUnique` only accepts unique key fields in `where`
 
-### BullMQ / Job Queue
-- ioredis must match BullMQ's peer dep version exactly — pin `ioredis@5.9.3`
-- `maxRetriesPerRequest: null` required on all ioredis connections used by BullMQ
-- Separate Redis connections for Queue and Worker — don't share one connection
-- Dynamic import for worker startup: `if (process.env.REDIS_URL) { import('./jobs/...').then(...) }`
+### In-Memory Job Processor (replaced BullMQ in Session 5)
 - Create DB record (PENDING) BEFORE queueing job — DB is source of truth, not the queue
-- Worker concurrency 2: each outfit job makes 2 sequential FASHN calls → max 4 concurrent FASHN requests (within 6-concurrent API limit)
-- Job data carries all URLs/IDs needed — worker never queries for product data, only updates TryOnResult status
-- `msgpackr-extract` build warning is harmless — BullMQ falls back to pure JS serialization
+- Job processor concurrency 2: max 2 concurrent FASHN calls at a time
+- Job data carries all URLs/IDs needed — handler never queries for product data, only updates TryOnResult status
+- Stale job recovery runs every 5min — marks PENDING/PROCESSING jobs older than 10min as FAILED
+- Jobs are lost on server restart (in-memory) — stale recovery handles this gracefully
+- Add Redis back at 10K+ users if persistence/distribution needed
 
 ### UI Components / React Native
 - ErrorBoundary MUST be a class component — React limitation, overrides CLAUDE.md "functional only" rule
@@ -291,7 +286,7 @@
 - `tsconfig.base.json` noEmit: true is typechecking-only — server and shared-types must override to false
 - `"type": "module"` in package.json when using ESNext module output — eliminates Node.js reparsing warning
 - Railway Nixpacks monorepo: explicit buildCommand chains `install → build deps → build app`
-- Startup diagnostics: log which subsystems are active (S3/Redis/FASHN) — immediate visibility on deploy
+- Startup diagnostics: log which subsystems are active (S3/FASHN/job processor) — immediate visibility on deploy
 
 ### Deploy / Railway (Continued)
 - Railway placeholder env vars kill deploys silently — always verify ALL env vars contain real values (not `postgresql://user:password@host:5432/kame`). The DIRECT_URL placeholder caused P1001 at startup.
@@ -336,15 +331,12 @@
 - Swipe is 1 POST per card: `{ productId, action }`. No outfitGroupId (outfit pairings removed in face-swap migration)
 - Onboarding: face photo is REQUIRED (blocks Next), body photo is OPTIONAL (for future sizing)
 
-### 2026-03-11 — Missing REDIS_URL silently disables entire try-on pipeline
-**What happened:** Feed showed "Generating your look..." spinner forever. No try-on images were ever generated despite FASHN_API_KEY being configured.
-**Root cause:** `REDIS_URL` was missing from `apps/server/.env`. This caused: `tryonQueue = null` → `POST /api/tryon/batch` returns 503 → `generating.tsx` silently catches the error → no jobs queued → no worker processes → no TryOnResult rows reach COMPLETED → feed returns `tryOnImageUrl: null` → SwipeCard shows infinite spinner.
-**Rule:** After adding any new infrastructure dependency (Redis, S3, external API), immediately verify the env var is present in BOTH `.env.example` AND the actual `.env` file. Add startup diagnostics that explicitly log which subsystems are active/disabled. Never silently swallow errors during onboarding — at minimum `console.warn` so developers see the failure.
+### 2026-03-11 — [ARCHIVED] Missing REDIS_URL silently disables entire try-on pipeline
+**Status:** No longer applicable — Redis removed in Session 5 (2026-03-16). Try-on pipeline now uses in-memory job processor (no env var needed).
+**General lesson:** After adding any new infrastructure dependency, verify the env var is present in `.env`. Add startup diagnostics that log which subsystems are active/disabled.
 
-### 2026-03-14 — BullMQ + Upstash free tier burns through 500k daily request limit
-**What happened:** Server logs flooded with `ReplyError: ERR max requests limit exceeded. Limit: 500000, Usage: 500002`. Try-on worker crashed.
-**Root cause:** BullMQ workers continuously poll Redis via BRPOPLPUSH even when idle. Upstash is serverless — every command counts as a request. Default settings (~10-20 commands/sec) exhaust the 500k/day free tier in hours.
-**Rule:** When using BullMQ with Upstash free tier, set `drainDelay: 60` (1min idle poll), `stalledInterval: 300_000` (5min stalled checks), `lockDuration: 600_000` (10min locks). This reduces idle usage to ~15k req/day. Tradeoff: jobs may wait up to 1min to be picked up — acceptable for MVP.
+### 2026-03-14 — [ARCHIVED] BullMQ + Upstash free tier burns through 500k daily request limit
+**Status:** No longer applicable — Redis/BullMQ removed in Session 5 (2026-03-16). In-memory job processor has zero external requests.
 
 ### 2026-03-14 — OneDrive paths break Claude Code Edit/Write tools
 **What happened:** The Edit and Write tools failed with EEXIST: file already exists, mkdir on every file modification attempt. The project path contains spaces and special characters (OneDrive - The Boston Consulting Group, Inc) which confuses the tools' internal directory creation logic.
@@ -352,10 +344,9 @@
 **Workaround used:** Read files via Read tool (works fine), then use node -e scripts via Bash to programmatically transform and write files (fs.readFileSync + string manipulation + fs.writeFileSync). This bypasses the Edit/Write tools entirely.
 **Rule:** For projects on OneDrive paths with spaces, prefer the Bash + Node.js fs workaround for file writes. Better yet, create a Windows junction: New-Item -ItemType Junction -Path C:\dev\KAME -Target <OneDrive path> and use the junction path as project root. This eliminates the issue for all tools.
 
-### 2026-03-15 — Unhandled Redis error events crash the Node.js process
-**What happened:** Railway deploy logs showed `ReplyError: ERR max requests limit exceeded` from Upstash. Server process crashed, Railway served its HTML 502 page. Mobile app received HTML instead of JSON, showing "Unexpected token '<'" on login.
-**Root cause:** IORedis connections in `queue.ts` and `generateTryOn.ts` were created without `.on('error')` handlers. In Node.js, an unhandled `error` event on an EventEmitter crashes the process.
-**Rule:** ALWAYS attach `.on('error', (err) => console.error(...))` to every IORedis connection. This prevents Redis errors from crashing the server. Auth endpoints don't use Redis and should never be affected by Redis issues.
+### 2026-03-15 — [ARCHIVED] Unhandled Redis error events crash the Node.js process
+**Status:** No longer applicable — Redis/IORedis removed in Session 5 (2026-03-16). No external connections to crash.
+**General lesson:** Always attach `.on('error')` handlers to any EventEmitter-based connection (databases, message queues, etc.).
 
 ### 2026-03-15 — Public .env files must be committed for fresh clones
 **What happened:** Mobile app showed "Network request failed" on a fresh clone. `apps/mobile/.env` was `.gitignored`, so `EXPO_PUBLIC_API_URL` was undefined. `fetch("undefined/auth/login")` failed differently per platform: native = "Network request failed", web = relative URL → HTML response → "Unexpected token '<'".
