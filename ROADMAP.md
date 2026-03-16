@@ -1,8 +1,8 @@
 # Kame — Development Roadmap
 
-> Last updated: 2026-03-15
+> Last updated: 2026-03-17
 > Current phase: **MVP Sprint (Weeks 1-3)**
-> Current step: **Sprint 3.6 — Favorites Redesign** (complete)
+> Current step: **Sprint 4.0 — Face-Swap Migration** (complete)
 
 ## Progress Tracking Convention
 - `[ ]` = Todo
@@ -205,7 +205,7 @@
 - [x] Session 2: Admin script (generate-base-images.ts) + worker rewrite ✅
 - [x] Session 3: tryon routes + FeedService rewrite (individual products, not outfit pairings) ✅
 - [x] Session 4: Mobile frontend updates (SwipeCard, SwipeDeck, onboarding) ✅
-- [ ] Post-migration: Run generate-base-images.ts ($10.58 one-time)
+- [x] Post-migration: Generate base images — 133/141 completed (8 skipped, excluded from beta) ✅
 - [ ] Post-migration: Test full flow with real user
 
 ---

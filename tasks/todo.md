@@ -456,7 +456,7 @@
 - **Net result:** -330 lines, +132 lines. bullmq + ioredis removed from package.json. No Redis dependency anywhere. API contract unchanged.
 
 ### Post-Migration (User Action Required)
-- [ ] Run generate-base-images.ts ($10.58 one-time, ~15-20 min)
+- [x] Run generate-base-images.ts — 133/141 base images completed via FASHN CDN recovery (8 skipped, excluded from beta) ✅
 - [ ] Test full flow with real user
 - [ ] Remove REDIS_URL from Railway dashboard env vars
 

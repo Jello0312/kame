@@ -396,6 +396,11 @@
 **Root cause:** The SDK was built for tryon-v1.6 and hasn't been updated for newer endpoints (product-to-model, model-swap). The REST API accepts these params but the SDK types don't.
 **Rule:** When an SDK's TypeScript types are outdated for newer API features, use raw fetch to the REST API directly instead of fighting the type system with casts. Keep the SDK for endpoints where it works (tryon-v1.6). Document why raw fetch is used with a comment. Pattern: POST `/v1/run` → get `{ id }` → poll `GET /v1/status/{id}` until terminal state.
 
+### 2026-03-17 — Save FASHN prediction IDs immediately, before R2 upload
+**What happened:** generate-base-images.ts called FASHN, then immediately tried to upload to R2. When R2 credentials were bad, the upload threw, and the FASHN prediction ID was lost. 282 credits burned, only 33 images saved. Had to scrape FASHN dashboard to recover 133 predictions via CDN URLs before they expired (72h).
+**Root cause:** The script treated FASHN generation + R2 upload as a single atomic operation. When upload failed, no record of the successful FASHN prediction was saved.
+**Rule:** Always persist external API results (prediction IDs, CDN URLs) to the database IMMEDIATELY after the external call succeeds, BEFORE doing any secondary processing (R2 upload, image transformation). If the secondary step fails, you can retry it later using the saved prediction ID. Never lose expensive API results due to downstream failures.
+
 ### 2026-03-16 — Corporate firewall blocks Prisma migrate — create migration SQL manually
 **What happened:** `npx prisma migrate dev` and `npx prisma migrate dev --create-only` both hung indefinitely — they connect to Supabase to check current DB state, even when only creating the migration file.
 **Root cause:** Corporate firewall blocks port 6543 (Supabase pooler). No workaround on this network — VPN, hotspot, and home WiFi don't help because the corporate laptop enforces the policy.
