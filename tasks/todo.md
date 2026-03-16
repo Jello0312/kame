@@ -1,6 +1,6 @@
 # Kame — Active Sprint Tasks
 
-> Updated: 2026-03-16 (Sprint 3.8 beta v2 debug complete)
+> Updated: 2026-03-16 (Sprint 4.0 Session 4 — mobile frontend migration complete)
 > See ROADMAP.md for full multi-week plan.
 
 ---
@@ -420,11 +420,23 @@
 - **FeedService.ts rewrite:** FeedCard simplified from `{ outfitPairingId, topProduct, bottomProduct, soloProduct, totalPrice, isSolo }` to `{ productId, tryOnImageUrl, product }`. Replaced `getTryOnImageForFeed` + `getSoloTryOnImageForFeed` with single `getTryOnImageForProduct` (no layer filter). `getFeedForUser` queries Products directly instead of OutfitPairing, with gender mapping and style tag filtering. Removed solo dress section. Cursor pagination now uses productId. All PRNG helpers preserved (seedFromString, mulberry32, shuffleArray).
 - **Breaking change:** FeedCard shape change breaks mobile frontend — SwipeCard/SwipeDeck expect old fields. Will be updated in Session 4.
 
-### Session 4: Mobile Frontend Updates
-- [ ] Update SwipeCard (single product per card, not outfit pairs)
-- [ ] Update SwipeDeck (1 POST per swipe, no outfitGroupId)
-- [ ] Make body photo optional in onboarding
-- [ ] Update generating step text
+### Session 4: Mobile Frontend Updates ✅
+- [x] Simplify FeedCard type: `{ productId, tryOnImageUrl, product }` (removed outfit pairing fields) ✅
+- [x] Rewrite SwipeCard — single product name + price, removed OutfitPairInfo/SoloProductInfo ✅
+- [x] Simplify SwipeDeck — 1 POST per swipe, removed outfitGroupId + UUID generation ✅
+- [x] Make body photo optional in onboarding (face required, "Required"/"Optional" labels) ✅
+- [x] Fix stale route references — `/onboarding/measurements` → `/onboarding` in index.tsx + not-found.tsx ✅
+- [x] TypeScript: zero errors (fixed 2 pre-existing route type errors) ✅
+
+### Review — Session 4 (2026-03-16)
+- **types/feed.ts:** FeedCard simplified from 6 fields (outfitPairingId, topProduct, bottomProduct, soloProduct, totalPrice, isSolo) to 3 (productId, tryOnImageUrl, product). ProductSummary and FeedResponse unchanged.
+- **SwipeCard.tsx:** Deleted OutfitPairInfo (top+bottom with divider+total) and SoloProductInfo components. Replaced with inline product name + price. Image fallback: `card.tryOnImageUrl ?? card.product.imageUrl`. Platform via `card.product.platform`. Removed 6 dead styles. Net -93 lines across all files.
+- **SwipeDeck.tsx:** Deleted `generateUUID()` function. `fireSwipeApi()` simplified from conditional solo/pair branching (1x or 2x parallel POSTs with outfitGroupId) to single `api.post('/api/swipe', { productId: card.product.id, action })`.
+- **PhotosStep.tsx:** Added `onValidChange` prop (reports `facePhotoUri != null`). Added "Required"/"Optional" subtitle labels on photo upload cards. Updated guidance text to explain face = try-on, body = future sizing.
+- **OnboardingWizard.tsx:** Step 2 (photos) now validates via `stepValid` (was always `true`). Next button disabled until face photo uploaded.
+- **Route fix:** `index.tsx` and `+not-found.tsx` referenced deleted `/onboarding/measurements`. Updated to `/onboarding` (wizard entry point). Resolved 2 pre-existing TS errors.
+- **explore.tsx:** No changes needed — `useInfiniteQuery<FeedResponse>` and `allCards` flatMap already compatible.
+- **GeneratingStep.tsx:** No changes needed — already handles face-only upload (body photo conditional on `store.bodyPhotoUri`).
 
 ### Post-Migration (User Action Required)
 - [ ] Run generate-base-images.ts ($10.58 one-time, ~15-20 min)

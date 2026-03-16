@@ -204,7 +204,7 @@
 - [x] Session 1: BaseProductImage schema + FASHN client methods (raw fetch for product-to-model & model-swap) ✅
 - [x] Session 2: Admin script (generate-base-images.ts) + worker rewrite ✅
 - [x] Session 3: tryon routes + FeedService rewrite (individual products, not outfit pairings) ✅
-- [ ] Session 4: Mobile frontend updates (SwipeCard, SwipeDeck, onboarding)
+- [x] Session 4: Mobile frontend updates (SwipeCard, SwipeDeck, onboarding) ✅
 - [ ] Post-migration: Run generate-base-images.ts ($10.58 one-time)
 - [ ] Post-migration: Test full flow with real user
 

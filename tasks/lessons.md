@@ -333,7 +333,8 @@
 ### General
 - affiliateUrl is intentionally null in MVP — do NOT populate with fake URLs
 - Tabs are Explore/Favorites/Profile — NEVER add a Cart tab in MVP
-- outfitGroupId on SwipeAction links paired items from same swipe — generate UUID client-side
+- Swipe is 1 POST per card: `{ productId, action }`. No outfitGroupId (outfit pairings removed in face-swap migration)
+- Onboarding: face photo is REQUIRED (blocks Next), body photo is OPTIONAL (for future sizing)
 
 ### 2026-03-11 — Missing REDIS_URL silently disables entire try-on pipeline
 **What happened:** Feed showed "Generating your look..." spinner forever. No try-on images were ever generated despite FASHN_API_KEY being configured.
