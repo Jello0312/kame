@@ -2,31 +2,32 @@ import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import fs from 'fs';
 import path from 'path';
 
-// ─── Configuration ──────────────────────────────────
+// ─── Configuration (Cloudflare R2) ──────────────────
 
-const S3_CONFIGURED =
-  !!process.env.AWS_ACCESS_KEY_ID &&
-  !!process.env.AWS_SECRET_ACCESS_KEY &&
-  !!process.env.AWS_S3_BUCKET;
+const R2_CONFIGURED =
+  !!process.env.R2_ENDPOINT &&
+  !!process.env.R2_ACCESS_KEY_ID &&
+  !!process.env.R2_SECRET_ACCESS_KEY;
 
-const s3Client = S3_CONFIGURED
+const s3Client = R2_CONFIGURED
   ? new S3Client({
-      region: process.env.AWS_REGION || 'us-east-1',
+      region: 'auto',
+      endpoint: process.env.R2_ENDPOINT!,
       credentials: {
-        accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+        accessKeyId: process.env.R2_ACCESS_KEY_ID!,
+        secretAccessKey: process.env.R2_SECRET_ACCESS_KEY!,
       },
     })
   : null;
 
-const BUCKET = process.env.AWS_S3_BUCKET || '';
-const REGION = process.env.AWS_REGION || 'us-east-1';
+const BUCKET = process.env.R2_BUCKET ?? 'kame-uploads';
+const R2_PUBLIC_URL = process.env.R2_PUBLIC_URL ?? '';
 const LOCAL_UPLOAD_DIR = path.resolve('uploads');
 
 // ─── Exports ────────────────────────────────────────
 
 export function isS3Configured(): boolean {
-  return S3_CONFIGURED;
+  return R2_CONFIGURED;
 }
 
 export async function uploadFile(
@@ -43,7 +44,7 @@ export async function uploadFile(
         ContentType: contentType,
       }),
     );
-    return `https://${BUCKET}.s3.${REGION}.amazonaws.com/${key}`;
+    return `${R2_PUBLIC_URL}/${key}`;
   }
 
   // Local fallback
@@ -55,8 +56,8 @@ export async function uploadFile(
 }
 
 export function getPublicUrl(key: string): string {
-  if (S3_CONFIGURED) {
-    return `https://${BUCKET}.s3.${REGION}.amazonaws.com/${key}`;
+  if (R2_CONFIGURED) {
+    return `${R2_PUBLIC_URL}/${key}`;
   }
   return `/uploads/${key}`;
 }

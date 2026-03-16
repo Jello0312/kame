@@ -86,7 +86,7 @@ Kame is a mobile-first fashion shopping app where users create a personal avatar
 | Database | PostgreSQL via Prisma ORM | Supabase/Neon hosting |
 | Cache/Queue | Redis + BullMQ | Upstash hosting; async try-on jobs |
 | AI Try-On | FASHN AI API v1.6 (direct, not fal.ai) | REST API; ~$0.075/image |
-| Storage | AWS S3 or Cloudflare R2 | User photos + try-on results |
+| Storage | Cloudflare R2 | User photos + try-on results |
 | State Mgmt | Zustand | Lightweight, TypeScript-first |
 | Data Fetching | TanStack React Query | Caching, offline, loading states |
 | Styling | NativeWind (Tailwind for RN) | Utility-first |
@@ -272,10 +272,11 @@ DATABASE_URL=postgresql://...
 REDIS_URL=redis://...
 JWT_SECRET=<random-32-char-string>
 FASHN_API_KEY=<from-fashn.ai-settings>
-AWS_ACCESS_KEY_ID=<s3-key>
-AWS_SECRET_ACCESS_KEY=<s3-secret>
-AWS_S3_BUCKET=kame-uploads
-AWS_REGION=us-east-1
+R2_ENDPOINT=https://<account-id>.r2.cloudflarestorage.com
+R2_ACCESS_KEY_ID=<r2-access-key>
+R2_SECRET_ACCESS_KEY=<r2-secret-key>
+R2_BUCKET=kame-uploads
+R2_PUBLIC_URL=https://pub-xxxxx.r2.dev
 
 # Mobile
 EXPO_PUBLIC_API_URL=https://<your-railway-url>.railway.app
@@ -290,8 +291,8 @@ EXPO_PUBLIC_API_URL=https://<your-railway-url>.railway.app
 - **Endpoints**: tryon-v1.6 (legacy), product-to-model (base generation), model-swap (per-user face swap)
 - **Inputs**:
   - tryon-v1.6: model_image (user body photo) + garment_image (product image)
-  - product-to-model: product_image + prompt + aspect_ratio
-  - model-swap: model_image (base product photo) + face_reference (user face photo)
+  - product-to-model: product_image + prompt + aspect_ratio (phase 1)
+  - model-swap: model_image (base product photo) + face_reference (user face photo) (phase 2)
 - **Base image prompt**: "full body shot, standing, in a daily life setting background (e.g., street, office, cafe)"
 - **Aspect ratio**: 3:4 for all base images
 - **Output**: image URL hosted by FASHN for 72h — download and re-upload to our S3 for persistence

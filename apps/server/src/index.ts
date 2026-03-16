@@ -41,7 +41,7 @@ if (!isS3Configured()) {
 }
 
 // ─── Startup Diagnostics ────────────────────────────
-console.log(`  Storage : ${isS3Configured() ? 'AWS S3' : 'LOCAL (ephemeral)'}`);
+console.log(`  Storage : ${isS3Configured() ? 'Cloudflare R2' : 'LOCAL (ephemeral)'}`);
 console.log(`  Try-on  : ${process.env.REDIS_URL ? 'Redis / BullMQ' : 'DISABLED (no REDIS_URL)'}`);
 console.log(`  FASHN AI: ${process.env.FASHN_API_KEY ? 'configured' : 'DISABLED (no FASHN_API_KEY)'}`);
 

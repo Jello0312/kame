@@ -20,12 +20,12 @@
 |---------|-------------|------|-----------|
 | **Railway** | Runs your server on the internet | Free trial ($5 credit) | YES |
 | **Upstash** | Redis queue for try-on jobs | Free tier (10k commands/day) | YES for try-on |
-| **AWS S3** | Stores user photos & try-on results | Free tier (5GB) | Recommended |
+| **Cloudflare R2** | Stores user photos & try-on results | Free tier (10GB, no egress fees) | Recommended |
 | **Expo** | Lets testers install the app on their phones | Free | YES |
 
 > **Without Upstash Redis:** The app works (login, swipe, favorites) but virtual try-on won't generate. Users see product photos only.
 >
-> **Without AWS S3:** User photos are stored on the server's local disk. They get deleted every time the server restarts. Not ideal but functional for a short beta test.
+> **Without Cloudflare R2:** User photos are stored on the server's local disk. They get deleted every time the server restarts. Not ideal but functional for a short beta test.
 
 ---
 
@@ -109,10 +109,11 @@ This is the most important step. Your server needs these secrets to function.
 
 | Variable Name | Value | Where to Get It |
 |--------------|-------|-----------------|
-| `AWS_ACCESS_KEY_ID` | Your AWS key | See Step 3 below |
-| `AWS_SECRET_ACCESS_KEY` | Your AWS secret | See Step 3 below |
-| `AWS_S3_BUCKET` | `kame-uploads` | Just type this |
-| `AWS_REGION` | `us-east-1` | Just type this |
+| `R2_ENDPOINT` | Your R2 endpoint URL | See Step 3 below |
+| `R2_ACCESS_KEY_ID` | Your R2 access key | See Step 3 below |
+| `R2_SECRET_ACCESS_KEY` | Your R2 secret key | See Step 3 below |
+| `R2_BUCKET` | `kame-uploads` | Just type this |
+| `R2_PUBLIC_URL` | Your R2 public URL | See Step 3 below |
 
 3. After adding all variables, Railway will automatically redeploy
 
@@ -137,27 +138,30 @@ https://kameserver-production.up.railway.app/health
 
 ---
 
-## STEP 3: Set Up AWS S3 (Optional, 10 min)
+## STEP 3: Set Up Cloudflare R2 (Optional, 10 min)
 
-S3 stores user photos and try-on results permanently. Without it, photos are stored on Railway's local disk and get deleted on every redeploy.
+R2 stores user photos and try-on results permanently. Without it, photos are stored on Railway's local disk and get deleted on every redeploy. R2 has zero egress fees, so viewing images costs nothing.
 
-> **Skip this step if you want a quick test.** The app will work without S3 — photos just won't survive server restarts. You can add S3 later.
+> **Skip this step if you want a quick test.** The app will work without R2 — photos just won't survive server restarts. You can add R2 later.
 
-### If you want to set up S3:
+### If you want to set up R2:
 
-1. Go to **https://aws.amazon.com** and create a free account (requires a credit card but won't charge for free tier)
-2. Go to **S3** in the AWS console
+1. Go to **https://dash.cloudflare.com** and create a free account (no credit card needed for free tier)
+2. In the sidebar, click **R2 Object Storage**
 3. Click **"Create bucket"**
    - **Name:** `kame-uploads`
-   - **Region:** `US East (N. Virginia)` us-east-1
-   - Uncheck "Block all public access" (needed so the app can view images)
+   - **Location:** Automatic
    - Click **Create bucket**
-4. Go to **IAM** → **Users** → **Create user**
-   - **Name:** `kame-server`
-   - Attach policy: `AmazonS3FullAccess`
-   - Create the user → go to **Security credentials** → **Create access key**
-   - Copy the **Access Key ID** and **Secret Access Key**
-5. Go back to Railway → **Variables** tab → add the 4 AWS variables from the table above
+4. Enable public access for the bucket:
+   - Go to the bucket → **Settings** → **Public access**
+   - Enable **R2.dev subdomain** — copy the public URL (looks like `https://pub-xxxxx.r2.dev`)
+5. Create an API token:
+   - Go back to **R2 Overview** → **Manage R2 API Tokens** → **Create API token**
+   - **Permissions:** Object Read & Write
+   - **Bucket scope:** `kame-uploads`
+   - Click **Create API Token**
+   - Copy the **Access Key ID**, **Secret Access Key**, and note your **endpoint URL** (shown on the token page, looks like `https://<account-id>.r2.cloudflarestorage.com`)
+6. Go back to Railway → **Variables** tab → add the 5 R2 variables from the table above
 
 ---
 
@@ -292,7 +296,7 @@ https://docs.google.com/forms/d/1s5PfWv4gw-jMEFfzG9KWdt1Cl_EGPIrev4Ua8MX-4Vw/vie
 | "Expo Go" can't find the server | Make sure `pnpm dev:mobile` is running on your laptop |
 | Swipe deck is empty | The database might not have products. Run `pnpm db:seed` on the server |
 | Try-on images never generate | Check that REDIS_URL and FASHN_API_KEY are set in Railway variables |
-| Photos disappear after redeploy | You need to set up S3 (Step 3) for permanent photo storage |
+| Photos disappear after redeploy | You need to set up Cloudflare R2 (Step 3) for permanent photo storage |
 
 ---
 
@@ -300,7 +304,7 @@ https://docs.google.com/forms/d/1s5PfWv4gw-jMEFfzG9KWdt1Cl_EGPIrev4Ua8MX-4Vw/vie
 
 - [ ] Step 1: Upstash Redis created, got `redis://` URL
 - [ ] Step 2: Railway deployed, all env vars set, /health returns OK
-- [ ] Step 3: (Optional) AWS S3 bucket created
+- [ ] Step 3: (Optional) Cloudflare R2 bucket created
 - [ ] Step 4: Mobile .env updated to Railway URL
 - [ ] Step 5: Tested full flow on your phone via Expo Go
 - [ ] Step 6: Shared QR code + feedback link with testers
