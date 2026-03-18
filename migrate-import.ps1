@@ -128,7 +128,8 @@ if (Test-Path "$bundle\claude-config\project-settings-local.json") {
     $content = Get-Content "$bundle\claude-config\project-settings-local.json" -Raw
     # Replace the old path pattern with the new one
     $oldPattern = 'C:\\\\Users\\\\Ho Jolene\\\\OneDrive - The Boston Consulting Group, Inc\\\\Desktop\\\\Claude\\\\KAME'
-    $newPattern = 'C:\\\\Users\\\\Ho Jolene\\\\Desktop\\\\KAME'
+    $username = $env:USERNAME
+    $newPattern = "C:\\\\Users\\\\$username\\\\Desktop\\\\KAME"
     $content = $content -replace [regex]::Escape($oldPattern), $newPattern
     # Also handle forward-slash variants
     $content = $content -replace 'OneDrive - The Boston Consulting Group, Inc/Desktop/Claude/KAME', 'Desktop/KAME'
