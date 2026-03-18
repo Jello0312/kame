@@ -1,11 +1,16 @@
 # Kame — Active Sprint Tasks
 
-> Updated: 2026-03-17 (Sprint 5.0 — Security Hardening complete)
+> Updated: 2026-03-18 (Sprint 5.1 — Beta Bug Fixes complete)
 > See ROADMAP.md for full multi-week plan.
 
 ---
 
 ## ✅ COMPLETED
+
+### Sprint 5.1 — Beta Bug Fixes (Session 6) ✅
+- [x] Fix Explore 500: batch try-on query (PgBouncer pool exhaustion) ✅
+- [x] Fix Favorites crash: remove Swipeable, add visible delete button ✅
+- [x] Prioritize completed try-on images first in feed ✅
 
 ### Sprint 1.1 — Project Scaffolding ✅
 - [x] Monorepo (pnpm workspaces, Expo, Express, shared-types)

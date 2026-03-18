@@ -401,6 +401,21 @@
 **Root cause:** The script treated FASHN generation + R2 upload as a single atomic operation. When upload failed, no record of the successful FASHN prediction was saved.
 **Rule:** Always persist external API results (prediction IDs, CDN URLs) to the database IMMEDIATELY after the external call succeeds, BEFORE doing any secondary processing (R2 upload, image transformation). If the secondary step fails, you can retry it later using the saved prediction ID. Never lose expensive API results due to downstream failures.
 
+### 2026-03-18 — Supabase PgBouncer pool exhaustion from parallel DB queries
+**What happened:** Explore page returned 500 "Internal server error". Railway logs showed `MaxClientsInSessionMode: max clients reached` from Supabase.
+**Root cause:** FeedService used `Promise.all` to query try-on status for ALL 76 matching products individually (76 parallel connections). Supabase free tier PgBouncer limits to ~15 concurrent connections.
+**Rule:** Never use `Promise.all` with individual DB queries on a large array. Use a single `findMany` with `{ in: [...ids] }` to batch-fetch. This applies to ANY hosted Postgres with connection pooling (Supabase, Neon, etc.).
+
+### 2026-03-18 — react-native-gesture-handler Swipeable crashes in functional components
+**What happened:** Favorites tab crashed with "[Gesture Handler] Failed to obtain view for PanGestureHandler. Note that old API doesn't support functional components." Both legacy `Swipeable` and `ReanimatedSwipeable` (which internally creates PanGestureHandler) caused the error.
+**Root cause:** `ReanimatedSwipeable` still uses old-style handler components internally. Version mismatch or Expo Go runtime incompatibility with gesture handler v2.28's internal PanGestureHandler creation.
+**Rule:** For MVP, avoid `Swipeable` entirely — use visible buttons (trash icon, etc.) instead of swipe-to-reveal gestures. More discoverable for users and zero gesture handler compatibility issues. The modern `Gesture.Pan()` API (used in SwipeDeck) works fine — it's specifically `Swipeable`/`ReanimatedSwipeable` that's broken.
+
+### 2026-03-18 — Prioritize completed try-on images in feed ordering
+**What happened:** ~1 in 3 swipe cards showed "Generating your look..." spinner because the feed served products in random order regardless of try-on status. Products with PENDING/FAILED try-ons appeared alongside completed ones.
+**Root cause:** Feed shuffled all products equally. With concurrency=2 and 20 jobs, only ~5-10 try-ons complete before the user starts swiping.
+**Rule:** Split feed cards into two groups: completed try-on images first, then products without try-on. Shuffle within each group but always serve completed ones first. Users see their best content immediately.
+
 ### 2026-03-16 — Corporate firewall blocks Prisma migrate — create migration SQL manually
 **What happened:** `npx prisma migrate dev` and `npx prisma migrate dev --create-only` both hung indefinitely — they connect to Supabase to check current DB state, even when only creating the migration file.
 **Root cause:** Corporate firewall blocks port 6543 (Supabase pooler). No workaround on this network — VPN, hotspot, and home WiFi don't help because the corporate laptop enforces the policy.

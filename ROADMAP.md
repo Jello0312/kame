@@ -1,8 +1,8 @@
 # Kame — Development Roadmap
 
-> Last updated: 2026-03-17
+> Last updated: 2026-03-18
 > Current phase: **MVP Sprint (Weeks 1-3)**
-> Current step: **Sprint 4.0 — Face-Swap Migration** (complete)
+> Current step: **Sprint 5.1 — Beta Bug Fixes** (complete)
 
 ## Progress Tracking Convention
 - `[ ]` = Todo
@@ -200,13 +200,18 @@
 - [x] SkeletonFavoriteCard updated to match new horizontal layout ✅
 - [x] Shopping cart icon header replacing KameLogo ✅
 
-### Sprint 4.0 — Face-Swap Architecture Migration
+### Sprint 4.0 — Face-Swap Architecture Migration ✅ COMPLETE
 - [x] Session 1: BaseProductImage schema + FASHN client methods (raw fetch for product-to-model & model-swap) ✅
 - [x] Session 2: Admin script (generate-base-images.ts) + worker rewrite ✅
 - [x] Session 3: tryon routes + FeedService rewrite (individual products, not outfit pairings) ✅
 - [x] Session 4: Mobile frontend updates (SwipeCard, SwipeDeck, onboarding) ✅
 - [x] Post-migration: Generate base images — 133/141 completed (8 skipped, excluded from beta) ✅
-- [ ] Post-migration: Test full flow with real user
+- [x] Post-migration: Test full flow with real user ✅
+
+### Sprint 5.1 — Beta Bug Fixes (Session 6) ✅ COMPLETE
+- [x] Fix Explore 500 error: replace N+1 try-on queries with single batch `findMany` (PgBouncer pool exhaustion) ✅
+- [x] Fix Favorites crash: remove gesture-handler Swipeable, replace with visible delete button ✅
+- [x] Prioritize completed try-on images in feed (completed first, pending/failed last) ✅
 
 ---
 
