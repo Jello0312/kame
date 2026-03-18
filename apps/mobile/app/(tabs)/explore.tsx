@@ -1,7 +1,8 @@
 import { useState, useCallback, useRef } from 'react';
-import { View, Text, Pressable, Alert, StyleSheet } from 'react-native';
+import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useInfiniteQuery, useMutation } from '@tanstack/react-query';
+import { useInfiniteQuery } from '@tanstack/react-query';
+import { X } from 'lucide-react-native';
 
 import { AuthBackground } from '../../components/AuthBackground';
 import { SwipeDeck } from '../../components/SwipeDeck';
@@ -9,16 +10,18 @@ import { KameLogo } from '../../components/KameLogo';
 import { SkeletonSwipeCard } from '../../components/SkeletonCard';
 import { api } from '../../services/api';
 import { queryClient } from '../../lib/queryClient';
-import { COLORS, FONTS, SPACING, RADIUS } from '../../src/theme/constants';
+import { COLORS, FONTS, SPACING, RADIUS, SHADOWS } from '../../src/theme/constants';
 import type { FeedCard, FeedResponse } from '../../types/feed';
 
 const COOLDOWN_MS = 15 * 60 * 1000; // 15 minutes
+const COOLDOWN_MESSAGE = 'Come Back in 15mins For\nYour Next Fashion Show!';
 
 // ─── Component ────────────────────────────────────────────────
 
 export default function ExploreScreen() {
   const [isEmpty, setIsEmpty] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [showCooldownCard, setShowCooldownCard] = useState(false);
   const lastBatchTime = useRef<number>(0);
 
   // Cursor-based infinite feed
@@ -39,7 +42,6 @@ export default function ExploreScreen() {
         ? `/api/feed?cursor=${encodeURIComponent(cursor)}&limit=10`
         : '/api/feed?limit=10';
       const response = await api.get<FeedResponse>(path);
-      // api.get throws on non-success, so data is always present here
       return response.data!;
     },
     initialPageParam: undefined as string | undefined,
@@ -52,10 +54,7 @@ export default function ExploreScreen() {
   // ─── Callbacks ────────────────────────────────────────────────
 
   const handleSwipe = useCallback(
-    (_card: FeedCard, _direction: 'left' | 'right') => {
-      // Swipe API is fire-and-forget inside SwipeDeck.
-      // Parent can add analytics tracking here if needed.
-    },
+    (_card: FeedCard, _direction: 'left' | 'right') => {},
     [],
   );
 
@@ -73,12 +72,9 @@ export default function ExploreScreen() {
     const now = Date.now();
     const elapsed = now - lastBatchTime.current;
 
+    // Client-side cooldown check
     if (lastBatchTime.current > 0 && elapsed < COOLDOWN_MS) {
-      Alert.alert(
-        'Come Back Soon!',
-        'Come Back in 15min For Your Next Fashion Show!',
-        [{ text: 'OK' }],
-      );
+      setShowCooldownCard(true);
       return;
     }
 
@@ -108,17 +104,9 @@ export default function ExploreScreen() {
       queryClient.removeQueries({ queryKey: ['feed'] });
       setIsEmpty(false);
       refetch();
-    } catch (err) {
-      // 429 = cooldown still active
-      if (err instanceof Error && err.message.includes('wait')) {
-        Alert.alert(
-          'Come Back Soon!',
-          'Come Back in 15min For Your Next Fashion Show!',
-          [{ text: 'OK' }],
-        );
-      } else {
-        Alert.alert('Error', 'Failed to generate new styles. Please try again.');
-      }
+    } catch {
+      // Any error (429 cooldown or other) — show cooldown card
+      setShowCooldownCard(true);
     } finally {
       setIsGenerating(false);
     }
@@ -159,7 +147,7 @@ export default function ExploreScreen() {
     );
   }
 
-  // ─── Empty State ──────────────────────────────────────────────
+  // ─── Empty / Session Complete State ───────────────────────────
 
   if (isEmpty || allCards.length === 0) {
     return (
@@ -169,9 +157,7 @@ export default function ExploreScreen() {
           <KameLogo />
         </View>
         <View style={styles.centered}>
-          <Text style={styles.sessionText}>
-            Come Back in 15min For{'\n'}Your Next Fashion Show!
-          </Text>
+          <Text style={styles.sessionText}>{COOLDOWN_MESSAGE}</Text>
           <Pressable
             style={[styles.retryButton, isGenerating && { opacity: 0.6 }]}
             onPress={handleRefresh}
@@ -182,6 +168,22 @@ export default function ExploreScreen() {
             </Text>
           </Pressable>
         </View>
+
+        {/* Cooldown overlay card */}
+        {showCooldownCard && (
+          <View style={styles.overlayContainer}>
+            <View style={styles.cooldownCard}>
+              <Pressable
+                style={styles.closeButton}
+                onPress={() => setShowCooldownCard(false)}
+                hitSlop={12}
+              >
+                <X size={20} color={COLORS.gray400} />
+              </Pressable>
+              <Text style={styles.cooldownText}>{COOLDOWN_MESSAGE}</Text>
+            </View>
+          </View>
+        )}
       </SafeAreaView>
     );
   }
@@ -246,5 +248,43 @@ const styles = StyleSheet.create({
     color: COLORS.navy,
     fontFamily: FONTS.semiBold,
     fontSize: 16,
+  },
+
+  // Cooldown overlay card
+  overlayContainer: {
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: SPACING['2xl'],
+  },
+  cooldownCard: {
+    backgroundColor: COLORS.white,
+    borderRadius: 20,
+    paddingHorizontal: SPACING['2xl'],
+    paddingTop: SPACING['3xl'],
+    paddingBottom: SPACING['2xl'],
+    width: '100%',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 16,
+    elevation: 10,
+  },
+  closeButton: {
+    position: 'absolute',
+    top: SPACING.md,
+    right: SPACING.md,
+    width: 44,
+    height: 44,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  cooldownText: {
+    color: COLORS.tealBright,
+    fontFamily: FONTS.bold,
+    fontSize: 20,
+    textAlign: 'center',
+    lineHeight: 30,
   },
 });

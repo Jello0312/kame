@@ -98,7 +98,7 @@ router.post(
         .filter((id): id is string => id !== null);
 
       // 6. Query products — filtered by gender, style, excluding already-processed
-      const products = await prisma.product.findMany({
+      let products = await prisma.product.findMany({
         where: {
           gender: { in: genderFilter },
           id: { notIn: existingProductIds },
@@ -109,6 +109,18 @@ router.post(
         select: { id: true },
         take: MAX_CARDS,
       });
+
+      // Fallback: if style filter returned 0 results, retry without style filter
+      if (products.length === 0 && userStyles.length > 0) {
+        products = await prisma.product.findMany({
+          where: {
+            gender: { in: genderFilter },
+            id: { notIn: existingProductIds },
+          },
+          select: { id: true },
+          take: MAX_CARDS,
+        });
+      }
 
       // 7. For each product, look up base image and queue face-swap job
       let totalQueued = 0;
