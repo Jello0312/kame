@@ -11,7 +11,7 @@ const router: Router = Router();
 
 // ─── Constants ───────────────────────────────────────
 
-const MAX_CARDS = 20;
+const MAX_CARDS = 10; // 10 cards × 5 credits (model-swap + face ref) = 50 credits/session
 const BATCH_COOLDOWN_MS = 15 * 60 * 1000; // 15 minutes
 
 // ─── Interfaces ──────────────────────────────────────
