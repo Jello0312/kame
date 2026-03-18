@@ -166,18 +166,32 @@ export async function getFeedForUser(
     tryOnResults.map((r) => [r.productId, r.resultImageUrl ? resolveToPublicUrl(r.resultImageUrl) : null]),
   );
 
-  // 7. Build FeedCard array
-  const allCards: FeedCard[] = styledProducts.map((product) => ({
-    productId: product.id,
-    tryOnImageUrl: tryOnMap.get(product.id) ?? null,
-    product: toProductSummary(product),
-  }));
+  // 7. Build FeedCard array — split by try-on availability
+  const withTryOn: FeedCard[] = [];
+  const withoutTryOn: FeedCard[] = [];
 
-  // 8. Deterministic shuffle (seeded by userId + date for stable pagination)
+  for (const product of styledProducts) {
+    const tryOnUrl = tryOnMap.get(product.id) ?? null;
+    const card: FeedCard = {
+      productId: product.id,
+      tryOnImageUrl: tryOnUrl,
+      product: toProductSummary(product),
+    };
+    if (tryOnUrl) {
+      withTryOn.push(card);
+    } else {
+      withoutTryOn.push(card);
+    }
+  }
+
+  // 8. Deterministic shuffle each group, then concat (try-on first)
   const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
   const seed = seedFromString(userId + today);
   const random = mulberry32(seed);
-  const shuffled = shuffleArray(allCards, random);
+  const shuffled = [
+    ...shuffleArray(withTryOn, random),
+    ...shuffleArray(withoutTryOn, random),
+  ];
 
   // 9. Cursor pagination
   let startIndex = 0;

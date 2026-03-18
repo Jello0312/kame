@@ -1,22 +1,18 @@
 // ═══════════════════════════════════════════════════════════════
 // FavoriteCard — Product card matching CheckoutItem layout
 // ═══════════════════════════════════════════════════════════════
-// Thumbnail | name + badge + brand | price + Shop button.
-// Swipe left to reveal delete action. Tap Shop to open link.
+// Thumbnail | name + badge + brand | price + Shop button + delete.
 // ═══════════════════════════════════════════════════════════════
 
-import { useRef } from 'react';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { ExternalLink, Trash2 } from 'lucide-react-native';
 import {
-  Animated,
   Pressable,
   StyleSheet,
   Text,
   View,
 } from 'react-native';
-import { Swipeable } from 'react-native-gesture-handler';
 
 import {
   COLORS,
@@ -51,61 +47,54 @@ function getBadgeColor(platform: string): string {
 // ── Component ─────────────────────────────────────────────────
 
 export function FavoriteCard({ item, onShop, onRemove }: FavoriteCardProps) {
-  const swipeableRef = useRef<Swipeable>(null);
-
-  const renderRightActions = () => (
-    <Pressable
-      onPress={() => {
-        swipeableRef.current?.close();
-        onRemove(item);
-      }}
-      style={styles.deleteAction}
-    >
-      <Trash2 size={22} color={COLORS.white} />
-      <Text style={styles.deleteText}>Delete</Text>
-    </Pressable>
-  );
-
   return (
-    <Swipeable
-      ref={swipeableRef}
-      renderRightActions={renderRightActions}
-      overshootRight={false}
-      friction={2}
-    >
-      <View style={styles.card}>
-        {/* Thumbnail */}
-        <Image
-          source={{ uri: item.imageUrl }}
-          style={styles.thumbnail}
-          contentFit="cover"
-          transition={200}
-        />
+    <View style={styles.card}>
+      {/* Thumbnail */}
+      <Image
+        source={{ uri: item.imageUrl }}
+        style={styles.thumbnail}
+        contentFit="cover"
+        transition={200}
+      />
 
-        {/* Info */}
-        <View style={styles.info}>
-          <View style={styles.topRow}>
-            <Text style={styles.itemName} numberOfLines={2}>
-              {item.name}
-            </Text>
-            {item.platform !== '' && (
-              <View style={[styles.badge, { backgroundColor: getBadgeColor(item.platform) }]}>
-                <Text style={styles.badgeText}>{item.platform}</Text>
-              </View>
-            )}
-          </View>
-
-          {item.brand != null && item.brand !== '' && (
-            <Text style={styles.brand} numberOfLines={1}>
-              {item.brand}
-            </Text>
+      {/* Info */}
+      <View style={styles.info}>
+        <View style={styles.topRow}>
+          <Text style={styles.itemName} numberOfLines={2}>
+            {item.name}
+          </Text>
+          {item.platform !== '' && (
+            <View style={[styles.badge, { backgroundColor: getBadgeColor(item.platform) }]}>
+              <Text style={styles.badgeText}>{item.platform}</Text>
+            </View>
           )}
+        </View>
 
-          <View style={styles.bottomRow}>
-            <Text style={styles.price}>
-              {formatPrice(item.price, item.currency)}
-            </Text>
+        {item.brand != null && item.brand !== '' && (
+          <Text style={styles.brand} numberOfLines={1}>
+            {item.brand}
+          </Text>
+        )}
 
+        <View style={styles.bottomRow}>
+          <Text style={styles.price}>
+            {formatPrice(item.price, item.currency)}
+          </Text>
+
+          <View style={styles.actions}>
+            {/* Delete button */}
+            <Pressable
+              onPress={() => onRemove(item)}
+              style={({ pressed }) => [
+                styles.deleteButton,
+                pressed && { opacity: 0.7 },
+              ]}
+              hitSlop={8}
+            >
+              <Trash2 size={18} color={COLORS.coral} />
+            </Pressable>
+
+            {/* Shop button */}
             <Pressable
               onPress={() => onShop(item)}
               style={({ pressed }) => [
@@ -126,7 +115,7 @@ export function FavoriteCard({ item, onShop, onRemove }: FavoriteCardProps) {
           </View>
         </View>
       </View>
-    </Swipeable>
+    </View>
   );
 }
 
@@ -200,6 +189,24 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
   },
 
+  // Actions row
+  actions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.sm,
+  },
+
+  // Delete button
+  deleteButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: COLORS.gray200,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
   // Shop button
   shopButton: {
     borderRadius: RADIUS.button,
@@ -218,22 +225,5 @@ const styles = StyleSheet.create({
     color: COLORS.white,
     fontFamily: FONTS.semiBold,
     fontSize: 13,
-  },
-
-  // Swipe-to-delete action
-  deleteAction: {
-    backgroundColor: COLORS.coral,
-    justifyContent: 'center',
-    alignItems: 'center',
-    width: 80,
-    borderTopRightRadius: RADIUS.input,
-    borderBottomRightRadius: RADIUS.input,
-    paddingHorizontal: SPACING.md,
-  },
-  deleteText: {
-    color: COLORS.white,
-    fontFamily: FONTS.semiBold,
-    fontSize: 11,
-    marginTop: 4,
   },
 });
