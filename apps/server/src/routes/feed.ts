@@ -31,24 +31,7 @@ router.get(
       };
       res.status(200).json(response);
     } catch (err) {
-      // Temporary debug: log full error for diagnosis
-      console.error('[FEED ERROR]', err instanceof Error ? err.stack : err);
       next(err);
-    }
-  },
-);
-
-// ─── Debug Route (TEMPORARY — remove before production) ────
-router.get(
-  '/debug',
-  authenticate,
-  async (req: Request, res: Response) => {
-    try {
-      const result = await FeedService.getFeedForUser(req.userId!, undefined, 3);
-      res.json({ success: true, cards: result.cards.length });
-    } catch (err) {
-      const error = err instanceof Error ? { message: err.message, stack: err.stack, name: err.name } : err;
-      res.status(500).json({ success: false, debug: error });
     }
   },
 );

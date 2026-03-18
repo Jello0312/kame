@@ -152,25 +152,34 @@ export async function getFeedForUser(
         )
       : products;
 
-  // 6. Build FeedCard array
-  const allCards: FeedCard[] = await Promise.all(
-    styledProducts.map(async (product) => {
-      const tryOnImageUrl = await getTryOnImageForProduct(userId, product.id);
-      return {
-        productId: product.id,
-        tryOnImageUrl,
-        product: toProductSummary(product),
-      };
-    }),
+  // 6. Batch-fetch all try-on results in a single query (avoids N+1 / pool exhaustion)
+  const productIds = styledProducts.map((p) => p.id);
+  const tryOnResults = await prisma.tryOnResult.findMany({
+    where: {
+      userId,
+      productId: { in: productIds },
+      status: 'COMPLETED',
+    },
+    select: { productId: true, resultImageUrl: true },
+  });
+  const tryOnMap = new Map(
+    tryOnResults.map((r) => [r.productId, r.resultImageUrl ? resolveToPublicUrl(r.resultImageUrl) : null]),
   );
 
-  // 7. Deterministic shuffle (seeded by userId + date for stable pagination)
+  // 7. Build FeedCard array
+  const allCards: FeedCard[] = styledProducts.map((product) => ({
+    productId: product.id,
+    tryOnImageUrl: tryOnMap.get(product.id) ?? null,
+    product: toProductSummary(product),
+  }));
+
+  // 8. Deterministic shuffle (seeded by userId + date for stable pagination)
   const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
   const seed = seedFromString(userId + today);
   const random = mulberry32(seed);
   const shuffled = shuffleArray(allCards, random);
 
-  // 8. Cursor pagination
+  // 9. Cursor pagination
   let startIndex = 0;
   if (cursor) {
     const cursorIndex = shuffled.findIndex((card) => card.productId === cursor);
@@ -179,13 +188,13 @@ export async function getFeedForUser(
     }
   }
 
-  // 9. Take `limit` items
+  // 10. Take `limit` items
   const page = shuffled.slice(startIndex, startIndex + limit);
 
-  // 10. Set nextCursor
+  // 11. Set nextCursor
   const lastCard = page[page.length - 1];
   const nextCursor = page.length < limit ? null : lastCard?.productId ?? null;
 
-  // 11. Return result
+  // 12. Return result
   return { cards: page, nextCursor };
 }
