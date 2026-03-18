@@ -12,11 +12,13 @@ const router: Router = Router();
 // ─── Constants ───────────────────────────────────────
 
 const MAX_CARDS = 20;
+const BATCH_COOLDOWN_MS = 15 * 60 * 1000; // 15 minutes
 
 // ─── Interfaces ──────────────────────────────────────
 
 interface BatchResult {
   totalQueued: number;
+  remainingProducts: number;
 }
 
 interface StatusResult {
@@ -39,6 +41,24 @@ router.post(
       }
 
       const userId = req.userId!;
+
+      // 0. Check cooldown — prevent batch spam (skip on first batch / onboarding)
+      const lastTryOn = await prisma.tryOnResult.findFirst({
+        where: { userId },
+        orderBy: { createdAt: 'desc' },
+        select: { createdAt: true },
+      });
+
+      if (lastTryOn) {
+        const elapsed = Date.now() - lastTryOn.createdAt.getTime();
+        if (elapsed < BATCH_COOLDOWN_MS) {
+          const minutesLeft = Math.ceil((BATCH_COOLDOWN_MS - elapsed) / 60000);
+          throw new AppError(
+            `Please wait ${minutesLeft} more minute${minutesLeft === 1 ? '' : 's'} before generating new styles`,
+            429,
+          );
+        }
+      }
 
       // 1. Get user avatar (need face photo for face-swap)
       const avatar = await prisma.userAvatar.findUnique({
@@ -126,7 +146,22 @@ router.post(
         totalQueued++;
       }
 
-      const result: BatchResult = { totalQueued };
+      // Count remaining products that could still get try-ons
+      const allExistingIds = [
+        ...existingProductIds,
+        ...products.map((p) => p.id),
+      ];
+      const remainingCount = await prisma.product.count({
+        where: {
+          gender: { in: genderFilter },
+          id: { notIn: allExistingIds },
+          ...(userStyles.length > 0
+            ? { styleTags: { hasSome: userStyles } }
+            : {}),
+        },
+      });
+
+      const result: BatchResult = { totalQueued, remainingProducts: remainingCount };
 
       const response: ApiResponse<BatchResult> = {
         success: true,

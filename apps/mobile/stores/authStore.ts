@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import * as storage from '../src/storage';
 import { api, ApiError } from '../services/api';
+import { queryClient } from '../lib/queryClient';
 
 const TOKEN_KEY = 'kame_auth_token';
 
@@ -85,6 +86,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   logout: async () => {
     await storage.deleteItem(TOKEN_KEY);
+    queryClient.clear();
 
     set({
       token: null,

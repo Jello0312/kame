@@ -1,20 +1,25 @@
-import { useState, useCallback } from 'react';
-import { View, Text, Pressable, StyleSheet } from 'react-native';
+import { useState, useCallback, useRef } from 'react';
+import { View, Text, Pressable, Alert, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useInfiniteQuery } from '@tanstack/react-query';
+import { useInfiniteQuery, useMutation } from '@tanstack/react-query';
 
 import { AuthBackground } from '../../components/AuthBackground';
 import { SwipeDeck } from '../../components/SwipeDeck';
 import { KameLogo } from '../../components/KameLogo';
 import { SkeletonSwipeCard } from '../../components/SkeletonCard';
 import { api } from '../../services/api';
+import { queryClient } from '../../lib/queryClient';
 import { COLORS, FONTS, SPACING, RADIUS } from '../../src/theme/constants';
 import type { FeedCard, FeedResponse } from '../../types/feed';
+
+const COOLDOWN_MS = 15 * 60 * 1000; // 15 minutes
 
 // ─── Component ────────────────────────────────────────────────
 
 export default function ExploreScreen() {
   const [isEmpty, setIsEmpty] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const lastBatchTime = useRef<number>(0);
 
   // Cursor-based infinite feed
   const {
@@ -64,9 +69,59 @@ export default function ExploreScreen() {
     setIsEmpty(true);
   }, []);
 
-  const handleRefresh = useCallback(() => {
-    setIsEmpty(false);
-    refetch();
+  const handleRefresh = useCallback(async () => {
+    const now = Date.now();
+    const elapsed = now - lastBatchTime.current;
+
+    if (lastBatchTime.current > 0 && elapsed < COOLDOWN_MS) {
+      Alert.alert(
+        'Come Back Soon!',
+        'Come Back in 15min For Your Next Fashion Show!',
+        [{ text: 'OK' }],
+      );
+      return;
+    }
+
+    // Generate new batch of try-on images
+    setIsGenerating(true);
+    try {
+      await api.post('/api/tryon/batch', {});
+      lastBatchTime.current = Date.now();
+
+      // Poll for completion (up to 60s)
+      let attempts = 0;
+      while (attempts < 20) {
+        await new Promise((r) => setTimeout(r, 3000));
+        const status = await api.get<{
+          completed: number;
+          pending: number;
+          processing: number;
+        }>('/api/tryon/status');
+        const s = status.data!;
+        if (s.completed >= 5 || (s.pending === 0 && s.processing === 0)) {
+          break;
+        }
+        attempts++;
+      }
+
+      // Clear feed cache and refetch with new try-on images
+      queryClient.removeQueries({ queryKey: ['feed'] });
+      setIsEmpty(false);
+      refetch();
+    } catch (err) {
+      // 429 = cooldown still active
+      if (err instanceof Error && err.message.includes('wait')) {
+        Alert.alert(
+          'Come Back Soon!',
+          'Come Back in 15min For Your Next Fashion Show!',
+          [{ text: 'OK' }],
+        );
+      } else {
+        Alert.alert('Error', 'Failed to generate new styles. Please try again.');
+      }
+    } finally {
+      setIsGenerating(false);
+    }
   }, [refetch]);
 
   // ─── Loading State ────────────────────────────────────────────
@@ -114,12 +169,17 @@ export default function ExploreScreen() {
           <KameLogo />
         </View>
         <View style={styles.centered}>
-          <Text style={styles.emptyTitle}>All caught up!</Text>
-          <Text style={styles.emptySubtitle}>
-            Check back later for new styles
+          <Text style={styles.sessionText}>
+            Come Back in 15min For{'\n'}Your Next Fashion Show!
           </Text>
-          <Pressable style={styles.retryButton} onPress={handleRefresh}>
-            <Text style={styles.retryButtonText}>Refresh</Text>
+          <Pressable
+            style={[styles.retryButton, isGenerating && { opacity: 0.6 }]}
+            onPress={handleRefresh}
+            disabled={isGenerating}
+          >
+            <Text style={styles.retryButtonText}>
+              {isGenerating ? 'Generating...' : 'Refresh'}
+            </Text>
           </Pressable>
         </View>
       </SafeAreaView>
@@ -168,17 +228,12 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: SPACING.xl,
   },
-  emptyTitle: {
-    color: COLORS.navy,
+  sessionText: {
+    color: COLORS.tealBright,
     fontFamily: FONTS.bold,
-    fontSize: 24,
-    marginBottom: SPACING.sm,
-  },
-  emptySubtitle: {
-    color: COLORS.gray500,
-    fontFamily: FONTS.regular,
-    fontSize: 16,
+    fontSize: 22,
     textAlign: 'center',
+    lineHeight: 32,
     marginBottom: SPACING['2xl'],
   },
   retryButton: {

@@ -56,6 +56,8 @@ export function SwipeDeck({ cards, onSwipe, onNeedMore, onEmpty }: SwipeDeckProp
   // Shared animation values for the top card
   const translateX = useSharedValue(0);
   const translateY = useSharedValue(0);
+  // Hides top card during index transition to prevent flash
+  const isTransitioning = useSharedValue(false);
 
   // Spring config scoped to component so it references SWIPE constants
   const springConfig = {
@@ -72,6 +74,13 @@ export function SwipeDeck({ cards, onSwipe, onNeedMore, onEmpty }: SwipeDeckProp
 
   // Top card: translate + rotate with the gesture
   const topCardStyle = useAnimatedStyle(() => {
+    // Force invisible during card transition to prevent flash
+    if (isTransitioning.value) {
+      return {
+        transform: [{ translateX: 0 }, { translateY: 0 }, { rotate: '0deg' }],
+        opacity: 0,
+      };
+    }
     const absX = Math.abs(translateX.value);
     return {
       transform: [
@@ -150,19 +159,27 @@ export function SwipeDeck({ cards, onSwipe, onNeedMore, onEmpty }: SwipeDeckProp
       // Fire API (fire-and-forget, non-blocking)
       fireSwipeApi(card, direction);
 
-      // 1. Cancel any in-flight exit animation
+      // 1. Hide top card immediately (prevents flash when resetting translateX)
+      isTransitioning.value = true;
+
+      // 2. Cancel any in-flight exit animation
       cancelAnimation(translateX);
       cancelAnimation(translateY);
 
-      // 2. Reset animation values BEFORE advancing index
+      // 3. Reset animation values (invisible due to isTransitioning)
       translateX.value = 0;
       translateY.value = 0;
 
-      // 3. Defer state update to next tick so the reset is processed first
+      // 4. Advance index, then reveal new top card after React renders
       const nextIndex = currentIndex + 1;
       setTimeout(() => {
         setCurrentIndex(nextIndex);
         onSwipe(card, direction);
+
+        // Reveal new card after React mounts it (~1 frame)
+        requestAnimationFrame(() => {
+          isTransitioning.value = false;
+        });
 
         if (cards.length - nextIndex < 3) {
           onNeedMore();
@@ -172,7 +189,7 @@ export function SwipeDeck({ cards, onSwipe, onNeedMore, onEmpty }: SwipeDeckProp
         }
       }, 0);
     },
-    [currentIndex, cards, onSwipe, onNeedMore, onEmpty, translateX, translateY],
+    [currentIndex, cards, onSwipe, onNeedMore, onEmpty, translateX, translateY, isTransitioning],
   );
 
   // ─── Pan Gesture (Gesture.Pan composable API) ────────────────────

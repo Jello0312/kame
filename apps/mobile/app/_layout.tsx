@@ -6,19 +6,11 @@ import { StatusBar } from 'expo-status-bar';
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClientProvider } from '@tanstack/react-query';
 import { useAuthStore } from '../stores/authStore';
 import { ErrorBoundary } from '../components/ErrorBoundary';
+import { queryClient } from '../lib/queryClient';
 import { COLORS } from '../src/theme/constants';
-
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 5 * 60 * 1000,
-      retry: 2,
-    },
-  },
-});
 
 SplashScreen.preventAutoHideAsync();
 
