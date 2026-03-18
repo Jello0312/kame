@@ -315,8 +315,10 @@ EXPO_PUBLIC_API_URL=https://<your-railway-url>.railway.app
 ### Try-On Pre-Generation Strategy
 Phase 1 (one-time admin): Run `generate-base-images.ts` to create professional model photos
 for all 141 products using product-to-model endpoint. Stored in BaseProductImage table.
-Phase 2 (per-user): After onboarding, run model-swap on 20 products using user's face photo.
-Results stored in TryOnResult. Feed serves from TryOnResult, falls back to product image.
+Phase 2 (per-user): After onboarding, run model-swap on 10 products using user's face photo.
+Each model-swap + face_reference = 5 FASHN credits ($0.375/image, 50 credits/session).
+User can refresh every 15 mins for next batch of 10. Results stored in TryOnResult.
+Feed serves from TryOnResult (prioritized first), falls back to product image.
 
 ---
 

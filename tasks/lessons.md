@@ -411,6 +411,26 @@
 **Root cause:** `ReanimatedSwipeable` still uses old-style handler components internally. Version mismatch or Expo Go runtime incompatibility with gesture handler v2.28's internal PanGestureHandler creation.
 **Rule:** For MVP, avoid `Swipeable` entirely — use visible buttons (trash icon, etc.) instead of swipe-to-reveal gestures. More discoverable for users and zero gesture handler compatibility issues. The modern `Gesture.Pan()` API (used in SwipeDeck) works fine — it's specifically `Swipeable`/`ReanimatedSwipeable` that's broken.
 
+### 2026-03-18 — React Query cache must be cleared on logout (cross-user data leak)
+**What happened:** Logging in as user B after user A showed user A's profile, favorites, and feed.
+**Root cause:** `logout()` cleared the JWT token from secure storage but never cleared React Query's in-memory cache. Cached queries (`['me']`, `['favorites']`, `['feed']`, etc.) persisted and were served to the new user.
+**Rule:** Always call `queryClient.clear()` in the logout function. Extract `queryClient` to a shared module (`lib/queryClient.ts`) so both `_layout.tsx` and `authStore.ts` can access it.
+
+### 2026-03-18 — Style preference filter can return 0 products for entire gender
+**What happened:** Male users got 0 try-on images. Female users worked fine.
+**Root cause:** `POST /api/tryon/batch` filters products by `styleTags: { hasSome: userStyles }`. Male products had different style tags than the user selected during onboarding, returning 0 matches.
+**Rule:** Always add a fallback when filtering by optional user preferences. If the filtered query returns 0 results and preferences were applied, retry WITHOUT the preference filter. Never let optional preferences block core functionality.
+
+### 2026-03-18 — FASHN model-swap with face_reference costs 5 credits (not 1)
+**What happened:** 6 model-swap generations consumed 24 credits instead of expected 6.
+**Root cause:** FASHN charges 1 base credit + 4 credits for face_reference per model-swap call = 5 credits/image.
+**Rule:** Always check FASHN credit costs per endpoint before setting batch sizes. model-swap + face_ref = 5 credits. At $0.075/credit, that's $0.375/image. MAX_CARDS reduced from 20 → 10 to halve costs ($3.75/session instead of $7.50).
+
+### 2026-03-18 — New Architecture (Fabric) breaks old gesture handler API in dependencies
+**What happened:** Favorites tab crashed with "[Gesture Handler] Failed to obtain view for TapGestureHandler" even after removing all direct gesture handler usage.
+**Root cause:** `newArchEnabled: true` in app.json enables React Native Fabric. Dependencies (expo-router, react-navigation) internally use old gesture handler API (TapGestureHandler, PanGestureHandler via createHandler.tsx) which can't find native view references under Fabric.
+**Rule:** For MVP beta, set `newArchEnabled: false`. The modern `Gesture.Pan()` API works under Fabric, but dependencies still use old API internally. Re-enable when gesture-handler fully supports Fabric for old API components.
+
 ### 2026-03-18 — Prioritize completed try-on images in feed ordering
 **What happened:** ~1 in 3 swipe cards showed "Generating your look..." spinner because the feed served products in random order regardless of try-on status. Products with PENDING/FAILED try-ons appeared alongside completed ones.
 **Root cause:** Feed shuffled all products equally. With concurrency=2 and 20 jobs, only ~5-10 try-ons complete before the user starts swiping.

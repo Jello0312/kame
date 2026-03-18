@@ -1,6 +1,6 @@
 # Kame — Active Sprint Tasks
 
-> Updated: 2026-03-18 (Sprint 5.1 — Beta Bug Fixes complete)
+> Updated: 2026-03-18 (Session 6 — Beta Bug Fixes complete)
 > See ROADMAP.md for full multi-week plan.
 
 ---
@@ -11,6 +11,13 @@
 - [x] Fix Explore 500: batch try-on query (PgBouncer pool exhaustion) ✅
 - [x] Fix Favorites crash: remove Swipeable, add visible delete button ✅
 - [x] Prioritize completed try-on images first in feed ✅
+- [x] Disable New Architecture (newArchEnabled: false) — gesture handler crash ✅
+- [x] Fix cross-user data leak: queryClient.clear() on logout ✅
+- [x] Fix card flash after swipe: isTransitioning shared value ✅
+- [x] Session refresh: 15-min cooldown + branded overlay + Refresh button ✅
+- [x] Fix male try-on: style filter fallback when 0 products match ✅
+- [x] Replace Alert.alert with branded white card overlay ✅
+- [x] Reduce MAX_CARDS 20 → 10 (model-swap = 5 credits/image) ✅
 
 ### Sprint 1.1 — Project Scaffolding ✅
 - [x] Monorepo (pnpm workspaces, Expo, Express, shared-types)

@@ -212,6 +212,13 @@
 - [x] Fix Explore 500 error: replace N+1 try-on queries with single batch `findMany` (PgBouncer pool exhaustion) ✅
 - [x] Fix Favorites crash: remove gesture-handler Swipeable, replace with visible delete button ✅
 - [x] Prioritize completed try-on images in feed (completed first, pending/failed last) ✅
+- [x] Disable New Architecture (`newArchEnabled: false`) to fix gesture handler crash on Favorites ✅
+- [x] Fix cross-user data leak: clear React Query cache on logout (`queryClient.clear()`) ✅
+- [x] Fix card flash after swipe: `isTransitioning` shared value hides card during index transition ✅
+- [x] Session refresh: "Come Back in 15mins" screen + Refresh button + 15-min server cooldown ✅
+- [x] Fix male users getting 0 try-on images: style filter fallback when 0 products match ✅
+- [x] Replace native Alert.alert with branded white card overlay for cooldown message ✅
+- [x] Reduce MAX_CARDS from 20 → 10 per session (model-swap = 5 credits/image, 50 credits/session) ✅
 
 ---
 
