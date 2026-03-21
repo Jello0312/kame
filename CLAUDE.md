@@ -219,11 +219,11 @@ Every endpoint returns:
 
 ### Styling
 - NativeWind (Tailwind classes) for all styling. No inline style objects unless necessary.
-- Brand colors in utils/colors.ts and tailwind.config.js:
-  - Navy (primary): #1A2B3D
-  - Teal (accent): #00BFA5
-  - Coral (CTA): #FF4D6A
-  - Gray (secondary): #6B7280
+- Brand colors defined in `src/theme/constants.ts` — import from there, never hardcode hex values:
+  - Primary background: #F5F0E8 (warmWhite)
+  - Teal (text, buttons, interactive): #48E6CD
+  - Coral (prices, commerce CTAs): #FA6869
+  - Gray (secondary text): #6B7280
 
 ### Naming
 - Files: PascalCase components, camelCase utilities.
@@ -373,35 +373,35 @@ Simple: filter by user's preferred styles + gender, exclude already-swiped produ
 
 Full brand spec is at: `docs/BRAND_SYSTEM.md` — READ IT before building any screen.
 
-### Quick Reference — The 6 Rules
+### Quick Reference — The 7 Rules
 
-1. **DARK-FIRST**: Navy `#112836` is the primary background everywhere. White surfaces only inside form cards and modals.
+1. **WARM WHITE FIRST**: `#F5F0E8` (warmWhite) is the primary background everywhere. White `#FFFFFF` surfaces inside cards and modals. No navy.
 
-2. **TWO ACCENT COLORS**: Teal bright `#48E6CD` for interactive elements (buttons, selected chips, links, active states). Coral `#FA6869` for prices and the CTA gradient.
+2. **TEAL = BRAND + INTERACTIVE**: Teal bright `#48E6CD` for the wordmark, buttons, selected chips, links, active states, and primary text accents.
 
-3. **FONT**: Plus Jakarta Sans everywhere. Files in `assets/fonts/`. Load via expo-font in `_layout.tsx`. Never use system fonts, Inter, or Roboto.
+3. **CORAL = COMMERCE + PRICES**: Coral `#FA6869` for every price tag and commerce CTAs (Buy Now, Checkout). Active tab icons also use coral to distinguish navigation from content.
 
-4. **BUTTONS — TWO CTA TIERS**: 
+4. **FONT**: Plus Jakarta Sans everywhere. Files in `assets/fonts/`. Load via expo-font in `_layout.tsx`. Never use system fonts, Inter, or Roboto.
+
+5. **BUTTONS — TWO CTA TIERS**:
    - Commerce CTAs (Buy Now, Checkout, Generate Styles) = coral gradient (`#CC4968` → `#FA6869`, 135deg)
    - Navigation CTAs (Next, Save, Login, Register, Continue) = teal bright `#48E6CD` solid
    - Both fully rounded (borderRadius 26px). Swipe like = green `#289B62` circle. Swipe dislike = red `#E3393C` circle.
 
-5. **PRICES ALWAYS CORAL**: Every price tag in the app uses `#FA6869` bold. No exceptions.
+6. **PRICES ALWAYS CORAL**: Every price tag in the app uses `#FA6869` bold. No exceptions.
 
-6. **TAB BAR = CORAL, IN-SCREEN = TEAL**: Active tab icons/labels use coral `#FA6869`. All other interactive elements inside screens (buttons, links, selected chips, toggles, focus borders) use teal bright `#48E6CD`. This separation makes navigation vs content visually distinct.
-
-7. **LOGO = ALL TEAL**: Render "Kame" as a single teal-bright `#48E6CD` BoldItalic text. Not split colors.
+7. **LOGO = OFFICIAL ASSET**: Use the `<KameLogo>` component — "Kame" in teal BoldItalic + "AI FASHION" in gray-400 small caps below. Do not rebuild from scratch.
 
 ### Color Tokens (import from `src/theme/constants.ts`)
 ```
-navy=#112836  navyDeep=#03213B  teal=#1AA39C  tealBright=#48E6CD
-coral=#FA6869  coralDeep=#CC4968  gold=#F7C13D  green=#289B62  
+warmWhite=#F5F0E8  teal=#1AA39C  tealBright=#48E6CD
+coral=#FA6869  coralDeep=#CC4968  gold=#F7C13D  green=#289B62
 red=#E3393C  purple=#744DA6  white=#FFFFFF  gray100=#F8F9FB
 gray200=#E5E7EB  gray400=#9CA3AF  gray500=#6B7280  gray700=#374151
 ```
 
 ### Component Patterns
-- **Chips**: Unselected = transparent + gray border. Selected = teal bright bg + navy text.
+- **Chips**: Unselected = transparent + gray border. Selected = teal bright bg + white text.
 - **Inputs**: gray-100 bg, gray-200 border, teal-bright focus border, 12px radius.
 - **Tab bar**: White bg, coral active icon+label, gray-400 inactive. 3 tabs only: Explore/Favorites/Profile.
 - **Platform badges**: Amazon = orange `#FF9900` bg. SHEIN = black bg. White text, rounded 8px.

@@ -12,12 +12,10 @@
 ### Primary Colors
 | Token | Hex | RGB | Usage |
 |-------|-----|-----|-------|
-| `navy` | `#112836` | rgb(17, 40, 54) | App background, dark surfaces, primary text on light |
-| `navy-deep` | `#03213B` | rgb(3, 33, 59) | Card overlays, darker sections, header bg |
-| `teal` | `#1AA39C` | rgb(26, 163, 156) | Primary accent, section highlights, teal boxes |
-| `teal-bright` | `#48E6CD` | rgb(72, 230, 205) | CTA buttons, selected chips, active states |
-| `white` | `#FFFFFF` | rgb(255, 255, 255) | Primary text on dark, card backgrounds |
-| `off-white` | `#F7FFFF` | rgb(247, 255, 255) | Secondary background, subtle tint |
+| `warm-white` | `#F5F0E8` | rgb(245, 240, 232) | Primary app background (all screens) |
+| `teal-bright` | `#48E6CD` | rgb(72, 230, 205) | Wordmark, buttons, selected chips, links, active states |
+| `teal` | `#1AA39C` | rgb(26, 163, 156) | Subtle teal accents, section highlights |
+| `white` | `#FFFFFF` | rgb(255, 255, 255) | Card surfaces, modals on warmWhite bg |
 
 ### Accent Colors
 | Token | Hex | RGB | Usage |
@@ -41,7 +39,7 @@
 ### Gradient Definitions
 ```
 CTA Button Gradient:   linear-gradient(135deg, #CC4968 0%, #FA6869 100%)
-Card Overlay Gradient: linear-gradient(to top, rgba(17,40,54,0.85) 0%, transparent 100%)
+Card Overlay Gradient: linear-gradient(to top, rgba(0,0,0,0.45) 0%, transparent 100%)
 Premium Banner:        linear-gradient(135deg, #744DA6 0%, #9B6BC7 100%)
 Teal Glow (subtle):   linear-gradient(135deg, #1AA39C 0%, #48E6CD 100%)
 ```
@@ -72,8 +70,9 @@ Logo font:                  Custom italic/stylized "K" — use "Plus Jakarta San
 | `price-sm` | 14px | 600 (SemiBold) | 18px | Price in lists/grids |
 
 ### Text Color Rules
-- On navy/dark backgrounds: `white` for primary, `gray-400` for secondary
-- On white/light surfaces: `gray-700` for primary, `gray-500` for secondary
+- On warm-white background: `gray-700` (#374151) for primary, `gray-500` (#6B7280) for secondary
+- On white/light card surfaces: `gray-700` for primary, `gray-500` for secondary
+- Teal accent (`teal-bright` #48E6CD) for headings, labels, and interactive text
 - Prices: always `coral` (#FA6869)
 - Links/interactive: `teal-bright` (#48E6CD)
 - Gold accent only for special headings (onboarding step labels, section titles in marketing)
@@ -98,7 +97,7 @@ USE FOR:       Buy Now, Checkout, Premium upgrade, any money/commerce action
 **PRIMARY CTA — Navigation/Onboarding (Next, Save, Continue, Log In, Sign Up):**
 ```
 Background:    #48E6CD solid
-Text:          #112836 (navy), 16px, SemiBold
+Text:          #FFFFFF, 16px, SemiBold
 Height:        52px
 Border Radius: 26px (fully rounded)
 Shadow:        0 4px 12px rgba(72, 230, 205, 0.25)
@@ -159,7 +158,7 @@ Padding:       0 16px
 ```
 Background:    #48E6CD
 Border:        1.5px solid #48E6CD
-Text:          #112836 (navy), 14px, SemiBold
+Text:          #FFFFFF, 14px, SemiBold
 Height:        36px
 Border Radius: 18px
 ```
@@ -176,7 +175,7 @@ SHEIN:    Background #000000, text white, 10px bold, rounded 8px
 ```
 Border Radius: 20px
 Overflow:      hidden
-Background:    navy-deep (#03213B) as fallback
+Background:    #000000 as fallback (neutral dark behind image)
 Image:         resizeMode cover, fills entire card
 Overlay:       CardOverlayGradient at bottom (40% height)
 Product info:  white text on overlay
@@ -188,7 +187,7 @@ Platform badge: top-right corner, 8px margin
 ```
 Border Radius: 16px
 Background:    white
-Shadow:        0 2px 8px rgba(17, 40, 54, 0.08)
+Shadow:        0 2px 8px rgba(0, 0, 0, 0.08)
 Image:         aspect ratio 3:4, rounded top corners
 Product name:  gray-700, 14px, medium, max 2 lines
 Price:         coral (#FA6869), 16px, bold
@@ -230,10 +229,10 @@ This creates a clear visual separation between navigation and content.
 
 ### Navigation / Headers
 ```
-Background:    navy (#112836) or transparent over content
+Background:    #48E6CD (teal) or transparent over content
 Title:         white, 18px, Bold
 Back Arrow:    white, 24px
-Status Bar:    light-content (white text on dark bg)
+Status Bar:    dark-content (dark text on light bg)
 ```
 
 ### Premium Upgrade Banner
@@ -321,48 +320,55 @@ Screen transitions: slide from right (default expo-router)
 Modal:              slide from bottom, spring damping 20
 Chip select:        scale 0.95 → 1.0, 150ms ease-out
 Button press:       scale 0.98, opacity 0.85, 100ms
-Loading shimmer:    navy-deep → navy → navy-deep, 1.5s loop
+Loading shimmer:    teal → teal-bright → teal, 1.5s loop
 ```
 
 ### Loading States
 ```
-Skeleton cards:  navy-deep (#03213B) rectangles with shimmer
+Skeleton cards:  gray-100 (#F8F9FB) rectangles with shimmer
 Spinner:         teal-bright (#48E6CD), native ActivityIndicator
 Progress text:   "Generating outfit 3 of 20..." in teal-bright
 ```
 
 ---
 
-## 7. DARK-FIRST DESIGN PRINCIPLE
+## 7. WARM-WHITE-FIRST DESIGN PRINCIPLE
 
-Kame is a **dark-theme-first** app. The navy background is the dominant surface. Light surfaces (white cards, input forms) appear only within onboarding forms and modals.
+Kame is a **warm-white-first** app. The `#F5F0E8` (warmWhite) background is the dominant surface across all screens. Teal `#48E6CD` drives the brand identity through text, buttons, and interactive elements. White `#FFFFFF` surfaces appear inside cards and modals.
 
 ```
-Primary screens (Explore, Feed):     Dark navy background
-Onboarding form cards:               White/off-white card on navy bg
-Modals (Product Detail):             White card on dark scrim
-Favorites grid:                      Dark navy background, white product cards
-Profile:                             Dark navy background
-Auth screens (Login/Register):       Dark navy background
+Primary screens (Explore, Feed):     Warm white background (#F5F0E8)
+Onboarding form cards:               White card on warm-white bg
+Modals (Product Detail):             White card on scrim overlay
+Favorites grid:                      Warm white background, white product cards
+Profile:                             Warm white background
+Auth screens (Login/Register):       Warm white background
 ```
 
 ---
 
 ## 8. LOGO USAGE
 
-The Kame logo uses **all teal** styling:
-```
-Full word "Kame" — Bold italic, teal-bright (#48E6CD)
-```
+### Official Logo Spec
+- **Wordmark**: "Kame" — Plus Jakarta Sans Bold Italic, teal-bright `#48E6CD`
+- **Subtext**: "AI FASHION" — Plus Jakarta Sans Regular, small caps, letter-spaced, gray-400 `#9CA3AF`
+- **Primary expression**: warm-white background with teal wordmark
 
-For the MVP, render the logo as a styled Text component:
+### Implementation
+Use the `<KameLogo>` component (`components/KameLogo.tsx`) everywhere. Do not rebuild inline.
+
 ```jsx
-<Text style={{ fontFamily: 'PlusJakartaSans-BoldItalic', fontSize: 28, color: '#48E6CD' }}>
-  Kame
-</Text>
+// Default (28px) — profile header
+<KameLogo />
+
+// Large (48px) — auth screens
+<KameLogo size={48} />
+
+// Medium (32px) — onboarding wizard
+<KameLogo size={32} />
 ```
 
-Replace with actual logo asset when available. For now, this all-teal text treatment gives strong brand identity on the navy background.
+The component renders "Kame" + "AI FASHION" subtext proportionally at any size.
 
 ---
 
@@ -375,10 +381,7 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        navy: {
-          DEFAULT: '#112836',
-          deep: '#03213B',
-        },
+        warmWhite: '#F5F0E8',
         teal: {
           DEFAULT: '#1AA39C',
           bright: '#48E6CD',
@@ -428,10 +431,10 @@ const [fontsLoaded] = useFonts({
 ### Theme Constants File (src/theme/constants.ts)
 ```ts
 export const COLORS = {
-  navy: '#112836',
-  navyDeep: '#03213B',
+  warmWhite: '#F5F0E8', // Primary background
   teal: '#1AA39C',
-  tealBright: '#48E6CD',
+  tealBright: '#48E6CD', // Brand primary: buttons, text, interactive
+  // navy / navyDeep kept as @deprecated aliases until UI brand update sprint
   coral: '#FA6869',
   coralDeep: '#CC4968',
   gold: '#F7C13D',
@@ -439,7 +442,6 @@ export const COLORS = {
   red: '#E3393C',
   purple: '#744DA6',
   white: '#FFFFFF',
-  offWhite: '#F7FFFF',
   gray100: '#F8F9FB',
   gray200: '#E5E7EB',
   gray400: '#9CA3AF',
@@ -449,7 +451,7 @@ export const COLORS = {
 
 export const GRADIENTS = {
   cta: ['#CC4968', '#FA6869'],
-  cardOverlay: ['transparent', 'rgba(17,40,54,0.85)'],
+  cardOverlay: ['transparent', 'rgba(0,0,0,0.45)'],
   premium: ['#744DA6', '#9B6BC7'],
   tealGlow: ['#1AA39C', '#48E6CD'],
 } as const;

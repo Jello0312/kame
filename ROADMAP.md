@@ -1,8 +1,8 @@
 # Kame — Development Roadmap
 
-> Last updated: 2026-03-18
+> Last updated: 2026-03-21
 > Current phase: **MVP Sprint (Weeks 1-3)**
-> Current step: **Sprint 5.1 — Beta Bug Fixes** (complete)
+> Current step: **Sprint 5.2 — Brand Kit Refresh** (complete)
 
 ## Progress Tracking Convention
 - `[ ]` = Todo
@@ -219,6 +219,15 @@
 - [x] Fix male users getting 0 try-on images: style filter fallback when 0 products match ✅
 - [x] Replace native Alert.alert with branded white card overlay for cooldown message ✅
 - [x] Reduce MAX_CARDS from 20 → 10 per session (model-swap = 5 credits/image, 50 credits/session) ✅
+
+### Sprint 5.2 — Brand Kit Refresh (Session 7) ✅ COMPLETE
+- [x] Adopt warm-white-first palette: warmWhite `#F5F0E8` as primary background, teal `#48E6CD` for text/buttons ✅
+- [x] Drop all navy values (#112836, #03213B) and old placeholder values (#1A2B3D, #00BFA5, #FF4D6A) ✅
+- [x] Add `warmWhite` token to constants.ts and tailwind.config.js ✅
+- [x] Update semantic tokens (background, surface, textPrimary, cardOverlay) in constants.ts ✅
+- [x] Update CLAUDE.md brand rules and colour token reference ✅
+- [x] Update docs/BRAND_SYSTEM.md (palette, typography, components, logo, dark-first → warm-white-first) ✅
+- [x] Update KameLogo.tsx with official logo: "Kame" teal BoldItalic + "AI FASHION" gray subtext ✅
 
 ---
 

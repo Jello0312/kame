@@ -1,7 +1,20 @@
 # Kame — Active Sprint Tasks
 
-> Updated: 2026-03-18 (Session 6 — Beta Bug Fixes complete)
+> Updated: 2026-03-21 (Session 7 — Brand Kit Refresh)
 > See ROADMAP.md for full multi-week plan.
+
+---
+
+## 🏗️ IN PROGRESS
+
+### Sprint 5.2 — Brand Kit Refresh (Session 7)
+- [x] Update CLAUDE.md — fix stale colour tokens + brand rules ✅
+- [x] Update theme/constants.ts — warmWhite, remove navy, update semantics ✅
+- [x] Update tailwind.config.js — remove navy block, add warmWhite ✅
+- [x] Update docs/BRAND_SYSTEM.md — all sections (palette, typography, components, logo) ✅
+- [x] Update KameLogo.tsx — add "AI FASHION" subtext per official logo ✅
+- [x] Update ROADMAP.md — mark sprint complete ✅
+- [x] Grep verify — zero old hex values in docs/config ✅
 
 ---
 

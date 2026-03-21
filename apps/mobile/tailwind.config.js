@@ -9,10 +9,7 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        navy: {
-          DEFAULT: '#112836',
-          deep: '#03213B',
-        },
+        warmWhite: '#F5F0E8',
         teal: {
           DEFAULT: '#1AA39C',
           bright: '#48E6CD',

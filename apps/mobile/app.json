@@ -5,11 +5,11 @@
     "version": "0.1.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "dark",
+    "userInterfaceStyle": "light",
     "newArchEnabled": false,
     "scheme": "kame",
     "splash": {
-      "backgroundColor": "#112836",
+      "backgroundColor": "#F5F0E8",
       "resizeMode": "contain"
     },
     "ios": {
@@ -18,7 +18,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#112836"
+        "backgroundColor": "#F5F0E8"
       },
       "package": "com.kame.app"
     },

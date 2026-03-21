@@ -8,12 +8,16 @@
 
 export const COLORS = {
   // ── Primary ──
-  navy: '#112836',
-  navyDeep: '#03213B',
+  warmWhite: '#F5F0E8', // Primary background surface
   teal: '#1AA39C',
-  tealBright: '#48E6CD',
+  tealBright: '#48E6CD', // Brand primary: text, buttons, interactive
   white: '#FFFFFF',
-  offWhite: '#F7FFFF',
+
+  // ── Deprecated — kept for backward compat until UI brand update sprint ──
+  /** @deprecated Use COLORS.background (#F5F0E8) */
+  navy: '#112836',
+  /** @deprecated Use COLORS.surface (#FFFFFF) */
+  navyDeep: '#03213B',
 
   // ── Accent ──
   coral: '#FA6869',
@@ -31,9 +35,10 @@ export const COLORS = {
   gray700: '#374151',
 
   // ── Semantic ──
-  background: '#112836',
-  surface: '#03213B',
-  textPrimary: '#FFFFFF',
+  background: '#F5F0E8', // warmWhite primary surface
+  surface: '#FFFFFF',    // White for cards and modals on warmWhite bg
+  textPrimary: '#374151', // Dark gray for body text on light bg
+  textTeal: '#48E6CD',    // Teal for headings, labels, interactive text
   textSecondary: '#9CA3AF',
   textOnLight: '#374151',
   textSecondaryOnLight: '#6B7280',
@@ -47,7 +52,7 @@ export const COLORS = {
   divider: '#E5E7EB',
 
   // ── Logo ──
-  logo: '#48E6CD', // "Kame" rendered in all teal-bright BoldItalic
+  logo: '#48E6CD', // "Kame" wordmark in teal-bright BoldItalic
 
   // ── Tab Bar ──
   tabActive: '#FA6869',   // Coral for active tab icon + label
@@ -65,7 +70,7 @@ export const COLORS = {
 export const GRADIENTS = {
   cta: ['#CC4968', '#FA6869'] as const,
   ctaAngle: 135,
-  cardOverlay: ['transparent', 'rgba(17,40,54,0.85)'] as const,
+  cardOverlay: ['transparent', 'rgba(0,0,0,0.45)'] as const,
   premium: ['#744DA6', '#9B6BC7'] as const,
   tealGlow: ['#1AA39C', '#48E6CD'] as const,
   glowLike: ['rgba(40, 155, 98, 0.70)', 'transparent'] as const,
@@ -114,7 +119,7 @@ export const RADIUS = {
 
 export const SHADOWS = {
   card: {
-    shadowColor: COLORS.navy,
+    shadowColor: '#000000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
     shadowRadius: 8,
