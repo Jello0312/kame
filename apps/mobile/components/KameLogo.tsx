@@ -1,34 +1,20 @@
-import { Text, View, type ViewStyle } from 'react-native';
-import { COLORS, FONTS } from '../src/theme/constants';
+import { Image, type ImageStyle } from 'react-native';
+
+// Aspect ratio of the official KAME_logo.png asset (landscape ~3:1)
+const LOGO_ASPECT_RATIO = 3;
 
 interface KameLogoProps {
+  /** Controls the logo height; width scales proportionally. Default: 48 */
   size?: number;
-  style?: ViewStyle;
+  style?: ImageStyle;
 }
 
-export function KameLogo({ size = 28, style }: KameLogoProps) {
+export function KameLogo({ size = 48, style }: KameLogoProps) {
   return (
-    <View style={[{ alignItems: 'center' }, style]}>
-      <Text
-        style={{
-          fontFamily: FONTS.boldItalic,
-          fontSize: size,
-          color: COLORS.logo,
-        }}
-      >
-        Kame
-      </Text>
-      <Text
-        style={{
-          fontFamily: FONTS.regular,
-          fontSize: Math.max(8, Math.round(size * 0.3)),
-          color: COLORS.gray400,
-          letterSpacing: 4,
-          marginTop: 2,
-        }}
-      >
-        AI FASHION
-      </Text>
-    </View>
+    <Image
+      source={require('../assets/KAME_logo.png')}
+      style={[{ height: size, width: size * LOGO_ASPECT_RATIO }, style]}
+      resizeMode="contain"
+    />
   );
 }
