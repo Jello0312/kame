@@ -83,7 +83,7 @@ export function MeasurementsStep({ onValidChange }: MeasurementsStepProps) {
     setMeasurements({ gender, heightCm, weightKg, waistCm, bodyShape, measurementUnit });
   }, [gender, bodyShape, measurementUnit, height, weight, waist, isMetric, setMeasurements]);
 
-  function renderGenderCard(value: 'W' | 'M', label: string, icon: string) {
+  function renderGenderCard(value: 'W' | 'M', label: string) {
     const selected = gender === value;
     return (
       <TouchableOpacity
@@ -95,11 +95,10 @@ export function MeasurementsStep({ onValidChange }: MeasurementsStepProps) {
         onPress={() => setGender(value)}
         activeOpacity={0.7}
       >
-        <Text style={styles.genderIcon}>{icon}</Text>
         <Text
           style={[
             styles.genderLabel,
-            { color: selected ? COLORS.navy : COLORS.gray700 },
+            { color: selected ? COLORS.tealBright : COLORS.gray700 },
           ]}
         >
           {label}
@@ -216,8 +215,8 @@ export function MeasurementsStep({ onValidChange }: MeasurementsStepProps) {
           I'm shopping for:<Text style={styles.requiredStar}> *</Text>
         </Text>
         <View style={styles.genderRow}>
-          {renderGenderCard('W', "Women's", '👗')}
-          {renderGenderCard('M', "Men's", '👔')}
+          {renderGenderCard('W', "Women's")}
+          {renderGenderCard('M', "Men's")}
         </View>
 
         {/* Body Shape */}
@@ -307,10 +306,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(72, 230, 205, 0.15)',
     borderWidth: 1.5,
     borderColor: COLORS.tealBright,
-  },
-  genderIcon: {
-    fontSize: 28,
-    marginBottom: SPACING.xs,
   },
   genderLabel: {
     ...TYPE.bodyLg,
