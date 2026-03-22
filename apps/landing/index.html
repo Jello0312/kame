@@ -155,6 +155,11 @@
       margin-bottom: 40px;
     }
 
+    /* Hide mobile-only logo on desktop */
+    .hero-logo-mobile {
+      display: none;
+    }
+
     .hero-tagline-line {
       width: 48px;
       height: 1px;
@@ -918,6 +923,20 @@
         width: 100%;
       }
 
+      /* Kame logo in hero (mobile only) */
+      .hero-logo-mobile {
+        display: block;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 28px;
+        font-weight: 700;
+        color: var(--teal-btn);
+        margin-bottom: 16px;
+      }
+
+      .hero-logo-mobile em {
+        font-style: italic;
+      }
+
       .hero-content {
         padding-top: 0;
         text-align: left;
@@ -926,7 +945,7 @@
       }
 
       .hero-tagline {
-        margin-bottom: 24px;
+        margin-bottom: 20px;
       }
 
       .hero-tagline-line {
@@ -934,57 +953,55 @@
       }
 
       .hero-tagline-text {
-        font-size: 11px;
-        letter-spacing: 2.8px;
+        font-size: 10px;
+        letter-spacing: 2.4px;
         white-space: nowrap;
       }
 
       .hero h1 {
-        font-size: 44px;
-        line-height: 54px;
-        letter-spacing: -1.5px;
-        margin-bottom: 20px;
+        font-size: 36px;
+        line-height: 44px;
+        letter-spacing: -1.2px;
+        margin-bottom: 16px;
       }
 
       .hero h1 .line-italic {
-        font-size: 42px;
+        font-size: 34px;
       }
 
       .hero-sub {
-        font-size: 13px;
-        line-height: 20px;
-        margin-bottom: 28px;
+        font-size: 12px;
+        line-height: 18px;
+        margin-bottom: 24px;
       }
 
       .hero-form-inline {
         max-width: 100%;
-        padding: 5px;
-        border-radius: 12px;
+        padding: 4px;
+        border-radius: 10px;
         box-shadow: 0 10px 24px -4px rgba(0, 0, 0, 0.14);
       }
 
       .hero-form-inline input[type="email"] {
-        padding: 14px 14px;
-        font-size: 10px;
+        padding: 12px 10px;
+        font-size: 9px;
         letter-spacing: 0.3px;
         flex: 1;
         min-width: 0;
       }
 
       .hero-form-inline .btn-submit {
-        padding: 12px 14px;
-        font-size: 8px;
-        letter-spacing: 0.8px;
-        border-radius: 8px;
-        white-space: normal;
-        line-height: 1.3;
-        max-width: 80px;
-        text-align: center;
+        padding: 10px 10px;
+        font-size: 7px;
+        letter-spacing: 0.6px;
+        border-radius: 7px;
+        white-space: nowrap;
+        flex-shrink: 0;
       }
 
       .hero-microcopy {
-        font-size: 9px;
-        margin-top: 16px;
+        font-size: 8px;
+        margin-top: 12px;
         letter-spacing: 0.8px;
       }
 
@@ -1199,7 +1216,7 @@
         padding: 24px 20px;
         gap: 16px;
         border-radius: 20px;
-        align-items: stretch;
+        align-items: center;
         background: #F0EFED;
         width: 100%;
       }
@@ -1314,6 +1331,9 @@
 
     <div class="container">
       <div class="hero-content fade-in-left">
+        <!-- Logo (mobile only, hidden on desktop via CSS) -->
+        <div class="hero-logo-mobile"><em>Kame</em></div>
+
         <!-- Tagline -->
         <div class="hero-tagline">
           <div class="hero-tagline-line"></div>
