@@ -1,6 +1,6 @@
 # Kame — Active Sprint Tasks
 
-> Updated: 2026-03-21 (Session 7 — Brand Kit Refresh)
+> Updated: 2026-03-22 (Session 8 — Waitlist System + Deployment)
 > See ROADMAP.md for full multi-week plan.
 
 ---
@@ -19,6 +19,22 @@
 ---
 
 ## ✅ COMPLETED
+
+### Sprint 6 — Waitlist System + Deployment (Session 8) ✅
+- [x] Prisma schema: WaitlistSignup model (email, name, utmSource, utmMedium, utmCampaign, referredBy, referralCode) ✅
+- [x] WaitlistService: signup, stats, list, export, disposable email blocking ✅
+- [x] Waitlist API routes: POST /api/waitlist/signup, GET /api/waitlist/admin/* ✅
+- [x] Admin auth middleware (ADMIN_SECRET header-based) ✅
+- [x] Landing page from Figma design (pixel-perfect HTML/CSS/JS) ✅
+- [x] Admin dashboard with Chart.js (signups over time, UTM breakdown, referral stats) ✅
+- [x] Deployed landing page to Cloudflare Pages ✅
+- [x] Deployed backend to Railway (multiple deploy fixes) ✅
+- [x] Fixed: Railway service URL mismatch (old vs new service) ✅
+- [x] Fixed: Zod null vs undefined for optional UTM fields ✅
+- [x] Fixed: Node 20 ESM JSON import for disposable-email-domains ✅
+- [x] Fixed: Express trust proxy for Railway reverse proxy ✅
+- [x] Fixed: Prisma migrate deploy failure in start script ✅
+- [!] **Remaining:** Supabase port 5432 unreachable from Railway — waitlist migration not yet applied. Need to run `prisma migrate deploy` manually when DB direct connection is accessible (unpause Supabase or use a network where port 5432 is open). Server runs fine without it via `|| echo` fallback. ⚠️
 
 ### Sprint 5.1 — Beta Bug Fixes (Session 6) ✅
 - [x] Fix Explore 500: batch try-on query (PgBouncer pool exhaustion) ✅

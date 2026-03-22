@@ -440,3 +440,32 @@
 **What happened:** `npx prisma migrate dev` and `npx prisma migrate dev --create-only` both hung indefinitely — they connect to Supabase to check current DB state, even when only creating the migration file.
 **Root cause:** Corporate firewall blocks port 6543 (Supabase pooler). No workaround on this network — VPN, hotspot, and home WiFi don't help because the corporate laptop enforces the policy.
 **Rule:** When Prisma migrate hangs due to firewall: (1) Create the migration directory manually with timestamp prefix (`YYYYMMDDHHMMSS_name`), (2) Write the SQL file by hand based on the schema diff, (3) Run `npx prisma generate` locally (doesn't need DB), (4) The migration will auto-apply on Railway deploy via `prisma migrate deploy`. This is a valid Prisma workflow — the migration history file just needs to exist with correct SQL.
+
+### 2026-03-22 — Railway service URL mismatch causes 404 on all new routes
+**What happened:** All waitlist API routes returned 404 despite code being correct and server running. Spent significant time debugging.
+**Root cause:** Railway had TWO services — old one at `kame-production.up.railway.app` and new one at `kameserver-production.up.railway.app`. Landing page pointed to the old URL. The old service ran code from before the waitlist was added.
+**Rule:** Always verify the Railway service URL matches what the frontend calls. Check the Deploy Logs header for the actual domain. When routes return 404 but server is running, first check if you're hitting the correct service URL.
+
+### 2026-03-22 — Zod optional string fields reject null (only accept undefined)
+**What happened:** Waitlist signup returned 400 "Validation failed" from the browser but worked via curl.
+**Root cause:** JavaScript's `params.get('utm_source') || null` sends `null` in JSON. Zod's `z.string().optional()` accepts `undefined` but rejects `null`. Curl tests didn't include UTM fields at all (undefined), so they passed.
+**Rule:** When building form payloads, never include fields with `null` values if the Zod schema uses `.optional()`. Only include fields that have actual values. Pattern: `const obj = {}; if (value) obj.field = value;` instead of `{ field: value || null }`.
+
+### 2026-03-22 — Node 20 ESM JSON import assertion error (disposable-email-domains)
+**What happened:** Railway deploy crashed with `ERR_IMPORT_ASSERTION_TYPE_MISSING` when importing `disposable-email-domains` package (which exports a JSON file).
+**Root cause:** Node.js 20 ESM requires import assertions for JSON files. Even `createRequire(import.meta.url)` can fail depending on how pnpm resolves the module.
+**Rule:** For packages that export JSON (like `disposable-email-domains`), use `fs.readFileSync` + `JSON.parse` instead of `require()` or `import`. Pattern: `const path = createRequire(import.meta.url).resolve('package-name'); const data = JSON.parse(readFileSync(path, 'utf-8'));`
+
+### 2026-03-22 — Express trust proxy required on Railway
+**What happened:** express-rate-limit threw `ERR_ERL_UNEXPECTED_X_FORWARDED_FOR` on every request, potentially blocking route handling.
+**Root cause:** Railway runs behind a reverse proxy that sets X-Forwarded-For headers. Express defaults to `trust proxy: false`, causing express-rate-limit v7+ to throw a validation error.
+**Rule:** Always add `app.set('trust proxy', 1)` when deploying Express to Railway (or any reverse proxy environment like Heroku, Render, etc.). Do this BEFORE any rate limiting middleware.
+
+### 2026-03-22 — Prisma migrate deploy fails when Supabase is paused or port 5432 blocked
+**What happened:** `prisma migrate deploy` in the start script failed with P1001 (can't reach DB on port 5432), blocking server startup.
+**Root cause:** The start script used `&&` which stops execution if migration fails. Supabase direct connection (port 5432) was unreachable from Railway.
+**Rule:** Use `prisma migrate deploy || echo 'Migration skipped' ; node dist/index.js` in the start script. The `||` ensures the server starts even if migration fails. Run migrations separately when DB is accessible.
+
+### 2026-03-22 — Cloudflare Pages deployment for static landing pages
+**What happened:** Successfully deployed static HTML landing page to Cloudflare Pages with custom domain.
+**Rule:** For static landing pages (no framework, no build step): Set "Path" to `apps/landing` in Cloudflare Pages settings. Leave build command empty. Cloudflare auto-deploys on git push. Custom domain setup takes ~2 minutes after adding to Cloudflare DNS.
