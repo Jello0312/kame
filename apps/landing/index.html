@@ -336,6 +336,66 @@
       padding-left: 8px;
     }
 
+    /* Scroll down indicator */
+    .scroll-indicator {
+      position: absolute;
+      bottom: 28px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0;
+      opacity: 0.45;
+      animation: scrollFade 2.4s ease-in-out infinite;
+      cursor: pointer;
+      z-index: 5;
+    }
+    .scroll-indicator .mouse {
+      width: 24px;
+      height: 38px;
+      border: 2px solid #444842;
+      border-radius: 12px;
+      position: relative;
+    }
+    .scroll-indicator .mouse::before {
+      content: '';
+      position: absolute;
+      top: 7px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 3px;
+      height: 8px;
+      background: #444842;
+      border-radius: 2px;
+      animation: scrollWheel 2.4s ease-in-out infinite;
+    }
+    .scroll-indicator .arrows {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 4px;
+    }
+    .scroll-indicator .arrows svg {
+      width: 18px;
+      height: 10px;
+      stroke: #444842;
+      stroke-width: 2;
+      fill: none;
+    }
+    .scroll-indicator .arrows svg:last-child {
+      opacity: 0.4;
+      margin-top: -3px;
+    }
+    @keyframes scrollWheel {
+      0%, 100% { opacity: 1; top: 7px; }
+      50% { opacity: 0.3; top: 18px; }
+    }
+    @keyframes scrollFade {
+      0%, 100% { opacity: 0.45; }
+      50% { opacity: 0.8; }
+    }
+
     /* Success state */
     .success-state {
       display: none;
@@ -1481,6 +1541,15 @@
             <img src="assets/Prototype-swipe it 2.jpeg" alt="Discover new styles" class="swipe-frame swipe-frame-2">
           </div>
         </div>
+      </div>
+    </div>
+
+    <!-- Scroll down indicator -->
+    <div class="scroll-indicator" onclick="document.querySelector('.quote-section').scrollIntoView({behavior:'smooth'})">
+      <div class="mouse"></div>
+      <div class="arrows">
+        <svg viewBox="0 0 18 10"><polyline points="2,2 9,8 16,2"/></svg>
+        <svg viewBox="0 0 18 10"><polyline points="2,2 9,8 16,2"/></svg>
       </div>
     </div>
   </section>
