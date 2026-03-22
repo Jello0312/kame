@@ -1483,12 +1483,15 @@
 
     // ─── UTM Capture ──────────────────────────
     const params = new URLSearchParams(window.location.search);
-    const utm = {
-      utmSource: params.get('utm_source') || params.get('ref') || null,
-      utmMedium: params.get('utm_medium') || null,
-      utmCampaign: params.get('utm_campaign') || null,
-      referrerUrl: document.referrer || null,
-    };
+    const utm = {};
+    const src = params.get('utm_source') || params.get('ref');
+    const med = params.get('utm_medium');
+    const camp = params.get('utm_campaign');
+    const ref = document.referrer;
+    if (src) utm.utmSource = src;
+    if (med) utm.utmMedium = med;
+    if (camp) utm.utmCampaign = camp;
+    if (ref) utm.referrerUrl = ref;
 
     // ─── Counter ──────────────────────────────
     async function loadCount() {
