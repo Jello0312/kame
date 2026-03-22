@@ -1,6 +1,8 @@
 import { prisma } from '../lib/prisma.js';
 import { AppError } from '../utils/errors.js';
-import disposableDomains from 'disposable-email-domains';
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
+const disposableDomains: string[] = require('disposable-email-domains');
 
 // ─── Types ──────────────────────────────────────────
 
