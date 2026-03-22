@@ -15,7 +15,10 @@ import { tryonRouter } from './routes/tryon.js';
 import { accountRouter } from './routes/account.js';
 import { waitlistRouter } from './routes/waitlist.js';
 import { isS3Configured } from './integrations/s3.js';
+import { isFashnConfigured } from './integrations/fashn.js';
 import { prisma } from './lib/prisma.js';
+import { tryonProcessor } from './lib/jobProcessor.js';
+import { processModelSwap } from './jobs/generateTryOn.js';
 import { AppError, ValidationError } from './utils/errors.js';
 import {
   authLimiter,
@@ -127,22 +130,82 @@ app.use('/api/waitlist/*', (req: Request, res: Response) => {
   res.status(404).json({ success: false, error: `Route not found: ${req.method} ${req.originalUrl}`, debug: true });
 });
 
-// ─── Stale Job Recovery ─────────────────────────────
-// Marks PENDING/PROCESSING jobs older than 10 min as FAILED.
-// Catches jobs stuck from a server restart mid-generation.
+// ─── Orphaned Job Recovery (on startup) ──────────────
+// Re-queues PENDING/PROCESSING jobs left over from a server restart.
+// In-memory queue is lost on restart; FASHN may have finished but we never polled.
+async function recoverOrphanedJobs(): Promise<void> {
+  try {
+    if (!isFashnConfigured()) {
+      console.log('[TryOn] Recovery skipped — FASHN not configured');
+      return;
+    }
+
+    const orphanedJobs = await prisma.tryOnResult.findMany({
+      where: { status: { in: ['PENDING', 'PROCESSING'] } },
+      select: { id: true, userId: true, productId: true },
+    });
+
+    if (orphanedJobs.length === 0) {
+      console.log('[TryOn] No orphaned jobs to recover');
+      return;
+    }
+
+    console.log(`[TryOn] Found ${orphanedJobs.length} orphaned jobs — re-queuing...`);
+
+    let requeued = 0;
+    for (const job of orphanedJobs) {
+      if (!job.productId) {
+        await prisma.tryOnResult.update({ where: { id: job.id }, data: { status: 'FAILED' } });
+        continue;
+      }
+
+      // Look up prerequisites
+      const [avatar, baseImage] = await Promise.all([
+        prisma.userAvatar.findUnique({ where: { userId: job.userId } }),
+        prisma.baseProductImage.findFirst({ where: { productId: job.productId, status: 'COMPLETED' } }),
+      ]);
+
+      if (!avatar?.facePhotoUrl || !baseImage) {
+        console.warn(`[TryOn] Recovery skip job ${job.id} — missing avatar or base image`);
+        await prisma.tryOnResult.update({ where: { id: job.id }, data: { status: 'FAILED' } });
+        continue;
+      }
+
+      // Reset to PENDING and re-queue
+      await prisma.tryOnResult.update({ where: { id: job.id }, data: { status: 'PENDING' } });
+      tryonProcessor.add(job.id, () =>
+        processModelSwap({
+          tryOnResultId: job.id,
+          userId: job.userId,
+          facePhotoUrl: avatar.facePhotoUrl!,
+          productId: job.productId!,
+          baseImageUrl: baseImage.imageUrl,
+        }),
+      );
+      requeued++;
+    }
+
+    console.log(`[TryOn] Re-queued ${requeued}/${orphanedJobs.length} orphaned jobs`);
+  } catch (err) {
+    console.error('[TryOn] Orphaned job recovery error:', err);
+  }
+}
+
+// ─── Stale Job Cleanup (periodic) ────────────────────
+// Marks jobs older than 15 min as FAILED (catches truly stuck jobs).
 setInterval(async () => {
   try {
-    const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
+    const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000);
     const staleJobs = await prisma.tryOnResult.findMany({
       where: {
         status: { in: ['PENDING', 'PROCESSING'] },
-        createdAt: { lt: tenMinutesAgo },
+        createdAt: { lt: fifteenMinutesAgo },
       },
       select: { id: true },
     });
 
     if (staleJobs.length > 0) {
-      console.log(`Found ${staleJobs.length} stale try-on jobs, marking as FAILED`);
+      console.log(`[TryOn] Found ${staleJobs.length} stale jobs (>15min), marking as FAILED`);
       await prisma.tryOnResult.updateMany({
         where: {
           id: { in: staleJobs.map((j) => j.id) },
@@ -151,7 +214,7 @@ setInterval(async () => {
       });
     }
   } catch (err) {
-    console.error('Stale job recovery error:', err);
+    console.error('[TryOn] Stale job cleanup error:', err);
   }
 }, 5 * 60 * 1000);
 
@@ -194,4 +257,6 @@ app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
 
 app.listen(Number(PORT), '0.0.0.0', () => {
   console.log(`Kame server running on 0.0.0.0:${PORT}`);
+  // Recover orphaned try-on jobs from previous server instance
+  recoverOrphanedJobs();
 });

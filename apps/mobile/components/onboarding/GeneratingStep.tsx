@@ -101,17 +101,24 @@ export function GeneratingStep({ onComplete }: GeneratingStepProps) {
         throw new Error(`Preferences save failed: ${err instanceof Error ? err.message : 'Unknown error'}`);
       }
 
-      // Phase 4: Trigger try-on batch (may 503 if Redis not configured)
+      // Phase 4: Trigger try-on batch
       setStatus('Generating your personalized outfits...');
       let tryOnTriggered = false;
+      let totalQueued = 0;
       try {
-        await api.post('/api/tryon/batch');
-        tryOnTriggered = true;
+        const batchRes = await api.post<{ totalQueued: number; remainingProducts: number }>('/api/tryon/batch');
+        totalQueued = batchRes.data?.totalQueued ?? 0;
+        tryOnTriggered = totalQueued > 0;
+        if (totalQueued === 0) {
+          console.warn('Try-on batch returned 0 queued jobs');
+        }
       } catch (err) {
-        console.warn('Try-on batch failed (Redis/FASHN may not be configured):', err);
+        const msg = err instanceof Error ? err.message : String(err);
+        console.warn('Try-on batch failed:', msg);
+        // Don't block onboarding — user can retry from feed later
       }
 
-      // Phase 5: Poll status (only if batch was triggered)
+      // Phase 5: Poll status (only if jobs were actually queued)
       if (tryOnTriggered) {
         const MAX_POLLS = 20; // 20 * 3s = 60s max
         for (let i = 0; i < MAX_POLLS; i++) {

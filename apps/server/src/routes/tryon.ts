@@ -4,6 +4,7 @@ import { prisma } from '../lib/prisma.js';
 import { tryonProcessor } from '../lib/jobProcessor.js';
 import { processModelSwap } from '../jobs/generateTryOn.js';
 import { isFashnConfigured } from '../integrations/fashn.js';
+import { isS3Configured } from '../integrations/s3.js';
 import { AppError, NotFoundError } from '../utils/errors.js';
 import type { ApiResponse } from '@kame/shared-types';
 
@@ -234,6 +235,171 @@ router.get(
         data: counts,
       };
       res.status(200).json(response);
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+// ─── GET /diagnostics — Pipeline health check ──────
+
+router.get(
+  '/diagnostics',
+  authenticate,
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const userId = req.userId!;
+
+      // 1. FASHN + R2 config
+      const fashnConfigured = isFashnConfigured();
+      const r2Configured = isS3Configured();
+      const r2PublicUrl = process.env.R2_PUBLIC_URL ?? '(not set)';
+
+      // 2. Avatar status
+      const avatar = await prisma.userAvatar.findUnique({
+        where: { userId },
+      });
+
+      // 3. Base image counts
+      const baseImageCounts = await prisma.baseProductImage.groupBy({
+        by: ['status'],
+        _count: true,
+      });
+      const baseImages: Record<string, number> = {};
+      for (const row of baseImageCounts) {
+        baseImages[row.status.toLowerCase()] = row._count;
+      }
+
+      // 4. TryOnResult counts for this user
+      const tryOnCounts = await prisma.tryOnResult.groupBy({
+        by: ['status'],
+        where: { userId },
+        _count: true,
+      });
+      const tryOnResults: Record<string, number> = {};
+      for (const row of tryOnCounts) {
+        tryOnResults[row.status.toLowerCase()] = row._count;
+      }
+
+      // 5. Recent failed jobs (last 10)
+      const recentFailed = await prisma.tryOnResult.findMany({
+        where: { userId, status: 'FAILED' },
+        select: { id: true, productId: true, status: true, createdAt: true, resultImageUrl: true },
+        orderBy: { createdAt: 'desc' },
+        take: 10,
+      });
+
+      // 6. Recent completed jobs (last 5) — check URLs
+      const recentCompleted = await prisma.tryOnResult.findMany({
+        where: { userId, status: 'COMPLETED' },
+        select: { id: true, productId: true, resultImageUrl: true, createdAt: true },
+        orderBy: { createdAt: 'desc' },
+        take: 5,
+      });
+
+      // 7. Job processor state
+      const jobQueue = {
+        pending: tryonProcessor.pendingCount,
+        active: tryonProcessor.activeCount,
+      };
+
+      const response: ApiResponse = {
+        success: true,
+        data: {
+          fashnConfigured,
+          r2Configured,
+          r2PublicUrl,
+          avatar: avatar
+            ? {
+                exists: true,
+                hasFacePhoto: !!avatar.facePhotoUrl,
+                facePhotoUrl: avatar.facePhotoUrl ?? null,
+                status: avatar.status,
+              }
+            : { exists: false },
+          baseImages,
+          tryOnResults,
+          recentFailed,
+          recentCompleted,
+          jobQueue,
+        },
+      };
+      res.status(200).json(response);
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+// ─── POST /retry-failed — Re-queue failed try-on jobs ─
+
+router.post(
+  '/retry-failed',
+  authenticate,
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      if (!isFashnConfigured()) {
+        throw new AppError('FASHN API is not configured (missing FASHN_API_KEY)', 503);
+      }
+
+      const userId = req.userId!;
+
+      // Get user's avatar
+      const avatar = await prisma.userAvatar.findUnique({
+        where: { userId },
+      });
+
+      if (!avatar?.facePhotoUrl) {
+        throw new NotFoundError('UserAvatar with face photo');
+      }
+
+      // Find all FAILED results for this user
+      const failedResults = await prisma.tryOnResult.findMany({
+        where: { userId, status: 'FAILED', productId: { not: null } },
+        select: { id: true, productId: true },
+      });
+
+      let requeued = 0;
+
+      for (const result of failedResults) {
+        if (!result.productId) continue;
+
+        const baseImage = await prisma.baseProductImage.findFirst({
+          where: { productId: result.productId, status: 'COMPLETED' },
+        });
+
+        if (!baseImage) {
+          console.warn(`[TryOn] Retry skip — no base image for product ${result.productId}`);
+          continue;
+        }
+
+        // Reset status to PENDING
+        await prisma.tryOnResult.update({
+          where: { id: result.id },
+          data: { status: 'PENDING' },
+        });
+
+        // Re-queue the job
+        tryonProcessor.add(result.id, () =>
+          processModelSwap({
+            tryOnResultId: result.id,
+            userId,
+            facePhotoUrl: avatar.facePhotoUrl!,
+            productId: result.productId!,
+            baseImageUrl: baseImage.imageUrl,
+          }),
+        );
+        requeued++;
+      }
+
+      console.log(`[TryOn] Retried ${requeued}/${failedResults.length} failed jobs for user ${userId}`);
+
+      const response: ApiResponse<{ requeued: number; totalFailed: number }> = {
+        success: true,
+        data: { requeued, totalFailed: failedResults.length },
+        message: `Re-queued ${requeued} failed try-on jobs`,
+      };
+      res.status(202).json(response);
     } catch (err) {
       next(err);
     }
