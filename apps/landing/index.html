@@ -285,6 +285,38 @@
 
     @keyframes spin { to { transform: translate(-50%, -50%) rotate(360deg); } }
 
+    /* Avatar social proof */
+    .avatar-row {
+      display: flex;
+      align-items: center;
+      margin-top: 16px;
+      margin-bottom: 2px;
+    }
+    .avatar-row img {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: 2px solid #fff;
+      margin-left: -10px;
+      object-fit: cover;
+    }
+    .avatar-row img:first-child { margin-left: 0; }
+    .avatar-count {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: 2px solid #fff;
+      margin-left: -10px;
+      background: #1a1c1b;
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
     /* Micro copy below form */
     .hero-microcopy {
       font-size: 10px;
@@ -292,7 +324,7 @@
       color: var(--text-body-60);
       letter-spacing: 1px;
       text-transform: uppercase;
-      margin-top: 14px;
+      margin-top: 6px;
       padding-left: 8px;
     }
 
@@ -1042,9 +1074,22 @@
         color: var(--white);
       }
 
+      .avatar-row img {
+        width: 28px;
+        height: 28px;
+        margin-left: -8px;
+      }
+      .avatar-count {
+        width: 28px;
+        height: 28px;
+        margin-left: -8px;
+        font-size: 9px;
+      }
+      .avatar-row { margin-top: 12px; }
+
       .hero-microcopy {
         font-size: 8px;
-        margin-top: 10px;
+        margin-top: 8px;
         letter-spacing: 0.8px;
       }
 
@@ -1406,6 +1451,14 @@
           </button>
         </form>
         <div class="form-error" id="heroError"></div>
+        <div class="avatar-row">
+          <img src="https://i.pravatar.cc/80?img=1" alt="" width="32" height="32">
+          <img src="https://i.pravatar.cc/80?img=5" alt="" width="32" height="32">
+          <img src="https://i.pravatar.cc/80?img=12" alt="" width="32" height="32">
+          <img src="https://i.pravatar.cc/80?img=32" alt="" width="32" height="32">
+          <img src="https://i.pravatar.cc/80?img=44" alt="" width="32" height="32">
+          <span class="avatar-count" id="avatarCount">+0</span>
+        </div>
         <p class="hero-microcopy" id="heroCounter">Limited pre-launch access only</p>
 
         <!-- Success state -->
@@ -1593,6 +1646,7 @@
         if (json.success && json.data.count > 0) {
           document.getElementById('heroCounter').innerHTML =
             `Join <strong>${json.data.count}</strong> other${json.data.count === 1 ? '' : 's'} waiting`;
+          document.getElementById('avatarCount').textContent = `+${json.data.count}`;
         }
       } catch (_) { /* silent fail */ }
     }
