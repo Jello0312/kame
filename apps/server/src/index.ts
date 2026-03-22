@@ -37,6 +37,9 @@ for (const key of requiredEnv) {
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+// ─── Trust Proxy (Railway runs behind a reverse proxy) ──
+app.set('trust proxy', 1);
+
 // ─── Security Middleware ───────────────────────────
 app.use(helmet());
 app.use(
