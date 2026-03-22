@@ -3,8 +3,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 // ─── Enums ───────────────────────────────────────────
@@ -254,4 +255,24 @@ model BaseProductImage {
   product     Product  @relation(fields: [productId], references: [id])
 
   @@map("base_product_images")
+}
+
+// ─── Waitlist ─────────────────────────────────────────
+
+model WaitlistSignup {
+  id          String   @id @default(uuid()) @db.Uuid
+  email       String   @unique
+  name        String?
+  status      String   @default("active")
+  utmSource   String?  @map("utm_source")
+  utmMedium   String?  @map("utm_medium")
+  utmCampaign String?  @map("utm_campaign")
+  referrerUrl String?  @map("referrer_url")
+  ipCountry   String?  @map("ip_country")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@map("waitlist_signups")
+  @@index([email])
+  @@index([createdAt])
+  @@index([utmSource])
 }

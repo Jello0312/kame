@@ -1,0 +1,1599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kame — AI Fashion Try-On | See It, Swipe It, Own It</title>
+  <meta name="description" content="AI-powered virtual try-on that shows clothes on your body before you buy. Join the waitlist for early access.">
+  <meta property="og:title" content="Kame — See It, Swipe It, Own It">
+  <meta property="og:description" content="AI-powered virtual try-on that shows clothes on your body before you buy.">
+  <meta property="og:type" content="website">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,500;1,700&family=Noto+Serif:wght@400&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #FAF9F7;
+      --bg-section: #F4F3F1;
+      --text-primary: #1A1C1B;
+      --text-body: #444842;
+      --text-body-40: rgba(68, 72, 66, 0.4);
+      --text-body-60: rgba(68, 72, 66, 0.6);
+      --text-muted: rgba(26, 28, 27, 0.6);
+      --dark-teal: #005F54;
+      --dark-teal-deep: #005046;
+      --teal-btn: rgba(72, 230, 205, 0.7);
+      --coral-card: rgba(173, 48, 53, 0.08);
+      --coral-shadow: rgba(173, 48, 53, 0.2);
+      --card-border: rgba(0, 0, 0, 0.05);
+      --divider: #C4C8C0;
+      --input-bg: #E9E8E6;
+      --border-light: #E5E7EB;
+      --phone-black: #171717;
+      --white: #FFFFFF;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      color: var(--text-body);
+      background: var(--bg);
+      line-height: 1.55;
+      font-weight: 400;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      overflow-x: hidden;
+    }
+
+    /* ─── Scroll Animations (slow, cinematic) ─── */
+    .fade-in {
+      opacity: 0;
+      transform: translateY(50px);
+      transition: opacity 1.4s cubic-bezier(0.16, 1, 0.3, 1), transform 1.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .fade-in.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .fade-in-left {
+      opacity: 0;
+      transform: translateX(-60px);
+      transition: opacity 1.4s cubic-bezier(0.16, 1, 0.3, 1), transform 1.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .fade-in-left.visible {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    .fade-in-right {
+      opacity: 0;
+      transform: translateX(60px);
+      transition: opacity 1.4s cubic-bezier(0.16, 1, 0.3, 1), transform 1.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .fade-in-right.visible {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    .fade-in-scale {
+      opacity: 0;
+      transform: scale(0.88);
+      transition: opacity 1.4s cubic-bezier(0.16, 1, 0.3, 1), transform 1.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .fade-in-scale.visible {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    /* Staggered card delays */
+    .stagger-1 { transition-delay: 0s; }
+    .stagger-2 { transition-delay: 0.15s; }
+    .stagger-3 { transition-delay: 0.3s; }
+
+    /* ═══════════════════════════════════════════
+       HERO SECTION
+    ═══════════════════════════════════════════ */
+    .hero {
+      position: relative;
+      padding: 120px 0 100px;
+      overflow: hidden;
+      min-height: 700px;
+    }
+
+    /* Gradient blobs — strong and visible */
+    .hero-blob-teal {
+      position: absolute;
+      top: -60px;
+      left: -80px;
+      width: 850px;
+      height: 550px;
+      background: radial-gradient(ellipse at 35% 45%, rgba(72, 230, 205, 0.35) 0%, rgba(72, 230, 205, 0.15) 35%, rgba(72, 230, 205, 0.05) 55%, transparent 75%);
+      pointer-events: none;
+      z-index: 0;
+      filter: blur(20px);
+    }
+
+    .hero-blob-coral {
+      position: absolute;
+      top: 200px;
+      right: -60px;
+      width: 650px;
+      height: 800px;
+      background: radial-gradient(circle at 50% 40%, rgba(250, 104, 105, 0.18) 0%, rgba(173, 48, 53, 0.08) 35%, transparent 65%);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 0;
+      filter: blur(30px);
+    }
+
+    .hero .container {
+      max-width: 1268px;
+      margin: 0 auto;
+      padding: 0 115px;
+      display: flex;
+      align-items: flex-start;
+      gap: 80px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-content {
+      flex: 1;
+      min-width: 0;
+      padding-top: 50px;
+    }
+
+    /* Tagline with divider */
+    .hero-tagline {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 40px;
+    }
+
+    .hero-tagline-line {
+      width: 48px;
+      height: 1px;
+      background: var(--dark-teal-deep);
+    }
+
+    .hero-tagline-text {
+      font-size: 20px;
+      font-weight: 400;
+      color: var(--dark-teal-deep);
+      letter-spacing: 4.2px;
+      text-transform: uppercase;
+      line-height: 20px;
+    }
+
+    /* Headline */
+    .hero h1 {
+      font-size: 96px;
+      font-weight: 700;
+      color: var(--text-primary);
+      line-height: 128px;
+      letter-spacing: -3.2px;
+      margin-bottom: 28px;
+    }
+
+    .hero h1 .line-italic {
+      font-style: italic;
+      font-weight: 400;
+      font-size: 90px;
+    }
+
+    /* Subtext */
+    .hero-sub {
+      font-size: 18px;
+      font-weight: 400;
+      color: var(--text-body);
+      line-height: 29.25px;
+      max-width: 633px;
+      margin-bottom: 40px;
+    }
+
+    /* Inline email form */
+    .hero-form-inline {
+      display: flex;
+      align-items: center;
+      background: var(--white);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 9px;
+      max-width: 512px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+      position: relative;
+    }
+
+    .hero-form-inline input[type="email"] {
+      flex: 1;
+      border: none;
+      outline: none;
+      background: transparent;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-body);
+      padding: 17px 24px;
+      letter-spacing: 0.35px;
+      min-width: 0;
+    }
+
+    .hero-form-inline input[type="email"]::placeholder {
+      color: var(--text-body-40);
+      text-transform: uppercase;
+    }
+
+    .hero-form-inline .btn-submit {
+      background: var(--dark-teal);
+      color: var(--white);
+      border: none;
+      border-radius: 12px;
+      padding: 16px 32px;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: opacity 0.2s;
+      flex-shrink: 0;
+    }
+
+    .hero-form-inline .btn-submit:hover {
+      opacity: 0.9;
+    }
+
+    .hero-form-inline .btn-submit:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .hero-form-inline .btn-submit.loading .btn-text {
+      visibility: hidden;
+    }
+
+    .hero-form-inline .btn-submit.loading .btn-spinner {
+      display: block;
+    }
+
+    .btn-spinner {
+      display: none;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    .btn-submit { position: relative; }
+
+    @keyframes spin { to { transform: translate(-50%, -50%) rotate(360deg); } }
+
+    /* Micro copy below form */
+    .hero-microcopy {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--text-body-60);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-top: 14px;
+      padding-left: 8px;
+    }
+
+    .form-error {
+      font-size: 13px;
+      color: #AD3035;
+      margin-top: 8px;
+      min-height: 20px;
+      padding-left: 8px;
+    }
+
+    /* Success state */
+    .success-state {
+      display: none;
+      text-align: center;
+      padding: 24px 0;
+      max-width: 512px;
+    }
+
+    .success-state.show {
+      display: block;
+      animation: fadeScale 0.5s ease forwards;
+    }
+
+    @keyframes fadeScale {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .success-check {
+      width: 56px;
+      height: 56px;
+      background: var(--dark-teal);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 16px;
+    }
+
+    .success-check svg {
+      width: 28px;
+      height: 28px;
+      color: white;
+    }
+
+    .success-state h3 {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+
+    .success-state p {
+      font-size: 16px;
+      color: var(--text-body);
+    }
+
+    /* Phone mockup */
+    .hero-phone {
+      flex-shrink: 0;
+      width: 340px;
+      position: relative;
+    }
+
+    .phone-frame {
+      width: 340px;
+      height: 737px;
+      background: var(--phone-black);
+      border-radius: 56px;
+      padding: 14px;
+      box-shadow: 0 50px 100px -20px rgba(0, 0, 0, 0.4);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .phone-notch {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 128px;
+      height: 28px;
+      background: var(--phone-black);
+      border-radius: 0 0 24px 24px;
+      z-index: 2;
+    }
+
+    .phone-screen {
+      width: 100%;
+      height: 100%;
+      background: var(--bg);
+      border-radius: 44px;
+      overflow: hidden;
+    }
+
+    /* Decorative circle behind phone */
+    .phone-circle {
+      position: absolute;
+      width: 450px;
+      height: 450px;
+      border: 1px solid var(--border-light);
+      border-radius: 50%;
+      top: 143px;
+      left: -66px;
+      pointer-events: none;
+    }
+
+    /* ═══════════════════════════════════════════
+       QUOTE SECTION
+    ═══════════════════════════════════════════ */
+    .quote-section {
+      background: var(--bg-section);
+      padding: 72px 0;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .quote-section .blob {
+      position: absolute;
+      bottom: -256px;
+      left: -256px;
+      width: 500px;
+      height: 500px;
+      background: rgba(173, 48, 53, 0.03);
+      border-radius: 12px;
+      pointer-events: none;
+    }
+
+    .quote-inner {
+      max-width: 960px;
+      margin: 0 auto;
+      text-align: center;
+      position: relative;
+      padding: 0 60px;
+    }
+
+    .quote-icon {
+      display: block;
+      margin: 0 auto 24px;
+      color: var(--dark-teal);
+    }
+
+    .quote-text {
+      font-size: 36px;
+      font-weight: 400;
+      color: var(--text-primary);
+      line-height: 48px;
+      text-align: center;
+      margin-bottom: 28px;
+    }
+
+    .quote-divider {
+      width: 48px;
+      height: 1px;
+      background: var(--divider);
+      margin: 0 auto 16px;
+    }
+
+    .quote-attribution {
+      font-size: 13px;
+      font-weight: 400;
+      color: var(--text-body);
+      letter-spacing: 2.8px;
+      text-transform: uppercase;
+      text-align: center;
+    }
+
+    /* ═══════════════════════════════════════════
+       EXPERIENCE SECTION (3 cards)
+    ═══════════════════════════════════════════ */
+    .experience {
+      padding: 100px 0 120px;
+    }
+
+    .experience .container {
+      max-width: 1268px;
+      margin: 0 auto;
+      padding: 0 86px;
+    }
+
+    .experience-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--dark-teal);
+      letter-spacing: 4.8px;
+      text-transform: uppercase;
+      margin-bottom: 40px;
+    }
+
+    .experience h2 {
+      font-size: 60px;
+      font-weight: 700;
+      color: var(--text-primary);
+      line-height: 72px;
+      max-width: 676px;
+      margin-bottom: 80px;
+    }
+
+    .cards-row {
+      display: flex;
+      gap: 32px;
+    }
+
+    .card {
+      flex: 1;
+      border-radius: 40px;
+      border: 1px solid var(--card-border);
+      padding: 40px;
+      min-height: 600px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card--coral {
+      background: var(--coral-card);
+    }
+
+    .card--neutral {
+      background: rgba(244, 243, 241, 0.4);
+      box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    }
+
+    .card-step {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Noto Serif', serif;
+      font-size: 20px;
+      font-weight: 400;
+      margin-bottom: 32px;
+    }
+
+    .card-step--white {
+      background: var(--white);
+      color: var(--text-primary);
+    }
+
+    .card-step--teal {
+      background: var(--dark-teal);
+      color: var(--white);
+    }
+
+    .card h3 {
+      font-size: 30px;
+      font-weight: 500;
+      font-style: italic;
+      color: var(--text-primary);
+      line-height: 36px;
+      margin-bottom: 16px;
+    }
+
+    .card p {
+      font-size: 16px;
+      font-weight: 400;
+      color: var(--text-body);
+      line-height: 24px;
+      max-width: 256px;
+    }
+
+    /* Scroll hint — hidden on desktop */
+    .scroll-hint {
+      display: none;
+    }
+
+    .card-visual {
+      flex: 1;
+      margin-top: 32px;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Mini phone inside cards */
+    .mini-phone {
+      width: 160px;
+      height: 320px;
+      background: var(--phone-black);
+      border-radius: 28px;
+      overflow: hidden;
+      box-shadow: 0 20px 40px -10px rgba(0,0,0,0.2);
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    .mini-phone-notch {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 60px;
+      height: 14px;
+      background: var(--phone-black);
+      border-radius: 0 0 12px 12px;
+      z-index: 2;
+    }
+
+    .mini-phone-screen {
+      margin: 4px;
+      width: calc(100% - 8px);
+      height: calc(100% - 8px);
+      background: var(--bg);
+      border-radius: 24px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Placeholder for screenshots to be added later */
+    .mini-phone-screen img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: top;
+    }
+
+    .screen-placeholder {
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(160deg, rgba(72,230,205,0.08) 0%, var(--bg) 40%, rgba(250,104,105,0.06) 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .screen-placeholder-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: rgba(0,0,0,0.04);
+    }
+
+    /* Hero phone image placeholder */
+    .phone-screen img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: top;
+    }
+
+    /* ═══════════════════════════════════════════
+       SIGN-UP SECTION
+    ═══════════════════════════════════════════ */
+    .signup-section {
+      padding: 40px 0 60px;
+    }
+
+    .signup-card {
+      max-width: 1104px;
+      margin: 0 auto;
+      background: var(--bg-section);
+      border-radius: 32px;
+      padding: 96px;
+      display: flex;
+      align-items: center;
+      gap: 64px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .signup-card .blob-decor {
+      position: absolute;
+      top: -192px;
+      right: -192px;
+      width: 384px;
+      height: 384px;
+      background: rgba(0, 80, 70, 0.03);
+      border-radius: 12px;
+      pointer-events: none;
+    }
+
+    .signup-left {
+      flex: 1;
+      position: relative;
+      z-index: 1;
+    }
+
+    .signup-left h2 {
+      font-size: 60px;
+      font-weight: 400;
+      color: var(--text-primary);
+      line-height: 60px;
+      margin-bottom: 31px;
+    }
+
+    .signup-left h2 em {
+      font-style: italic;
+      font-weight: 400;
+    }
+
+    .signup-left p {
+      font-size: 18px;
+      font-weight: 400;
+      font-family: 'Liberation Sans', 'Plus Jakarta Sans', sans-serif;
+      color: var(--text-body);
+      line-height: 29.25px;
+      max-width: 424px;
+    }
+
+    .signup-right {
+      width: 424px;
+      flex-shrink: 0;
+      position: relative;
+      z-index: 1;
+    }
+
+    .signup-right .input-field {
+      width: 100%;
+      background: var(--input-bg);
+      border: none;
+      outline: none;
+      padding: 25px 24px;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 400;
+      color: var(--text-body);
+      letter-spacing: 1.4px;
+      text-transform: uppercase;
+      margin-bottom: 24px;
+    }
+
+    .signup-right .input-field::placeholder {
+      color: var(--text-body-40);
+    }
+
+    .signup-right .btn-cta {
+      width: 100%;
+      background: var(--teal-btn);
+      color: var(--white);
+      border: none;
+      padding: 24px;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 4.8px;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: opacity 0.2s;
+      position: relative;
+      box-shadow: 0 20px 25px -5px var(--coral-shadow), 0 8px 10px -6px var(--coral-shadow);
+    }
+
+    .signup-right .btn-cta:hover {
+      opacity: 0.9;
+    }
+
+    .signup-right .btn-cta:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .signup-right .btn-cta.loading .btn-text {
+      visibility: hidden;
+    }
+
+    .signup-right .btn-cta.loading .btn-spinner {
+      display: block;
+    }
+
+    .signup-right .consent-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      margin-top: 16px;
+    }
+
+    .signup-right .consent-row input[type="checkbox"] {
+      margin-top: 3px;
+      accent-color: var(--dark-teal);
+    }
+
+    .signup-right .consent-row label {
+      font-size: 12px;
+      color: var(--text-body-60);
+      line-height: 1.4;
+    }
+
+    /* ═══════════════════════════════════════════
+       FOOTER
+    ═══════════════════════════════════════════ */
+    footer {
+      padding: 28px 0;
+    }
+
+    footer .container {
+      max-width: 1268px;
+      margin: 0 auto;
+      padding: 0 78px;
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+    }
+
+    .footer-logo {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 20px;
+      font-weight: 400;
+      color: var(--text-primary);
+      letter-spacing: 4px;
+      text-transform: uppercase;
+    }
+
+    .footer-copy {
+      font-family: 'Liberation Serif', Georgia, serif;
+      font-style: italic;
+      font-size: 14px;
+      color: var(--text-muted);
+      letter-spacing: 0.35px;
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 32px;
+      justify-content: flex-end;
+    }
+
+    .footer-links a {
+      font-family: 'Liberation Serif', Georgia, serif;
+      font-style: italic;
+      font-size: 14px;
+      color: var(--text-muted);
+      text-decoration: none;
+      letter-spacing: 0.35px;
+      transition: color 0.2s;
+    }
+
+    .footer-links a:hover {
+      color: var(--text-primary);
+    }
+
+    /* ═══════════════════════════════════════════
+       MOBILE RESPONSIVE
+    ═══════════════════════════════════════════ */
+    @media (max-width: 1024px) {
+      .hero .container {
+        padding: 0 60px;
+        gap: 40px;
+      }
+
+      .hero h1 {
+        font-size: 64px;
+        line-height: 80px;
+      }
+
+      .hero h1 .line-italic {
+        font-size: 60px;
+      }
+
+      .hero-phone {
+        width: 280px;
+      }
+
+      .phone-frame {
+        width: 280px;
+        height: 607px;
+        border-radius: 46px;
+      }
+
+      .phone-circle {
+        width: 370px;
+        height: 370px;
+        top: 100px;
+        left: -50px;
+      }
+
+      .experience .container {
+        padding: 0 40px;
+      }
+
+      .experience h2 {
+        font-size: 42px;
+        line-height: 52px;
+      }
+
+      .cards-row {
+        gap: 20px;
+      }
+
+      .card {
+        min-height: 480px;
+        padding: 32px;
+      }
+
+      .signup-card {
+        padding: 60px;
+        gap: 40px;
+      }
+
+      .signup-left h2 {
+        font-size: 42px;
+        line-height: 46px;
+      }
+
+      .signup-right {
+        width: 360px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .hero {
+        padding: 28px 0 32px;
+        min-height: auto;
+      }
+
+      /* Side-by-side like desktop — left text, right phone centered */
+      .hero .container {
+        flex-direction: row;
+        padding: 0 16px;
+        gap: 12px;
+        align-items: center;
+      }
+
+      .hero-content {
+        padding-top: 0;
+        text-align: left;
+        flex: 1;
+        min-width: 0;
+      }
+
+      .hero-tagline {
+        margin-bottom: 8px;
+      }
+
+      .hero-tagline-line {
+        width: 20px;
+      }
+
+      .hero-tagline-text {
+        font-size: 7px;
+        letter-spacing: 1.6px;
+      }
+
+      .hero h1 {
+        font-size: 24px;
+        line-height: 28px;
+        letter-spacing: -0.8px;
+        margin-bottom: 6px;
+      }
+
+      .hero h1 .line-italic {
+        font-size: 22px;
+      }
+
+      .hero-sub {
+        font-size: 8.5px;
+        line-height: 13px;
+        margin-bottom: 10px;
+      }
+
+      .hero-form-inline {
+        max-width: 100%;
+        padding: 4px;
+        border-radius: 8px;
+        box-shadow: 0 6px 16px -4px rgba(0, 0, 0, 0.12);
+      }
+
+      .hero-form-inline input[type="email"] {
+        padding: 7px 8px;
+        font-size: 7px;
+        letter-spacing: 0.2px;
+      }
+
+      .hero-form-inline .btn-submit {
+        padding: 7px 10px;
+        font-size: 6.5px;
+        letter-spacing: 0.6px;
+        border-radius: 6px;
+      }
+
+      .hero-microcopy {
+        font-size: 6px;
+        margin-top: 5px;
+        letter-spacing: 0.6px;
+      }
+
+      .form-error {
+        font-size: 8px;
+        margin-top: 4px;
+        min-height: 14px;
+      }
+
+      .hero-phone {
+        width: 90px;
+        flex-shrink: 0;
+      }
+
+      .phone-frame {
+        width: 90px;
+        height: 195px;
+        border-radius: 16px;
+        padding: 5px;
+        box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.3);
+        background: linear-gradient(145deg, #1a1a1a 0%, #2d2d2d 50%, #1a1a1a 100%);
+      }
+
+      .phone-notch {
+        width: 36px;
+        height: 9px;
+        border-radius: 0 0 6px 6px;
+      }
+
+      .phone-screen {
+        border-radius: 12px;
+        background: linear-gradient(160deg, rgba(72,230,205,0.06) 0%, var(--bg) 50%, rgba(250,104,105,0.04) 100%);
+      }
+
+      .phone-circle {
+        width: 120px;
+        height: 120px;
+        top: 30px;
+        left: -18px;
+      }
+
+      .hero-blob-teal {
+        width: 250px;
+        height: 200px;
+        top: -20px;
+        left: -40px;
+      }
+
+      .hero-blob-coral {
+        width: 200px;
+        height: 250px;
+        top: 40px;
+        right: -50px;
+      }
+
+      /* Quote — compact strip, smaller text, more like desktop proportions */
+      .quote-section {
+        padding: 24px 0;
+      }
+
+      .quote-inner {
+        padding: 0 24px;
+      }
+
+      .quote-icon {
+        width: 16px;
+        height: 11px;
+        margin-bottom: 10px;
+      }
+
+      .quote-text {
+        font-size: 14px;
+        line-height: 21px;
+        margin-bottom: 12px;
+      }
+
+      .quote-divider {
+        width: 28px;
+        margin-bottom: 8px;
+      }
+
+      .quote-attribution {
+        font-size: 8px;
+        letter-spacing: 1.6px;
+      }
+
+      /* Experience — horizontal scroll carousel */
+      .experience {
+        padding: 32px 0 36px;
+      }
+
+      .experience .container {
+        padding: 0 20px;
+      }
+
+      .experience-label {
+        font-size: 9px;
+        margin-bottom: 10px;
+        letter-spacing: 2.5px;
+      }
+
+      .experience h2 {
+        font-size: 22px;
+        line-height: 28px;
+        margin-bottom: 20px;
+      }
+
+      .cards-row {
+        flex-direction: row;
+        gap: 12px;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 16px;
+        padding-top: 4px;
+        margin-right: -20px;
+        scrollbar-width: none;
+      }
+
+      .cards-row::-webkit-scrollbar {
+        display: none;
+      }
+
+      .card {
+        min-width: 220px;
+        max-width: 220px;
+        min-height: 280px;
+        padding: 18px;
+        border-radius: 18px;
+        flex-shrink: 0;
+        scroll-snap-align: start;
+        box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06);
+      }
+
+      /* Swipe hint animation on second card */
+      @keyframes swipeHint {
+        0%, 100% { transform: translateX(0); }
+        50% { transform: translateX(-8px); }
+      }
+
+      .card:nth-child(2) {
+        animation: swipeHint 2s ease-in-out 1.5s 2;
+      }
+
+      .card h3 {
+        font-size: 16px;
+        line-height: 20px;
+        margin-bottom: 4px;
+      }
+
+      .card p {
+        font-size: 11px;
+        line-height: 16px;
+      }
+
+      .card-step {
+        width: 30px;
+        height: 30px;
+        font-size: 12px;
+        margin-bottom: 10px;
+      }
+
+      .card-visual {
+        margin-top: 12px;
+      }
+
+      .mini-phone {
+        width: 80px;
+        height: 160px;
+        border-radius: 14px;
+      }
+
+      .mini-phone-notch {
+        width: 36px;
+        height: 8px;
+        border-radius: 0 0 6px 6px;
+      }
+
+      .mini-phone-screen {
+        border-radius: 14px;
+        margin: 3px;
+        width: calc(100% - 6px);
+        height: calc(100% - 6px);
+      }
+
+      /* Scroll indicator dots */
+      .scroll-hint {
+        display: flex;
+        justify-content: center;
+        gap: 6px;
+        margin-top: 12px;
+      }
+
+      .scroll-hint-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--divider);
+        transition: background 0.3s, width 0.3s;
+      }
+
+      .scroll-hint-dot.active {
+        background: var(--dark-teal);
+        width: 18px;
+        border-radius: 3px;
+      }
+
+      /* Join KAME — lighter bg so form stands out */
+      .signup-section {
+        padding: 8px 16px 16px;
+      }
+
+      .signup-card {
+        flex-direction: row;
+        padding: 20px 16px;
+        gap: 12px;
+        border-radius: 16px;
+        align-items: stretch;
+        background: #F0EFED;
+      }
+
+      .signup-card .blob-decor {
+        width: 150px;
+        height: 150px;
+        top: -75px;
+        right: -75px;
+        opacity: 0.4;
+      }
+
+      .signup-left {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+
+      .signup-left h2 {
+        font-size: 20px;
+        line-height: 24px;
+        text-align: left;
+        margin-bottom: 5px;
+      }
+
+      .signup-left p {
+        font-size: 8px;
+        line-height: 12px;
+        text-align: left;
+        margin: 0;
+      }
+
+      .signup-right {
+        width: 160px;
+        flex-shrink: 0;
+      }
+
+      .signup-right .input-field {
+        padding: 11px 10px;
+        font-size: 8px;
+        letter-spacing: 0.6px;
+        margin-bottom: 8px;
+        background: var(--white);
+      }
+
+      .signup-right .btn-cta {
+        padding: 10px;
+        font-size: 8px;
+        letter-spacing: 1.6px;
+      }
+
+      .signup-right .consent-row {
+        margin-top: 5px;
+        gap: 3px;
+      }
+
+      .signup-right .consent-row label {
+        font-size: 6.5px;
+        line-height: 1.2;
+      }
+
+      .signup-right .consent-row input[type="checkbox"] {
+        width: 9px;
+        height: 9px;
+      }
+
+      footer {
+        padding: 10px 0;
+        border-top: 1px solid rgba(0,0,0,0.04);
+      }
+
+      footer .container {
+        grid-template-columns: auto 1fr auto;
+        gap: 0;
+        padding: 0 16px;
+        align-items: center;
+      }
+
+      .footer-logo {
+        font-size: 10px;
+        letter-spacing: 2px;
+      }
+
+      .footer-copy {
+        font-size: 8px;
+        text-align: center;
+      }
+
+      .footer-links {
+        justify-content: flex-end;
+        gap: 12px;
+      }
+
+      .footer-links a {
+        font-size: 8px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ═══════════════ HERO ═══════════════ -->
+  <section class="hero">
+    <div class="hero-blob-teal"></div>
+    <div class="hero-blob-coral"></div>
+
+    <div class="container">
+      <div class="hero-content fade-in-left">
+        <!-- Tagline -->
+        <div class="hero-tagline">
+          <div class="hero-tagline-line"></div>
+          <span class="hero-tagline-text">See it, Swipe it, Own it</span>
+        </div>
+
+        <!-- Headline -->
+        <h1>
+          Your ONLY<br>
+          <span class="line-italic">SHOPPING<br>AGENT.</span>
+        </h1>
+
+        <!-- Subtext -->
+        <p class="hero-sub">
+          See how your outfit looks exactly on you before making purchase.
+          Bring global fashions to your hand.
+          Swipe to build your dream wardrobe.
+        </p>
+
+        <!-- Email form -->
+        <form class="hero-form-inline" id="heroForm" novalidate>
+          <input type="email" name="email" placeholder="Enter your email for access" required autocomplete="email">
+          <button type="submit" class="btn-submit">
+            <span class="btn-text">JOIN THE WAITLIST</span>
+            <span class="btn-spinner"></span>
+          </button>
+        </form>
+        <div class="form-error" id="heroError"></div>
+        <p class="hero-microcopy" id="heroCounter">Limited pre-launch access only</p>
+
+        <!-- Success state -->
+        <div class="success-state" id="heroSuccess">
+          <div class="success-check">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          </div>
+          <h3>You're on the list!</h3>
+          <p>We'll let you know when Kame is ready.</p>
+        </div>
+      </div>
+
+      <!-- Phone mockup -->
+      <div class="hero-phone fade-in-right">
+        <div class="phone-circle"></div>
+        <div class="phone-frame">
+          <div class="phone-notch"></div>
+          <div class="phone-screen"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════ QUOTE ═══════════════ -->
+  <section class="quote-section fade-in-scale">
+    <div class="blob"></div>
+    <div class="quote-inner">
+      <!-- Quote mark SVG -->
+      <svg class="quote-icon" width="32" height="23" viewBox="0 0 32 23" fill="none">
+        <path d="M0 22.6V13.6C0 9.8 0.8 6.7 2.4 4.3C4.1 1.9 6.6 0.3 9.9 0L11 3.8C9.1 4.2 7.6 5.2 6.6 6.7C5.6 8.2 5.1 10 5.1 12.1H10.5V22.6H0ZM21.4 22.6V13.6C21.4 9.8 22.2 6.7 23.8 4.3C25.5 1.9 28 0.3 31.3 0L32.4 3.8C30.5 4.2 29 5.2 28 6.7C27 8.2 26.5 10 26.5 12.1H31.9V22.6H21.4Z" fill="currentColor"/>
+      </svg>
+
+      <p class="quote-text">
+        &ldquo;Save the pain of scrolling through
+        10 shopping platforms.
+        No more disappoint when receiving
+        your online shopping packages.&rdquo;
+      </p>
+
+      <div class="quote-divider"></div>
+      <p class="quote-attribution">Kame Creative Director</p>
+    </div>
+  </section>
+
+  <!-- ═══════════════ EXPERIENCE ═══════════════ -->
+  <section class="experience fade-in">
+    <div class="container">
+      <p class="experience-label">Kame Experience</p>
+      <h2>Redefines Online Shopping Experience</h2>
+
+      <div class="cards-row">
+        <!-- Card 1: SEE IT -->
+        <div class="card card--coral fade-in stagger-1">
+          <div class="card-step card-step--white">01</div>
+          <h3>SEE IT</h3>
+          <p>Bring global fashion on you with your face and your body shape</p>
+          <div class="card-visual">
+            <div class="mini-phone">
+              <div class="mini-phone-notch"></div>
+              <div class="mini-phone-screen">
+                <!-- Replace with: <img src="screenshot-see-it.png" alt="See It preview"> -->
+                <div class="screen-placeholder"><div class="screen-placeholder-icon"></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 2: SWIPE IT -->
+        <div class="card card--neutral fade-in stagger-2">
+          <div class="card-step card-step--teal">02</div>
+          <h3>SWIPE IT</h3>
+          <p>Simple swipes to build your dream wardrobe</p>
+          <div class="card-visual">
+            <div class="mini-phone">
+              <div class="mini-phone-notch"></div>
+              <div class="mini-phone-screen">
+                <!-- Replace with: <img src="screenshot-swipe-it.png" alt="Swipe It preview"> -->
+                <div class="screen-placeholder"><div class="screen-placeholder-icon"></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 3: OWN IT -->
+        <div class="card card--coral fade-in stagger-3">
+          <div class="card-step card-step--white">03</div>
+          <h3>OWN IT</h3>
+          <p>One-kart, single-click checkout across multiple shopping platforms</p>
+          <div class="card-visual">
+            <div class="mini-phone">
+              <div class="mini-phone-notch"></div>
+              <div class="mini-phone-screen">
+                <!-- Replace with: <img src="screenshot-own-it.png" alt="Own It preview"> -->
+                <div class="screen-placeholder"><div class="screen-placeholder-icon"></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Scroll indicator dots (mobile only) -->
+      <div class="scroll-hint" id="scrollHint">
+        <div class="scroll-hint-dot active" data-index="0"></div>
+        <div class="scroll-hint-dot" data-index="1"></div>
+        <div class="scroll-hint-dot" data-index="2"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════ SIGNUP CTA ═══════════════ -->
+  <section class="signup-section fade-in">
+    <div class="signup-card">
+      <div class="blob-decor"></div>
+
+      <div class="signup-left fade-in-left">
+        <h2>Join <em>KAME</em></h2>
+        <p>Be the first to access our private beta. Exclusive invites are extended to a curated few each month.</p>
+      </div>
+
+      <div class="signup-right fade-in-right">
+        <form id="ctaForm" novalidate>
+          <input type="email" name="email" class="input-field" placeholder="Your email address" required autocomplete="email">
+          <button type="submit" class="btn-cta">
+            <span class="btn-text">Request Invitation</span>
+            <span class="btn-spinner"></span>
+          </button>
+          <div class="consent-row">
+            <input type="checkbox" id="ctaConsent" name="consent">
+            <label for="ctaConsent">I agree to receive updates from Kame. You can unsubscribe anytime.</label>
+          </div>
+        </form>
+        <div class="form-error" id="ctaError"></div>
+        <div class="success-state" id="ctaSuccess">
+          <div class="success-check">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          </div>
+          <h3>You're on the list!</h3>
+          <p>We'll let you know when Kame is ready.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════ FOOTER ═══════════════ -->
+  <footer>
+    <div class="container">
+      <span class="footer-logo">KAME</span>
+      <span class="footer-copy">&copy; 2026 Kame. All rights reserved.</span>
+      <div class="footer-links">
+        <a href="#">Privacy</a>
+        <a href="#">Terms</a>
+        <a href="#">Contact</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // ─── Config ───────────────────────────────
+    const API_BASE = 'https://kame-production.up.railway.app';
+
+    // ─── UTM Capture ──────────────────────────
+    const params = new URLSearchParams(window.location.search);
+    const utm = {
+      utmSource: params.get('utm_source') || params.get('ref') || null,
+      utmMedium: params.get('utm_medium') || null,
+      utmCampaign: params.get('utm_campaign') || null,
+      referrerUrl: document.referrer || null,
+    };
+
+    // ─── Counter ──────────────────────────────
+    async function loadCount() {
+      try {
+        const res = await fetch(`${API_BASE}/api/waitlist/count`);
+        const json = await res.json();
+        if (json.success && json.data.count > 0) {
+          document.getElementById('heroCounter').innerHTML =
+            `Join <strong>${json.data.count}</strong> other${json.data.count === 1 ? '' : 's'} waiting`;
+        }
+      } catch (_) { /* silent fail */ }
+    }
+    loadCount();
+
+    // ─── Form Handler ─────────────────────────
+    function setupForm(formId, errorId, successId, hasConsent) {
+      const form = document.getElementById(formId);
+      const errorEl = document.getElementById(errorId);
+      const successEl = document.getElementById(successId);
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        errorEl.textContent = '';
+
+        const emailInput = form.querySelector('input[type="email"]');
+        const consentInput = form.querySelector('input[type="checkbox"]');
+        const btn = form.querySelector('button');
+
+        const email = emailInput.value.trim();
+
+        // Client-side validation
+        if (!email) { errorEl.textContent = 'Please enter your email.'; return; }
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+          errorEl.textContent = 'Please enter a valid email.'; return;
+        }
+        if (consentInput && !consentInput.checked) {
+          errorEl.textContent = 'Please agree to receive updates.'; return;
+        }
+
+        // Submit
+        btn.classList.add('loading');
+        btn.disabled = true;
+
+        try {
+          const body = { email, consent: true, ...utm };
+
+          const res = await fetch(`${API_BASE}/api/waitlist/signup`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+          });
+
+          const json = await res.json();
+
+          if (res.ok) {
+            form.style.display = 'none';
+            successEl.classList.add('show');
+            loadCount();
+          } else if (res.status === 409) {
+            errorEl.textContent = "You're already on the list!";
+          } else {
+            errorEl.textContent = json.error || 'Something went wrong. Please try again.';
+          }
+        } catch (_) {
+          errorEl.textContent = 'Network error. Please try again.';
+        } finally {
+          btn.classList.remove('loading');
+          btn.disabled = false;
+        }
+      });
+    }
+
+    // Hero form doesn't have consent checkbox (inline form) — auto-consent
+    setupForm('heroForm', 'heroError', 'heroSuccess', false);
+    setupForm('ctaForm', 'ctaError', 'ctaSuccess', true);
+
+    // ─── Scroll Animations ────────────────────
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.1 }
+    );
+
+    document.querySelectorAll('.fade-in, .fade-in-left, .fade-in-right, .fade-in-scale').forEach((el) => observer.observe(el));
+
+    // ─── Horizontal Scroll Indicator (mobile) ────
+    const cardsRow = document.querySelector('.cards-row');
+    const dots = document.querySelectorAll('.scroll-hint-dot');
+    if (cardsRow && dots.length) {
+      cardsRow.addEventListener('scroll', () => {
+        const scrollLeft = cardsRow.scrollLeft;
+        const cardWidth = 272; // 260px card + 12px gap
+        const activeIndex = Math.round(scrollLeft / cardWidth);
+        dots.forEach((dot, i) => {
+          dot.classList.toggle('active', i === activeIndex);
+        });
+      });
+    }
+  </script>
+
+</body>
+</html>

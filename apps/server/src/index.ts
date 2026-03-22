@@ -13,6 +13,7 @@ import { favoritesRouter } from './routes/favorites.js';
 import { analyticsRouter } from './routes/analytics.js';
 import { tryonRouter } from './routes/tryon.js';
 import { accountRouter } from './routes/account.js';
+import { waitlistRouter } from './routes/waitlist.js';
 import { isS3Configured } from './integrations/s3.js';
 import { prisma } from './lib/prisma.js';
 import { AppError, ValidationError } from './utils/errors.js';
@@ -42,7 +43,18 @@ app.use(
   cors({
     origin:
       process.env.NODE_ENV === 'production'
-        ? process.env.ALLOWED_ORIGIN || '*'
+        ? (origin, callback) => {
+            const allowed = [
+              process.env.ALLOWED_ORIGIN,
+              'https://kame-ai.com',
+              'https://www.kame-ai.com',
+            ].filter(Boolean) as string[];
+            if (!origin || allowed.includes(origin)) {
+              callback(null, true);
+            } else {
+              callback(new Error('Not allowed by CORS'));
+            }
+          }
         : '*',
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
     allowedHeaders: ['Content-Type', 'Authorization'],
@@ -59,6 +71,7 @@ app.use('/api/tryon', uploadLimiter);
 app.use('/api/swipe', writeLimiter);
 app.use('/api/profile', writeLimiter);
 app.use('/api/preferences', writeLimiter);
+app.use('/api/waitlist/signup', writeLimiter);
 app.use(generalLimiter);
 
 // ─── Health Check ───────────────────────────────────
@@ -87,6 +100,7 @@ app.use('/api/favorites', favoritesRouter);
 app.use('/api/analytics', analyticsRouter);
 app.use('/api/tryon', tryonRouter);
 app.use('/api/account', accountRouter);
+app.use('/api/waitlist', waitlistRouter);
 
 // ─── Stale Job Recovery ─────────────────────────────
 // Marks PENDING/PROCESSING jobs older than 10 min as FAILED.

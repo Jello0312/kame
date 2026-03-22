@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kame Waitlist — Admin Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --teal: #48E6CD;
+      --teal-10: rgba(72, 230, 205, 0.1);
+      --coral: #FA6869;
+      --coral-10: rgba(250, 104, 105, 0.1);
+      --bone: #F5F0E8;
+      --white: #FFFFFF;
+      --body: #5A5A58;
+      --body-light: #7A7A78;
+      --gray-100: #F8F9FB;
+      --gray-200: #E5E7EB;
+      --gray-400: #9CA3AF;
+      --gray-700: #374151;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      color: var(--body);
+      background: var(--gray-100);
+      line-height: 1.5;
+      min-height: 100vh;
+    }
+
+    /* ─── Login Screen ─────────────────── */
+    #loginScreen {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .login-card {
+      background: var(--white);
+      border-radius: 16px;
+      padding: 40px;
+      max-width: 380px;
+      width: 100%;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+      text-align: center;
+    }
+    .login-card h1 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--teal);
+      margin-bottom: 8px;
+    }
+    .login-card p {
+      font-size: 14px;
+      color: var(--body-light);
+      margin-bottom: 24px;
+    }
+    .login-card input {
+      width: 100%;
+      padding: 12px 16px;
+      border: 1px solid var(--gray-200);
+      border-radius: 10px;
+      font-family: inherit;
+      font-size: 15px;
+      background: var(--gray-100);
+      outline: none;
+      margin-bottom: 12px;
+    }
+    .login-card input:focus { border-color: var(--teal); }
+    .login-card button {
+      width: 100%;
+      padding: 12px;
+      background: var(--teal);
+      color: var(--bone);
+      border: none;
+      border-radius: 26px;
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+    .login-card button:hover { opacity: 0.9; }
+    .login-error {
+      color: var(--coral);
+      font-size: 13px;
+      margin-top: 8px;
+      min-height: 20px;
+    }
+
+    /* ─── Dashboard ────────────────────── */
+    #dashboard { display: none; }
+
+    .header {
+      background: var(--white);
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--gray-200);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .header h1 {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--body);
+    }
+    .header h1 span { color: var(--teal); font-style: italic; }
+    .header-actions { display: flex; gap: 10px; align-items: center; }
+    .header-actions button {
+      padding: 8px 16px;
+      border-radius: 8px;
+      border: 1px solid var(--gray-200);
+      background: var(--white);
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      color: var(--body);
+      transition: background 0.15s;
+    }
+    .header-actions button:hover { background: var(--gray-100); }
+    .header-actions .btn-export {
+      background: var(--teal);
+      color: var(--white);
+      border: none;
+    }
+    .header-actions .btn-export:hover { opacity: 0.9; }
+    .refresh-text { font-size: 12px; color: var(--gray-400); }
+
+    .main { padding: 24px; max-width: 1200px; margin: 0 auto; }
+
+    /* ─── Stat Cards ───────────────────── */
+    .stat-cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .stat-card {
+      background: var(--white);
+      border-radius: 12px;
+      padding: 20px 24px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    }
+    .stat-card .label {
+      font-size: 13px;
+      color: var(--body-light);
+      font-weight: 500;
+      margin-bottom: 4px;
+    }
+    .stat-card .value {
+      font-size: 36px;
+      font-weight: 800;
+      color: var(--teal);
+      letter-spacing: -1px;
+    }
+    .stat-card.coral .value { color: var(--coral); }
+
+    /* ─── Charts ───────────────────────── */
+    .chart-row {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .chart-card {
+      background: var(--white);
+      border-radius: 12px;
+      padding: 20px 24px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    }
+    .chart-card h3 {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--body);
+      margin-bottom: 16px;
+    }
+
+    /* ─── Tables ───────────────────────── */
+    .table-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .table-card {
+      background: var(--white);
+      border-radius: 12px;
+      padding: 20px 24px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    }
+    .table-card h3 {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--body);
+      margin-bottom: 12px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    th {
+      text-align: left;
+      padding: 8px 12px;
+      border-bottom: 2px solid var(--gray-200);
+      font-weight: 600;
+      color: var(--body-light);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    td {
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--gray-100);
+      color: var(--body);
+    }
+
+    /* Recent signups table full width */
+    .recent-card {
+      background: var(--white);
+      border-radius: 12px;
+      padding: 20px 24px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    }
+    .recent-card h3 {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--body);
+      margin-bottom: 12px;
+    }
+
+    /* ─── Empty state ──────────────────── */
+    .empty {
+      text-align: center;
+      padding: 40px;
+      color: var(--gray-400);
+      font-size: 14px;
+    }
+
+    /* ─── Responsive ───────────────────── */
+    @media (max-width: 768px) {
+      .stat-cards { grid-template-columns: 1fr; }
+      .chart-row { grid-template-columns: 1fr; }
+      .table-row { grid-template-columns: 1fr; }
+      .header { flex-direction: column; gap: 12px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ═══════ LOGIN ═══════ -->
+  <div id="loginScreen">
+    <div class="login-card">
+      <h1>Kame Admin</h1>
+      <p>Enter the admin password to access the dashboard.</p>
+      <form id="loginForm">
+        <input type="password" id="passwordInput" placeholder="Admin password" autocomplete="off">
+        <button type="submit">Sign In</button>
+      </form>
+      <div class="login-error" id="loginError"></div>
+    </div>
+  </div>
+
+  <!-- ═══════ DASHBOARD ═══════ -->
+  <div id="dashboard">
+    <div class="header">
+      <h1><span>Kame</span> Waitlist Dashboard</h1>
+      <div class="header-actions">
+        <span class="refresh-text" id="lastRefresh"></span>
+        <button onclick="loadStats()">Refresh</button>
+        <button class="btn-export" onclick="exportCSV()">Download CSV</button>
+      </div>
+    </div>
+
+    <div class="main">
+      <!-- Stat Cards -->
+      <div class="stat-cards">
+        <div class="stat-card">
+          <div class="label">Total Signups</div>
+          <div class="value" id="totalSignups">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">Today</div>
+          <div class="value" id="todaySignups">—</div>
+        </div>
+        <div class="stat-card coral">
+          <div class="label">This Week</div>
+          <div class="value" id="weekSignups">—</div>
+        </div>
+      </div>
+
+      <!-- Charts -->
+      <div class="chart-row">
+        <div class="chart-card">
+          <h3>Signups per Day (last 30 days)</h3>
+          <canvas id="dailyChart" height="200"></canvas>
+        </div>
+        <div class="chart-card">
+          <h3>By Source</h3>
+          <canvas id="sourceChart" height="200"></canvas>
+        </div>
+      </div>
+
+      <!-- Tables -->
+      <div class="table-row">
+        <div class="table-card">
+          <h3>Top Countries</h3>
+          <div id="countryTable"></div>
+        </div>
+        <div class="table-card">
+          <h3>Campaigns</h3>
+          <div id="campaignTable"></div>
+        </div>
+      </div>
+
+      <!-- Recent Signups -->
+      <div class="recent-card">
+        <h3>Recent Signups</h3>
+        <div id="recentTable"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = 'https://kame-production.up.railway.app';
+    let adminKey = sessionStorage.getItem('kame_admin_key') || '';
+    let statsData = null;
+    let dailyChartInstance = null;
+    let sourceChartInstance = null;
+    let refreshInterval = null;
+
+    // ─── Login ────────────────────────────
+    const loginForm = document.getElementById('loginForm');
+    const loginError = document.getElementById('loginError');
+
+    // Auto-login if key in URL
+    const urlKey = new URLSearchParams(window.location.search).get('key');
+    if (urlKey) {
+      adminKey = urlKey;
+      sessionStorage.setItem('kame_admin_key', adminKey);
+      // Clean URL
+      window.history.replaceState({}, '', window.location.pathname);
+      tryLogin();
+    } else if (adminKey) {
+      tryLogin();
+    }
+
+    loginForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      adminKey = document.getElementById('passwordInput').value.trim();
+      if (!adminKey) { loginError.textContent = 'Enter the password.'; return; }
+      sessionStorage.setItem('kame_admin_key', adminKey);
+      tryLogin();
+    });
+
+    async function tryLogin() {
+      try {
+        const res = await fetch(`${API_BASE}/api/waitlist/admin/stats`, {
+          headers: { 'Authorization': `Bearer ${adminKey}` },
+        });
+        if (res.ok) {
+          document.getElementById('loginScreen').style.display = 'none';
+          document.getElementById('dashboard').style.display = 'block';
+          const json = await res.json();
+          renderStats(json.data);
+          // Auto-refresh every 60s
+          refreshInterval = setInterval(loadStats, 60_000);
+        } else {
+          loginError.textContent = 'Invalid password.';
+          sessionStorage.removeItem('kame_admin_key');
+        }
+      } catch (_) {
+        loginError.textContent = 'Cannot reach server.';
+      }
+    }
+
+    // ─── Load Stats ───────────────────────
+    async function loadStats() {
+      try {
+        const res = await fetch(`${API_BASE}/api/waitlist/admin/stats`, {
+          headers: { 'Authorization': `Bearer ${adminKey}` },
+        });
+        if (!res.ok) return;
+        const json = await res.json();
+        renderStats(json.data);
+      } catch (_) { /* silent */ }
+    }
+
+    // ─── Render Stats ─────────────────────
+    function renderStats(data) {
+      statsData = data;
+
+      // Cards
+      document.getElementById('totalSignups').textContent = data.totalSignups.toLocaleString();
+      document.getElementById('todaySignups').textContent = data.today.toLocaleString();
+      document.getElementById('weekSignups').textContent = data.thisWeek.toLocaleString();
+
+      // Last refresh
+      document.getElementById('lastRefresh').textContent =
+        `Updated ${new Date().toLocaleTimeString()}`;
+
+      // Daily chart
+      renderDailyChart(data.byDay);
+
+      // Source chart
+      renderSourceChart(data.bySource);
+
+      // Tables
+      renderTable('countryTable', ['Country', 'Count'], data.byCountry.map(r => [r.country || '(unknown)', r.count]));
+      renderTable('campaignTable', ['Campaign', 'Count'], data.byCampaign.map(r => [r.campaign || '(none)', r.count]));
+      renderRecentTable(data.recentSignups);
+    }
+
+    // ─── Charts ───────────────────────────
+    function renderDailyChart(byDay) {
+      if (dailyChartInstance) dailyChartInstance.destroy();
+
+      const ctx = document.getElementById('dailyChart').getContext('2d');
+      dailyChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: byDay.map(d => {
+            const date = new Date(d.date);
+            return `${date.getMonth()+1}/${date.getDate()}`;
+          }),
+          datasets: [{
+            label: 'Signups',
+            data: byDay.map(d => d.count),
+            borderColor: '#48E6CD',
+            backgroundColor: 'rgba(72, 230, 205, 0.1)',
+            fill: true,
+            tension: 0.3,
+            pointRadius: 3,
+            pointBackgroundColor: '#48E6CD',
+          }],
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: { beginAtZero: true, ticks: { stepSize: 1 } },
+            x: { grid: { display: false } },
+          },
+        },
+      });
+    }
+
+    function renderSourceChart(bySource) {
+      if (sourceChartInstance) sourceChartInstance.destroy();
+
+      const colors = ['#48E6CD', '#FA6869', '#F7C13D', '#744DA6', '#289B62', '#9CA3AF'];
+      const ctx = document.getElementById('sourceChart').getContext('2d');
+      sourceChartInstance = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: bySource.map(s => s.source || '(direct)'),
+          datasets: [{
+            data: bySource.map(s => s.count),
+            backgroundColor: bySource.map((_, i) => colors[i % colors.length]),
+            borderWidth: 0,
+          }],
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { position: 'bottom', labels: { font: { size: 12 } } },
+          },
+        },
+      });
+    }
+
+    // ─── Tables ───────────────────────────
+    function renderTable(containerId, headers, rows) {
+      const el = document.getElementById(containerId);
+      if (rows.length === 0) {
+        el.innerHTML = '<div class="empty">No data yet</div>';
+        return;
+      }
+      let html = '<table><thead><tr>';
+      headers.forEach(h => html += `<th>${h}</th>`);
+      html += '</tr></thead><tbody>';
+      rows.forEach(row => {
+        html += '<tr>';
+        row.forEach(cell => html += `<td>${cell}</td>`);
+        html += '</tr>';
+      });
+      html += '</tbody></table>';
+      el.innerHTML = html;
+    }
+
+    function renderRecentTable(signups) {
+      const el = document.getElementById('recentTable');
+      if (signups.length === 0) {
+        el.innerHTML = '<div class="empty">No signups yet</div>';
+        return;
+      }
+      let html = '<table><thead><tr><th>Email</th><th>Name</th><th>Source</th><th>Country</th><th>Date</th></tr></thead><tbody>';
+      signups.forEach(s => {
+        const date = new Date(s.createdAt);
+        const dateStr = `${date.getMonth()+1}/${date.getDate()} ${date.getHours()}:${String(date.getMinutes()).padStart(2,'0')}`;
+        html += `<tr>
+          <td>${s.email}</td>
+          <td>${s.name || '—'}</td>
+          <td>${s.source || '—'}</td>
+          <td>${s.country || '—'}</td>
+          <td>${dateStr}</td>
+        </tr>`;
+      });
+      html += '</tbody></table>';
+      el.innerHTML = html;
+    }
+
+    // ─── CSV Export ───────────────────────
+    function exportCSV() {
+      if (!statsData || !statsData.recentSignups.length) return;
+
+      const headers = ['Email', 'Name', 'Source', 'Country', 'Date'];
+      const rows = statsData.recentSignups.map(s => [
+        s.email,
+        s.name || '',
+        s.source || '',
+        s.country || '',
+        new Date(s.createdAt).toISOString(),
+      ]);
+
+      let csv = headers.join(',') + '\n';
+      rows.forEach(row => {
+        csv += row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',') + '\n';
+      });
+
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `kame-waitlist-${new Date().toISOString().split('T')[0]}.csv`;
+      link.click();
+      URL.revokeObjectURL(link.href);
+    }
+  </script>
+
+</body>
+</html>
