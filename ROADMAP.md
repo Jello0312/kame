@@ -2,7 +2,7 @@
 
 > Last updated: 2026-03-21
 > Current phase: **MVP Sprint (Weeks 1-3)**
-> Current step: **Sprint 5.2 — Brand Kit Refresh** (complete)
+> Current step: **Sprint 5.3 — Brand Kit v2 Documentation + Token Alignment** (complete)
 
 ## Progress Tracking Convention
 - `[ ]` = Todo
@@ -227,7 +227,27 @@
 - [x] Update semantic tokens (background, surface, textPrimary, cardOverlay) in constants.ts ✅
 - [x] Update CLAUDE.md brand rules and colour token reference ✅
 - [x] Update docs/BRAND_SYSTEM.md (palette, typography, components, logo, dark-first → warm-white-first) ✅
-- [x] Update KameLogo.tsx with official logo: "Kame" teal BoldItalic + "AI FASHION" gray subtext ✅
+- [x] Update KameLogo.tsx with official logo: "Kame" teal BoldItalic + "FASHION AI" subtext ✅
+
+### Sprint 5.3 — Brand Kit v2 Documentation + Token Alignment ✅ COMPLETE
+- [x] Rewrite docs/BRAND_SYSTEM.md — sync §1-6 from official Brand Kit PDF (March 21, 2026) ✅
+- [x] Retire `#1AA39C` (old teal) — mark deprecated in constants.ts, update tailwind.config.js DEFAULT to `#48E6CD` ✅
+- [x] Add body text tokens: `body` (#5A5A58), `bodyLight` (#7A7A78) to constants.ts + tailwind.config.js ✅
+- [x] Add ExtraBold 800 weight to FONTS in constants.ts + tailwind.config.js ✅
+- [x] Fix logo subtitle text: "AI FASHION" → "FASHION AI" across all docs ✅
+- [x] Fix logo subtitle spec: gray-400 Regular → SemiBold teal @ 50% opacity ✅
+- [x] Add new brand sections: decorative fills, design elements, layout rules, Kame Signature divider ✅
+- [x] Update CLAUDE.md brand rules (8 rules, updated tokens, 3 chip variants) ✅
+- [x] Update chip radius: 18px → 14px in tailwind.config.js ✅
+
+### Sprint 5.4 — Brand Kit v2 UI Alignment (pending)
+- [ ] Update all component files to use `body` (#5A5A58) instead of gray-700 for body text
+- [ ] Update all component files to use `bodyLight` (#7A7A78) instead of gray-400 for secondary text
+- [ ] Replace all remaining `COLORS.teal` usage with `COLORS.tealBright` in components
+- [ ] Load ExtraBold font in `_layout.tsx`
+- [ ] Update chip components to match 3-variant spec (tag-teal, tag-coral, tag-ghost)
+- [ ] Update CTA button text from white to bone (#F5F0E8)
+- [ ] Implement Kame Signature divider component
 
 ---
 

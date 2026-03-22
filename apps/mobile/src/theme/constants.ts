@@ -2,15 +2,16 @@
 // KAME THEME CONSTANTS
 // ═══════════════════════════════════════════════════════════════
 // Source of truth for all visual tokens in the Kame mobile app.
-// Extracted from official Kame pitch deck and prototype mockups.
+// Synced from official Kame Brand Kit — Production Guide (March 21, 2026).
 // Import this file instead of hardcoding hex values.
 // ═══════════════════════════════════════════════════════════════
 
 export const COLORS = {
   // ── Primary ──
   warmWhite: '#F5F0E8', // Primary background surface
+  /** @deprecated RETIRED per Brand Kit v2 (March 2026). Use tealBright #48E6CD instead. */
   teal: '#1AA39C',
-  tealBright: '#48E6CD', // Brand primary: text, buttons, interactive
+  tealBright: '#48E6CD', // Brand primary: text, buttons, interactive (the ONLY teal)
   white: '#FFFFFF',
 
   // ── Deprecated — kept for backward compat until UI brand update sprint ──
@@ -26,6 +27,10 @@ export const COLORS = {
   green: '#289B62',
   red: '#E3393C',
   purple: '#744DA6',
+
+  // ── Body Text (Brand Kit v2) ──
+  body: '#5A5A58',       // Body/paragraph text — warm neutral gray
+  bodyLight: '#7A7A78',  // Captions, placeholders, secondary text
 
   // ── Neutral ──
   gray100: '#F8F9FB',
@@ -72,7 +77,8 @@ export const GRADIENTS = {
   ctaAngle: 135,
   cardOverlay: ['transparent', 'rgba(0,0,0,0.45)'] as const,
   premium: ['#744DA6', '#9B6BC7'] as const,
-  tealGlow: ['#1AA39C', '#48E6CD'] as const,
+  /** @deprecated tealGlow used retired #1AA39C — prefer solid teal #48E6CD */
+  tealGlow: ['#48E6CD', '#48E6CD'] as const,
   glowLike: ['rgba(40, 155, 98, 0.70)', 'transparent'] as const,
   glowDislike: ['rgba(227, 57, 60, 0.70)', 'transparent'] as const,
 } as const;
@@ -83,6 +89,7 @@ export const FONTS = {
   semiBold: 'PlusJakartaSans-SemiBold',
   bold: 'PlusJakartaSans-Bold',
   boldItalic: 'PlusJakartaSans-BoldItalic',
+  extraBold: 'PlusJakartaSans-ExtraBold',
 } as const;
 
 export const TYPE = {

@@ -11,12 +11,16 @@ module.exports = {
       colors: {
         warmWhite: '#F5F0E8',
         teal: {
-          DEFAULT: '#1AA39C',
-          bright: '#48E6CD',
+          DEFAULT: '#48E6CD', // #1AA39C is RETIRED per Brand Kit v2
+          bright: '#48E6CD',  // kept for backward compat
         },
         coral: {
           DEFAULT: '#FA6869',
           deep: '#CC4968',
+        },
+        body: {
+          DEFAULT: '#5A5A58', // Body/paragraph text — warm neutral gray
+          light: '#7A7A78',   // Captions, placeholders, secondary text
         },
         gold: '#F7C13D',
         kame: {
@@ -35,6 +39,7 @@ module.exports = {
       fontFamily: {
         heading: ['PlusJakartaSans-Bold'],
         'heading-semi': ['PlusJakartaSans-SemiBold'],
+        'heading-extra': ['PlusJakartaSans-ExtraBold'],
         body: ['PlusJakartaSans-Regular'],
         'body-medium': ['PlusJakartaSans-Medium'],
       },
@@ -42,7 +47,7 @@ module.exports = {
         card: '20px',
         'card-sm': '16px',
         button: '26px',
-        chip: '18px',
+        chip: '14px', // updated from 18px per Brand Kit v2
         input: '12px',
       },
     },

@@ -12,7 +12,7 @@
 - [x] Update theme/constants.ts — warmWhite, remove navy, update semantics ✅
 - [x] Update tailwind.config.js — remove navy block, add warmWhite ✅
 - [x] Update docs/BRAND_SYSTEM.md — all sections (palette, typography, components, logo) ✅
-- [x] Update KameLogo.tsx — add "AI FASHION" subtext per official logo ✅
+- [x] Update KameLogo.tsx — add "FASHION AI" subtext per official logo ✅
 - [x] Update ROADMAP.md — mark sprint complete ✅
 - [x] Grep verify — zero old hex values in docs/config ✅
 

@@ -372,44 +372,44 @@ Simple: filter by user's preferred styles + gender, exclude already-swiped produ
 ## Brand Design System (READ BEFORE ANY UI WORK)
 
 Full brand spec is at: `docs/BRAND_SYSTEM.md` — READ IT before building any screen.
+Synced from official Kame Brand Kit — Production Guide (PDF, March 21, 2026).
 
-### Quick Reference — The 7 Rules
+### Quick Reference — The 8 Rules
 
-1. **WARM WHITE FIRST**: `#F5F0E8` (warmWhite) is the primary background everywhere. White `#FFFFFF` surfaces inside cards and modals. No navy.
+1. **WARM WHITE FIRST**: `#F5F0E8` (warmWhite / bone) is the primary background everywhere. White `#FFFFFF` surfaces inside cards and modals. No navy.
 
-2. **TEAL = BRAND + INTERACTIVE**: Teal bright `#48E6CD` for the wordmark, buttons, selected chips, links, active states, and primary text accents.
+2. **TEAL = BRAND + INTERACTIVE**: `#48E6CD` is the ONLY teal. For the wordmark, buttons, selected chips, links, active states, and primary text accents. **`#1AA39C` is RETIRED — do not use.**
 
 3. **CORAL = COMMERCE + PRICES**: Coral `#FA6869` for every price tag and commerce CTAs (Buy Now, Checkout). Active tab icons also use coral to distinguish navigation from content.
 
-4. **FONT**: Plus Jakarta Sans everywhere. Files in `assets/fonts/`. Load via expo-font in `_layout.tsx`. Never use system fonts, Inter, or Roboto.
+4. **FONT**: Plus Jakarta Sans everywhere (6 weights: Regular, Medium, SemiBold, Bold, BoldItalic, ExtraBold). Files in `assets/fonts/`. Load via expo-font in `_layout.tsx`. Never use system fonts, Inter, or Roboto.
 
 5. **BUTTONS — TWO CTA TIERS**:
-   - Commerce CTAs (Buy Now, Checkout, Generate Styles) = coral gradient (`#CC4968` → `#FA6869`, 135deg)
-   - Navigation CTAs (Next, Save, Login, Register, Continue) = teal bright `#48E6CD` solid
+   - Commerce CTAs (Buy Now, Checkout, Generate Styles) = coral solid `#FA6869`, bone text `#F5F0E8`
+   - Navigation CTAs (Next, Save, Login, Register, Continue) = teal `#48E6CD` solid, bone text
    - Both fully rounded (borderRadius 26px). Swipe like = green `#289B62` circle. Swipe dislike = red `#E3393C` circle.
 
 6. **PRICES ALWAYS CORAL**: Every price tag in the app uses `#FA6869` bold. No exceptions.
 
-7. **LOGO = OFFICIAL ASSET**: Use the `<KameLogo>` component — "Kame" in teal BoldItalic + "AI FASHION" in gray-400 small caps below. Do not rebuild from scratch.
+7. **LOGO = OFFICIAL ASSET**: Use the `<KameLogo>` component — "Kame" in teal BoldItalic + "FASHION AI" in SemiBold teal @ 50% opacity below. Do not rebuild from scratch.
+
+8. **KAME SIGNATURE DIVIDER**: Double-line divider (teal bar + coral accent, 4px gap). Never use a single line divider.
 
 ### Color Tokens (import from `src/theme/constants.ts`)
 ```
-warmWhite=#F5F0E8  teal=#1AA39C  tealBright=#48E6CD
+warmWhite=#F5F0E8  tealBright=#48E6CD  body=#5A5A58  bodyLight=#7A7A78
 coral=#FA6869  coralDeep=#CC4968  gold=#F7C13D  green=#289B62
 red=#E3393C  purple=#744DA6  white=#FFFFFF  gray100=#F8F9FB
 gray200=#E5E7EB  gray400=#9CA3AF  gray500=#6B7280  gray700=#374151
 ```
+> **Retired**: `teal=#1AA39C` — kept as `@deprecated` in constants.ts for backward compat only.
 
 ### Component Patterns
-- **Chips**: Unselected = transparent + gray border. Selected = teal bright bg + white text.
-- **Inputs**: gray-100 bg, gray-200 border, teal-bright focus border, 12px radius.
+- **Chips (3 variants)**: `tag-teal` = teal bg + bone text. `tag-coral` = coral bg + bone text. `tag-ghost` = teal tint bg + teal text. All: 14px radius, 9px uppercase bold, no borders.
+- **Inputs**: gray-100 bg, gray-200 border, teal focus border, 12px radius.
 - **Tab bar**: White bg, coral active icon+label, gray-400 inactive. 3 tabs only: Explore/Favorites/Profile.
 - **Platform badges**: Amazon = orange `#FF9900` bg. SHEIN = black bg. White text, rounded 8px.
 - **Premium banner**: Purple gradient `#744DA6→#9B6BC7`, 16px radius.
-
-### Files to Create (Sprint 2 setup)
-1. `apps/mobile/src/theme/constants.ts` — All color, font, spacing, radius tokens
-2. `apps/mobile/assets/fonts/` — Plus Jakarta Sans .ttf files (5 weights)
-3. Update `tailwind.config.js` — Add Kame color/font tokens to NativeWind
-4. Update `app/_layout.tsx` — Load fonts via expo-font before rendering
+- **Step numbers**: Teal circle (01-02), coral circle (03), 32px, ExtraBold.
+- **Icon circles**: 34px, teal/coral tint backgrounds, 15px stroke icons.
 
