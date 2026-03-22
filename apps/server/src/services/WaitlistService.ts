@@ -1,8 +1,12 @@
 import { prisma } from '../lib/prisma.js';
 import { AppError } from '../utils/errors.js';
+import { readFileSync } from 'fs';
 import { createRequire } from 'module';
-const require = createRequire(import.meta.url);
-const disposableDomains: string[] = require('disposable-email-domains');
+
+// Load disposable domains list — use fs.readFileSync to avoid Node 20 ESM JSON import assertion issues
+const require_ = createRequire(import.meta.url);
+const domainListPath = require_.resolve('disposable-email-domains');
+const disposableDomains: string[] = JSON.parse(readFileSync(domainListPath, 'utf-8'));
 
 // ─── Types ──────────────────────────────────────────
 
