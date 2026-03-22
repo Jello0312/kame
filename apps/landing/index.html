@@ -631,6 +631,42 @@
       background: rgba(0,0,0,0.04);
     }
 
+    /* Swipe card animation — alternates between two screenshots */
+    .swipe-anim {
+      position: relative;
+    }
+
+    .swipe-frame {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: top;
+      border-radius: inherit;
+    }
+
+    .swipe-frame-1 {
+      animation: swipeAlternate1 4s ease-in-out infinite;
+    }
+
+    .swipe-frame-2 {
+      animation: swipeAlternate2 4s ease-in-out infinite;
+    }
+
+    @keyframes swipeAlternate1 {
+      0%, 45% { opacity: 1; }
+      50%, 95% { opacity: 0; }
+      100% { opacity: 1; }
+    }
+
+    @keyframes swipeAlternate2 {
+      0%, 45% { opacity: 0; }
+      50%, 95% { opacity: 1; }
+      100% { opacity: 0; }
+    }
+
     /* Hero phone image placeholder */
     .phone-screen img {
       width: 100%;
@@ -1432,14 +1468,13 @@
             <div class="mini-phone">
               <div class="mini-phone-notch"></div>
               <div class="mini-phone-screen">
-                <!-- Replace with: <img src="screenshot-see-it.png" alt="See It preview"> -->
-                <div class="screen-placeholder"><div class="screen-placeholder-icon"></div></div>
+                <img src="assets/Prototype-see it.jpeg" alt="See It — upload your photos">
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Card 2: SWIPE IT -->
+        <!-- Card 2: SWIPE IT (animated: alternates between 2 screenshots) -->
         <div class="card card--neutral fade-in stagger-2">
           <div class="card-content">
             <div class="card-step card-step--teal">02</div>
@@ -1449,9 +1484,9 @@
           <div class="card-visual">
             <div class="mini-phone">
               <div class="mini-phone-notch"></div>
-              <div class="mini-phone-screen">
-                <!-- Replace with: <img src="screenshot-swipe-it.png" alt="Swipe It preview"> -->
-                <div class="screen-placeholder"><div class="screen-placeholder-icon"></div></div>
+              <div class="mini-phone-screen swipe-anim">
+                <img src="assets/Prototype-swipe it.jpeg" alt="Swipe through outfits" class="swipe-frame swipe-frame-1">
+                <img src="assets/Prototype-swipe it 2.jpeg" alt="Discover new styles" class="swipe-frame swipe-frame-2">
               </div>
             </div>
           </div>
@@ -1468,8 +1503,7 @@
             <div class="mini-phone">
               <div class="mini-phone-notch"></div>
               <div class="mini-phone-screen">
-                <!-- Replace with: <img src="screenshot-own-it.png" alt="Own It preview"> -->
-                <div class="screen-placeholder"><div class="screen-placeholder-icon"></div></div>
+                <img src="assets/Prototype-own it.jpeg" alt="Own It — favorites & checkout">
               </div>
             </div>
           </div>
