@@ -92,6 +92,11 @@ console.log(`  Storage       : ${isS3Configured() ? 'Cloudflare R2' : 'LOCAL (ep
 console.log(`  FASHN AI      : ${process.env.FASHN_API_KEY ? 'configured' : 'DISABLED (no FASHN_API_KEY)'}`);
 console.log(`  Job processor : in-memory (concurrency: 2)`);
 
+// ─── Health Check (no dependencies) ──────────────────
+app.get('/api/health', (_req: Request, res: Response) => {
+  res.json({ success: true, status: 'ok', time: new Date().toISOString() });
+});
+
 // ─── Routes ─────────────────────────────────────────
 app.use('/auth', authRouter);
 app.use('/api/profile', profileRouter);
@@ -104,6 +109,23 @@ app.use('/api/analytics', analyticsRouter);
 app.use('/api/tryon', tryonRouter);
 app.use('/api/account', accountRouter);
 app.use('/api/waitlist', waitlistRouter);
+
+// ─── Debug: log registered routes ────────────────────
+console.log('Registered routes:');
+app._router?.stack?.forEach((layer: Record<string, unknown>) => {
+  if (layer.route) {
+    const r = layer.route as Record<string, unknown>;
+    console.log(`  ${Object.keys(r.methods as object).join(',').toUpperCase()} ${r.path}`);
+  } else if (layer.name === 'router' && layer.regexp) {
+    console.log(`  ROUTER ${layer.regexp}`);
+  }
+});
+
+// ─── Debug: catch-all to diagnose 404s ───────────────
+app.use('/api/waitlist/*', (req: Request, res: Response) => {
+  console.log(`WAITLIST CATCH-ALL HIT: ${req.method} ${req.originalUrl}`);
+  res.status(404).json({ success: false, error: `Route not found: ${req.method} ${req.originalUrl}`, debug: true });
+});
 
 // ─── Stale Job Recovery ─────────────────────────────
 // Marks PENDING/PROCESSING jobs older than 10 min as FAILED.
