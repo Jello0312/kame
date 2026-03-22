@@ -1643,10 +1643,12 @@
       try {
         const res = await fetch(`${API_BASE}/api/waitlist/count`);
         const json = await res.json();
-        if (json.success && json.data.count > 0) {
-          document.getElementById('heroCounter').innerHTML =
-            `Join <strong>${json.data.count}</strong> other${json.data.count === 1 ? '' : 's'} waiting`;
-          document.getElementById('avatarCount').textContent = `+${json.data.count}`;
+        if (json.success) {
+          const c = json.data.count;
+          document.getElementById('heroCounter').innerHTML = c > 0
+            ? `Join <strong>${c}</strong> other${c === 1 ? '' : 's'} waiting`
+            : 'Be the first to join the waitlist';
+          document.getElementById('avatarCount').textContent = `+${c}`;
         }
       } catch (_) { /* silent fail */ }
     }
