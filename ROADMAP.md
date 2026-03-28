@@ -1,8 +1,8 @@
 # Kame — Development Roadmap
 
-> Last updated: 2026-03-21
+> Last updated: 2026-03-28
 > Current phase: **MVP Sprint (Weeks 1-3)**
-> Current step: **Sprint 5.3 — Brand Kit v2 Documentation + Token Alignment** (complete)
+> Current step: **Sprint 5.5 — Brand Audit: Landing Page Sync** (complete)
 
 ## Progress Tracking Convention
 - `[ ]` = Todo
@@ -241,13 +241,23 @@
 - [x] Update chip radius: 18px → 14px in tailwind.config.js ✅
 
 ### Sprint 5.4 — Brand Kit v2 UI Alignment (pending)
-- [ ] Update all component files to use `body` (#5A5A58) instead of gray-700 for body text
-- [ ] Update all component files to use `bodyLight` (#7A7A78) instead of gray-400 for secondary text
 - [ ] Replace all remaining `COLORS.teal` usage with `COLORS.tealBright` in components
 - [ ] Load ExtraBold font in `_layout.tsx`
 - [ ] Update chip components to match 3-variant spec (tag-teal, tag-coral, tag-ghost)
-- [ ] Update CTA button text from white to bone (#F5F0E8)
 - [ ] Implement Kame Signature divider component
+- [ ] Apply AppBackground to all tab screens (explore, favorites, profile)
+
+### Sprint 5.5 — Brand Audit: Landing Page Sync ✅ COMPLETE
+- [x] Audit live landing page (kame-ai.com) for color discrepancies vs brand docs ✅
+- [x] Update warmWhite: `#F5F0E8` → `#FAF9F7` in constants.ts + tailwind.config.js ✅
+- [x] Update body text: `#5A5A58` → `#444842`, bodyLight: `#7A7A78` → `#6E726C` ✅
+- [x] Add new tokens: divider `#C4C8C0`, inputBg `#E9E8E6`, bgSection `#F4F3F1`, error `#AD3035` ✅
+- [x] Mark retired colors as `@deprecated` in constants.ts ✅
+- [x] Create AppBackground.tsx decorative component (blobs + circle outline + accent line) ✅
+- [x] Update BRAND_SYSTEM.md sections §1-6 with audited values ✅
+- [x] Update CLAUDE.md brand rules (9 rules, refreshed token list, AppBackground rule) ✅
+- [x] Update admin.html, app.json, explore/favorites/profile tabs ✅
+- [x] Add lessons learned entry for brand audit process ✅
 
 ---
 

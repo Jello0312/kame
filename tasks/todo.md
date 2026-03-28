@@ -1,13 +1,33 @@
 # Kame — Active Sprint Tasks
 
-> Updated: 2026-03-22 (Session 8 — Waitlist System + Deployment)
+> Updated: 2026-03-28 (Session 9 — Brand Audit: Landing Page Sync)
 > See ROADMAP.md for full multi-week plan.
 
 ---
 
 ## 🏗️ IN PROGRESS
 
-### Sprint 5.2 — Brand Kit Refresh (Session 7)
+### Sprint 5.4 — Brand Kit v2 UI Alignment (pending)
+- [ ] Replace remaining `COLORS.teal` usage with `COLORS.tealBright` in components
+- [ ] Load ExtraBold font in `_layout.tsx`
+- [ ] Update chip components to match 3-variant spec (tag-teal, tag-coral, tag-ghost)
+- [ ] Implement Kame Signature divider component
+- [ ] Apply AppBackground to all tab screens
+
+---
+
+## ✅ COMPLETED
+
+### Sprint 5.5 — Brand Audit: Landing Page Sync (Session 9) ✅
+- [x] Audited kame-ai.com for color discrepancies vs brand docs ✅
+- [x] Updated warmWhite #F5F0E8→#FAF9F7, body #5A5A58→#444842, bodyLight #7A7A78→#6E726C ✅
+- [x] Added new tokens: divider, inputBg, bgSection, error, textPrimaryDark, gray tiers ✅
+- [x] Created AppBackground.tsx decorative component ✅
+- [x] Retired old colors as @deprecated in constants.ts ✅
+- [x] Updated CLAUDE.md (9 brand rules), BRAND_SYSTEM.md, admin.html, app.json ✅
+- [x] Updated explore/favorites/profile tabs with new background tokens ✅
+
+### Sprint 5.2 — Brand Kit Refresh (Session 7) ✅
 - [x] Update CLAUDE.md — fix stale colour tokens + brand rules ✅
 - [x] Update theme/constants.ts — warmWhite, remove navy, update semantics ✅
 - [x] Update tailwind.config.js — remove navy block, add warmWhite ✅
@@ -15,10 +35,6 @@
 - [x] Update KameLogo.tsx — add "FASHION AI" subtext per official logo ✅
 - [x] Update ROADMAP.md — mark sprint complete ✅
 - [x] Grep verify — zero old hex values in docs/config ✅
-
----
-
-## ✅ COMPLETED
 
 ### Sprint 6 — Waitlist System + Deployment (Session 8) ✅
 - [x] Prisma schema: WaitlistSignup model (email, name, utmSource, utmMedium, utmCampaign, referredBy, referralCode) ✅

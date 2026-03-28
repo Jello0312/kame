@@ -480,3 +480,13 @@
 - New: AppBackground.tsx decorative component (blobs, circle, accent line) for tab screens
 - Retired: #F5F0E8, #5A5A58, #7A7A78 added to retired list
 **Rule:** The landing page at kame-ai.com is the brand source of truth. When the landing page evolves, update brand docs + code tokens to match. Headlines and CTA styling use bright teal #48E6CD — these are the brand identity anchors that don't change with supporting palette shifts.
+
+### 2026-03-28 — Retire deprecated colors properly
+**What happened:** Old color values (#F5F0E8, #1AA39C, #5A5A58, #7A7A78) were still referenced in some files after the brand audit updated them. Simply replacing wasn't enough — needed to mark them as `@deprecated` in constants.ts so future devs know not to use them.
+**Root cause:** Color tokens evolved across 3 sprints (5.2, 5.3, 5.5) with no deprecation markers.
+**Rule:** When retiring a color token: (1) mark it `@deprecated` with a JSDoc comment pointing to the replacement, (2) keep it exported so existing code doesn't break, (3) update CLAUDE.md retired list, (4) grep the entire codebase for the old hex value to find stragglers. Never just delete a token — deprecate it first, then remove in a subsequent cleanup sprint.
+
+### 2026-03-28 — Brand system has two tiers: identity anchors vs supporting palette
+**What happened:** Over 3 brand refresh sprints, the supporting colors changed multiple times (warmWhite, body text, dividers) while the identity colors (teal #48E6CD, coral #FA6869) stayed constant.
+**Root cause:** The brand system naturally has stable "identity anchor" colors (logo, headlines, CTAs) and volatile "supporting" colors (backgrounds, text, borders) that evolve with the design.
+**Rule:** Treat brand colors in two tiers. Identity anchors (teal, coral) are locked — changing them requires explicit CTO approval. Supporting palette (backgrounds, body text, dividers, inputs) can evolve to match the live landing page. When auditing, only flag identity anchor changes as breaking — supporting changes are expected.
