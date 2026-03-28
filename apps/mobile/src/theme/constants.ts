@@ -2,35 +2,37 @@
 // KAME THEME CONSTANTS
 // ═══════════════════════════════════════════════════════════════
 // Source of truth for all visual tokens in the Kame mobile app.
-// Synced from official Kame Brand Kit — Production Guide (March 21, 2026).
+// Synced from live landing page (kame-ai.com) — Brand Audit March 23, 2026.
 // Import this file instead of hardcoding hex values.
 // ═══════════════════════════════════════════════════════════════
 
 export const COLORS = {
   // ── Primary ──
-  warmWhite: '#F5F0E8', // Primary background surface
-  /** @deprecated RETIRED per Brand Kit v2 (March 2026). Use tealBright #48E6CD instead. */
-  teal: '#1AA39C',
+  warmWhite: '#FAF9F7', // Primary background surface (updated from #F5F0E8 per brand audit)
   tealBright: '#48E6CD', // Brand primary: text, buttons, interactive (the ONLY teal)
   white: '#FFFFFF',
 
-  // ── Deprecated — kept for backward compat until UI brand update sprint ──
-  /** @deprecated Use COLORS.background (#F5F0E8) */
+  // ── Deprecated — kept for backward compat ──
+  /** @deprecated RETIRED per Brand Audit (March 2026). Use tealBright #48E6CD instead. */
+  teal: '#1AA39C',
+  /** @deprecated Use COLORS.background (#FAF9F7) */
   navy: '#112836',
   /** @deprecated Use COLORS.surface (#FFFFFF) */
   navyDeep: '#03213B',
+  /** @deprecated Old warmWhite. Use #FAF9F7. */
+  bone: '#F5F0E8',
 
   // ── Accent ──
   coral: '#FA6869',
-  coralDeep: '#CC4968',
+  coralDeep: '#CC4968', // Used in CTA gradient — keep for button styling
   gold: '#F7C13D',
   green: '#289B62',
-  red: '#E3393C',
+  red: '#E3393C',       // Swipe dislike button
   purple: '#744DA6',
 
-  // ── Body Text (Brand Kit v2) ──
-  body: '#5A5A58',       // Body/paragraph text — warm neutral gray
-  bodyLight: '#7A7A78',  // Captions, placeholders, secondary text
+  // ── Body Text (Brand Audit March 2026) ──
+  body: '#444842',       // Body/paragraph text — warm green-gray (updated from #5A5A58)
+  bodyLight: '#6E726C',  // Captions, placeholders, secondary text (updated from #7A7A78)
 
   // ── Neutral ──
   gray100: '#F8F9FB',
@@ -39,8 +41,13 @@ export const COLORS = {
   gray500: '#6B7280',
   gray700: '#374151',
 
+  // ── New tokens from landing page ──
+  bgSection: '#F4F3F1',  // Section backgrounds
+  textPrimaryDark: '#1A1C1B', // Near-black emphasis text
+  phoneBlack: '#171717', // Phone mockup frames
+
   // ── Semantic ──
-  background: '#F5F0E8', // warmWhite primary surface
+  background: '#FAF9F7', // warmWhite primary surface (updated from #F5F0E8)
   surface: '#FFFFFF',    // White for cards and modals on warmWhite bg
   textPrimary: '#374151', // Dark gray for body text on light bg
   textTeal: '#48E6CD',    // Teal for headings, labels, interactive text
@@ -50,11 +57,11 @@ export const COLORS = {
   price: '#FA6869',
   link: '#48E6CD',
   success: '#289B62',
-  error: '#E3393C',
-  inputBg: '#F8F9FB',
+  error: '#AD3035',       // Form errors — deeper red (updated from #E3393C)
+  inputBg: '#E9E8E6',    // Input backgrounds — warmer (updated from #F8F9FB)
   inputBorder: '#E5E7EB',
   inputBorderFocus: '#48E6CD',
-  divider: '#E5E7EB',
+  divider: '#C4C8C0',    // Dividers — warmer green-gray (updated from #E5E7EB)
 
   // ── Logo ──
   logo: '#48E6CD', // "Kame" wordmark in teal-bright BoldItalic
@@ -77,7 +84,7 @@ export const GRADIENTS = {
   ctaAngle: 135,
   cardOverlay: ['transparent', 'rgba(0,0,0,0.45)'] as const,
   premium: ['#744DA6', '#9B6BC7'] as const,
-  /** @deprecated tealGlow used retired #1AA39C — prefer solid teal #48E6CD */
+  /** @deprecated tealGlow used retired #1AA39C — now solid teal #48E6CD */
   tealGlow: ['#48E6CD', '#48E6CD'] as const,
   glowLike: ['rgba(40, 155, 98, 0.70)', 'transparent'] as const,
   glowDislike: ['rgba(227, 57, 60, 0.70)', 'transparent'] as const,

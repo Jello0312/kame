@@ -25,8 +25,8 @@
 
 Full spec: `docs/BRAND_SYSTEM.md` | Tokens: `apps/mobile/src/theme/constants.ts`
 
-**The 7 Rules:**
-1. **WARM-WHITE-FIRST**: WarmWhite `#F5F0E8` background everywhere. White only inside cards/modals. Teal `#48E6CD` for text and buttons.
+**The 7 Rules (updated per Brand Audit March 23, 2026):**
+1. **WARM-WHITE-FIRST**: WarmWhite `#FAF9F7` background everywhere. White only inside cards/modals. Teal `#48E6CD` for text and buttons. **`#F5F0E8` is RETIRED.**
 2. **TWO ACCENT COLORS**: Teal bright `#48E6CD` for interactive in-screen elements. Coral `#FA6869` for prices.
 3. **FONT**: Plus Jakarta Sans everywhere. Loaded from `assets/fonts/`. Never system fonts.
 4. **BUTTONS — TWO CTA TIERS**: Commerce CTAs (Buy Now, Checkout) = coral gradient. Navigation CTAs (Next, Save, Login) = teal solid.
@@ -345,7 +345,7 @@ Set up the Kame brand design system in apps/mobile/:
    Renders "Kame" in teal-bright (#48E6CD) BoldItalic, configurable size.
 
 6. VERIFY: Confirm fonts load in Expo Go. Text renders in Plus Jakarta Sans.
-   Background is warm-white #F5F0E8.
+   Background is warm-white #FAF9F7.
 
 Plan first.
 ```
@@ -378,7 +378,7 @@ b. services/api.ts:
 
 c. app/auth/login.tsx:
    - Import COLORS, FONTS, TYPE, SPACING, RADIUS from src/theme/constants
-   - WarmWhite (#F5F0E8) background for entire screen
+   - WarmWhite (#FAF9F7) background for entire screen
    - Kame logo at top (teal-bright #48E6CD BoldItalic)
    - Email + password TextInputs (gray-100 bg, gray-200 border, teal-bright focus border, 12px radius)
    - 'Log In' button: TEAL solid #48E6CD (this is navigation CTA, not commerce)

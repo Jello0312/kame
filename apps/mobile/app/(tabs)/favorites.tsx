@@ -19,7 +19,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { AuthBackground } from '../../components/AuthBackground';
+import { AppBackground } from '../../components/AppBackground';
 import { FavoriteCard } from '../../components/FavoriteCard';
 import { SkeletonFavoriteCard } from '../../components/SkeletonCard';
 import { useAnalyticsClick } from '../../hooks/useAnalyticsClick';
@@ -112,7 +112,7 @@ export default function FavoritesScreen() {
   if (isLoading) {
     return (
       <SafeAreaView style={styles.screen} edges={['top']}>
-        <AuthBackground />
+        <AppBackground />
         <View style={styles.header}>
           <View style={styles.headerLeft}>
             <ShoppingCartIcon size={24} color={COLORS.navy} />
@@ -133,7 +133,7 @@ export default function FavoritesScreen() {
   if (isError) {
     return (
       <SafeAreaView style={styles.screen} edges={['top']}>
-        <AuthBackground />
+        <AppBackground />
         <View style={styles.header}>
           <View style={styles.headerLeft}>
             <ShoppingCartIcon size={24} color={COLORS.navy} />
@@ -157,7 +157,7 @@ export default function FavoritesScreen() {
   if (data && data.length === 0) {
     return (
       <SafeAreaView style={styles.screen} edges={['top']}>
-        <AuthBackground />
+        <AppBackground />
         <View style={styles.header}>
           <View style={styles.headerLeft}>
             <ShoppingCartIcon size={24} color={COLORS.navy} />
@@ -206,7 +206,7 @@ export default function FavoritesScreen() {
 
   return (
     <SafeAreaView style={styles.screen} edges={['top']}>
-      <AuthBackground />
+      <AppBackground />
 
       {/* Header */}
       <View style={styles.header}>

@@ -9,7 +9,7 @@
     "newArchEnabled": false,
     "scheme": "kame",
     "splash": {
-      "backgroundColor": "#F5F0E8",
+      "backgroundColor": "#FAF9F7",
       "resizeMode": "contain"
     },
     "ios": {
@@ -18,7 +18,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#F5F0E8"
+        "backgroundColor": "#FAF9F7"
       },
       "package": "com.kame.app"
     },

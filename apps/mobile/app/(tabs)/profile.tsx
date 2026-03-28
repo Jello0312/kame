@@ -13,7 +13,7 @@ import * as WebBrowser from 'expo-web-browser';
 import { useQuery } from '@tanstack/react-query';
 import { MessageSquare, LogOut, Trash2 } from 'lucide-react-native';
 
-import { AuthBackground } from '../../components/AuthBackground';
+import { AppBackground } from '../../components/AppBackground';
 import { ProfileSection } from '../../components/ProfileSection';
 import { KameLogo } from '../../components/KameLogo';
 import { api } from '../../services/api';
@@ -173,7 +173,7 @@ export default function ProfileScreen() {
 
   return (
     <SafeAreaView style={styles.screen} edges={['top']}>
-      <AuthBackground />
+      <AppBackground />
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}

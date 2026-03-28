@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { X } from 'lucide-react-native';
 
-import { AuthBackground } from '../../components/AuthBackground';
+import { AppBackground } from '../../components/AppBackground';
 import { SwipeDeck } from '../../components/SwipeDeck';
 import { KameLogo } from '../../components/KameLogo';
 import { SkeletonSwipeCard } from '../../components/SkeletonCard';
@@ -117,7 +117,7 @@ export default function ExploreScreen() {
   if (isLoading) {
     return (
       <SafeAreaView style={styles.screen} edges={['top']}>
-        <AuthBackground />
+        <AppBackground />
         <View style={styles.header}>
           <KameLogo />
         </View>
@@ -131,7 +131,7 @@ export default function ExploreScreen() {
   if (isError) {
     return (
       <SafeAreaView style={styles.screen} edges={['top']}>
-        <AuthBackground />
+        <AppBackground />
         <View style={styles.header}>
           <KameLogo />
         </View>
@@ -152,7 +152,7 @@ export default function ExploreScreen() {
   if (isEmpty || allCards.length === 0) {
     return (
       <SafeAreaView style={styles.screen} edges={['top']}>
-        <AuthBackground />
+        <AppBackground />
         <View style={styles.header}>
           <KameLogo />
         </View>
@@ -192,7 +192,7 @@ export default function ExploreScreen() {
 
   return (
     <SafeAreaView style={styles.screen} edges={['top']}>
-      <AuthBackground />
+      <AppBackground />
       <View style={styles.header}>
         <KameLogo />
       </View>

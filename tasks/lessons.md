@@ -469,3 +469,14 @@
 ### 2026-03-22 — Cloudflare Pages deployment for static landing pages
 **What happened:** Successfully deployed static HTML landing page to Cloudflare Pages with custom domain.
 **Rule:** For static landing pages (no framework, no build step): Set "Path" to `apps/landing` in Cloudflare Pages settings. Leave build command empty. Cloudflare auto-deploys on git push. Custom domain setup takes ~2 minutes after adding to Cloudflare DNS.
+
+### 2026-03-23 — Brand audit: landing page is the source of truth
+**What happened:** The live landing page (kame-ai.com) used different supporting colors than the brand docs and mobile app tokens. Background was #FAF9F7 (not #F5F0E8), body text was #444842 (not #5A5A58), dividers were #C4C8C0, inputs were #E9E8E6, errors were #AD3035.
+**Root cause:** Landing page design iterated independently from the brand kit docs. Nobody updated BRAND_SYSTEM.md or constants.ts to match.
+**Changes made:**
+- Files updated: constants.ts, tailwind.config.js, app.json, BRAND_SYSTEM.md, CLAUDE.md, admin.html, both implementation guides
+- Colors changed: warmWhite #F5F0E8→#FAF9F7, body #5A5A58→#444842, bodyLight #7A7A78→#6E726C, divider #E5E7EB→#C4C8C0, inputBg #F8F9FB→#E9E8E6, error #E3393C→#AD3035
+- Colors KEPT: teal #48E6CD (headlines, CTAs, logo), coral #FA6869 (prices), CTA gradient #CC4968→#FA6869, all accent colors
+- New: AppBackground.tsx decorative component (blobs, circle, accent line) for tab screens
+- Retired: #F5F0E8, #5A5A58, #7A7A78 added to retired list
+**Rule:** The landing page at kame-ai.com is the brand source of truth. When the landing page evolves, update brand docs + code tokens to match. Headlines and CTA styling use bright teal #48E6CD — these are the brand identity anchors that don't change with supporting palette shifts.

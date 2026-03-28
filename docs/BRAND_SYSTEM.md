@@ -3,8 +3,8 @@
 ## For Claude Code — Read Before Building ANY UI Screen
 
 > Single source of truth for all design, marketing, and development work.
-> Synced from official Kame Brand Kit — Production Guide (PDF, March 21, 2026).
-> Last Updated: 2026-03-22
+> Synced from live landing page (kame-ai.com) + Kame Brand Kit — Brand Audit March 23, 2026.
+> Last Updated: 2026-03-23
 > Status: LOCKED — do not deviate from these specs
 
 ---
@@ -15,12 +15,14 @@
 
 | Token | Hex | RGB | Usage |
 |-------|-----|-----|-------|
-| `teal` | `#48E6CD` | 72, 230, 205 | Brand primary — headlines, logo, tags, icons, interactive elements |
-| `coral` | `#FA6869` | 250, 104, 105 | CTAs, prices, highlights, emphasis |
-| `white` | `#FFFFFF` | 255, 255, 255 | Slide/page backgrounds, card surfaces, modals |
-| `bone` | `#F5F0E8` | 245, 240, 232 | Text on teal/coral surfaces (buttons, tags, chips). Also primary app background (warmWhite) |
-| `body` | `#5A5A58` | 90, 90, 88 | Body/paragraph text — warm neutral gray |
-| `body-light` | `#7A7A78` | 122, 122, 120 | Captions, placeholders, secondary text |
+| `teal` | `#48E6CD` | 72, 230, 205 | Brand primary — headlines, logo, tags, icons, interactive elements, CTA buttons |
+| `coral` | `#FA6869` | 250, 104, 105 | Prices, commerce CTAs, highlights, emphasis |
+| `warmWhite` | `#FAF9F7` | 250, 249, 247 | Primary app background (screens, splash) |
+| `white` | `#FFFFFF` | 255, 255, 255 | Card surfaces, modals, input backgrounds |
+| `body` | `#444842` | 68, 72, 66 | Body/paragraph text — warm green-gray |
+| `body-light` | `#6E726C` | 110, 114, 108 | Captions, placeholders, secondary text |
+| `text-primary` | `#1A1C1B` | 26, 28, 27 | Near-black emphasis text (optional) |
+| `bg-section` | `#F4F3F1` | 244, 243, 241 | Section backgrounds |
 
 ### Additional Accent Colors
 
@@ -32,24 +34,30 @@
 | `red` | `#E3393C` | 227, 57, 60 | Dislike/X button, errors, destructive actions |
 | `purple` | `#744DA6` | 116, 77, 166 | Premium/upgrade banner |
 
-### Neutral Colors (Mobile App)
+### Neutral / UI Colors
 
 | Token | Hex | RGB | Usage |
 |-------|-----|-----|-------|
-| `gray-100` | `#F8F9FB` | 248, 249, 251 | Input field backgrounds, card surfaces |
-| `gray-200` | `#E5E7EB` | 229, 231, 235 | Borders, dividers |
+| `input-bg` | `#E9E8E6` | 233, 232, 230 | Input field backgrounds |
+| `divider` | `#C4C8C0` | 196, 200, 192 | Dividers, separators |
+| `border-light` | `#E5E7EB` | 229, 231, 235 | Card borders, input borders |
 | `gray-400` | `#9CA3AF` | 156, 163, 175 | Disabled states, inactive tab icons |
-| `gray-500` | `#6B7280` | 107, 114, 128 | Legacy secondary text (prefer `body` #5A5A58) |
-| `gray-700` | `#374151` | 55, 65, 81 | Legacy primary text (prefer `body` #5A5A58) |
+| `gray-500` | `#6B7280` | 107, 114, 128 | Legacy secondary text (prefer `body` #444842) |
+| `gray-700` | `#374151` | 55, 65, 81 | Legacy primary text |
+| `phone-black` | `#171717` | 23, 23, 23 | Phone mockup frames |
+| `error` | `#AD3035` | 173, 48, 53 | Form errors, deep coral |
 
 ### Decorative Fills (Blobs & Backgrounds)
 
 | Token | Value | Usage |
 |-------|-------|-------|
-| Teal blob | `rgba(72, 230, 205, 0.07)` | Soft teal circle decorations |
-| Coral blob | `rgba(250, 104, 105, 0.05)` | Soft coral circle decorations |
+| Teal blob (strong) | `rgba(72, 230, 205, 0.12)` | App background decorative blob |
+| Teal blob (soft) | `rgba(72, 230, 205, 0.07)` | Secondary teal blob, softer |
+| Coral blob | `rgba(250, 104, 105, 0.06)` | Subtle coral circle decorations |
 | Teal tint | `rgba(72, 230, 205, 0.12)` | Icon circle backgrounds, ghost tags |
 | Coral tint | `rgba(250, 104, 105, 0.10)` | Coral icon circle backgrounds |
+| Deco circle | `1px solid rgba(72, 230, 205, 0.08)` | 400px outline circle, background accent |
+| Deco line | `rgba(200, 196, 192, 0.15)` | Thin horizontal accent line |
 
 ### Gradient Definitions
 
@@ -63,9 +71,11 @@ Premium Banner:        linear-gradient(135deg, #744DA6 0%, #9B6BC7 100%)
 
 ```
 #1C1C1C  #112836  #1A2B3D  #00BFA5  #FF4D6A  #1AA39C  #F7F5F1
+#F5F0E8  #5A5A58  #7A7A78
 ```
 
 > **Important:** `#1AA39C` (old teal) is fully retired. Use only `#48E6CD` for all teal usage.
+> `#F5F0E8` (old warmWhite/bone) retired — use `#FAF9F7`. `#5A5A58` / `#7A7A78` (old body text) retired — use `#444842` / `#6E726C`.
 
 ---
 
@@ -73,7 +83,9 @@ Premium Banner:        linear-gradient(135deg, #744DA6 0%, #9B6BC7 100%)
 
 ### Font Family
 
-**Plus Jakarta Sans** — the only font used across all Kame materials.
+**Plus Jakarta Sans** — the primary font across all Kame materials.
+
+**Noto Serif** (400 Regular) — secondary font, used for card step numbers on the landing page only.
 
 Weights in use: 400 (Regular), 500 (Medium), 600 (SemiBold), 700 (Bold), 800 (ExtraBold).
 
@@ -89,7 +101,7 @@ https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400
 | Hero headline | `.hx` | 800 ExtraBold | 27-42px | 1.06 | -1.5px | Teal |
 | Section headline | `.h1` | 700 Bold | 17-22px | 1.14 | -0.8px | Teal |
 | Subheadline | `.hm` | 700 Bold | 13-17px | 1.20 | -0.3px | Teal |
-| Body text | `.bd` | 400 Regular | 11-13px | 1.55 | 0 | Body (#5A5A58) |
+| Body text | `.bd` | 400 Regular | 11-13px | 1.55 | 0 | Body (#444842) |
 | Tag / chip label | `.tag` | 700 Bold | 8-9px | — | 1.2px | Uppercase |
 | Logo "Kame" | — | 700 Bold Italic | 50px | — | -1px | Teal |
 | Logo subtitle | `.logo-s` | 600 SemiBold | 8px | — | 4px | Teal @ 50% opacity |
@@ -111,11 +123,11 @@ https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400
 
 ### Text Color Rules
 
-- Body/paragraph text: `body` (#5A5A58) — warm neutral gray
-- Captions, placeholders, secondary: `body-light` (#7A7A78)
+- Body/paragraph text: `body` (#444842) — warm green-gray
+- Captions, placeholders, secondary: `body-light` (#6E726C)
 - Headlines, labels, interactive: `teal` (#48E6CD)
 - Prices: always `coral` (#FA6869)
-- Text on teal/coral surfaces: `bone` (#F5F0E8)
+- Text on teal/coral surfaces: `white` (#FFFFFF)
 
 ### Accent Color in Text
 
@@ -136,7 +148,7 @@ Below it: **"FASHION AI"** in Plus Jakarta Sans **SemiBold**, small caps, letter
 
 - Logo is always a single teal color — never split, never outlined, never gradient
 - Minimum clear space: 1× the height of the "K" on all sides
-- On dark backgrounds: use bone `#F5F0E8` instead of teal
+- On dark backgrounds: use white `#FFFFFF` instead of teal
 - Watermark usage: bottom-left of slides, 30% opacity, 10-12px
 
 ### Logo Files
@@ -207,8 +219,8 @@ The double-line divider is a distinctive Kame design element:
 
 | Variant | Background | Text Color | Border |
 |---------|-----------|------------|--------|
-| `tag-teal` | `#48E6CD` solid | `#F5F0E8` bone | None |
-| `tag-coral` | `#FA6869` solid | `#F5F0E8` bone | None |
+| `tag-teal` | `#48E6CD` solid | `#FFFFFF` white | None |
+| `tag-coral` | `#FA6869` solid | `#FFFFFF` white | None |
 | `tag-ghost` | `rgba(72, 230, 205, 0.1)` | `#48E6CD` teal | None |
 
 All tags: `border-radius: 14px; padding: 5px 14px; font-size: 9px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase`
@@ -217,7 +229,7 @@ All tags: `border-radius: 14px; padding: 5px 14px; font-size: 9px; font-weight: 
 
 ```
 Fill:           #FA6869 coral
-Text:           #F5F0E8 bone, 700 bold
+Text:           #FFFFFF white, 700 bold
 Border-radius:  26px (fully rounded pill)
 Shadow:         0 4px 18px rgba(250, 104, 105, 0.22)
 Always includes arrow → icon
@@ -230,7 +242,7 @@ Font size:      13-14px
 **PRIMARY CTA — Commerce Actions (Buy Now, Proceed to Checkout, Generate My Styles):**
 ```
 Background:    linear-gradient(135deg, #CC4968 0%, #FA6869 100%)
-Text:          #F5F0E8 (bone), 16px, SemiBold
+Text:          #FFFFFF (white), 16px, SemiBold
 Height:        52px
 Border Radius: 26px (fully rounded)
 Shadow:        0 4px 12px rgba(204, 73, 104, 0.3)
@@ -240,7 +252,7 @@ Pressed:       opacity 0.85, scale 0.98
 **PRIMARY CTA — Navigation/Onboarding (Next, Save, Continue, Log In, Sign Up):**
 ```
 Background:    #48E6CD solid
-Text:          #F5F0E8 (bone), 16px, SemiBold
+Text:          #FFFFFF (white), 16px, SemiBold
 Height:        52px
 Border Radius: 26px (fully rounded)
 Shadow:        0 4px 12px rgba(72, 230, 205, 0.25)
@@ -319,7 +331,7 @@ Border Radius: 16px
 Background:    white
 Shadow:        0 2px 8px rgba(0, 0, 0, 0.08)
 Image:         aspect ratio 3:4, rounded top corners
-Product name:  body (#5A5A58), 14px, medium, max 2 lines
+Product name:  body (#444842), 14px, medium, max 2 lines
 Price:         coral (#FA6869), 16px, bold
 Platform:      badge below price
 Padding:       12px
@@ -328,14 +340,14 @@ Padding:       12px
 ### Input Fields
 ```
 Height:        52px
-Background:    #F8F9FB (gray-100)
-Border:        1.5px solid #E5E7EB (gray-200)
+Background:    #E9E8E6 (input-bg)
+Border:        1.5px solid #E5E7EB (border-light)
 Border Focus:  1.5px solid #48E6CD (teal)
 Border Radius: 12px
-Text:          16px, body (#5A5A58)
-Placeholder:   body-light (#7A7A78)
+Text:          16px, body (#444842)
+Placeholder:   body-light (#6E726C)
 Padding:       0 16px
-Label:         12px, Medium, body-light (#7A7A78), 6px margin bottom
+Label:         12px, Medium, body-light (#6E726C), 6px margin bottom
 ```
 
 ### Tab Bar
@@ -441,7 +453,7 @@ Bottom: home indicator height + tab bar (56px)
 Style:     Outline (not filled), 1.5px stroke
 Library:   Lucide React Native (lucide-react-native)
 Size:      24px default, 20px in compact spaces, 28px for swipe buttons
-Color:     Inherits from context (white on dark, body #5A5A58 on light)
+Color:     Inherits from context (white on dark, body #444842 on light)
 
 Key icons:
   Explore tab:    Compass
@@ -492,16 +504,26 @@ Progress text:   "Generating outfit 3 of 20..." in teal
 
 ## 10. WARM-WHITE-FIRST DESIGN PRINCIPLE
 
-Kame is a **warm-white-first** app. The `#F5F0E8` (bone / warmWhite) background is the dominant surface across all screens. Teal `#48E6CD` drives the brand identity through text, buttons, and interactive elements. White `#FFFFFF` surfaces appear inside cards and modals.
+Kame is a **warm-white-first** app. The `#FAF9F7` (warmWhite) background is the dominant surface across all screens, with subtle decorative blobs, circles, and lines via the `<AppBackground>` component. Teal `#48E6CD` drives the brand identity through headlines, buttons, and interactive elements. White `#FFFFFF` surfaces appear inside cards and modals.
 
 ```
-Primary screens (Explore, Feed):     Warm white background (#F5F0E8)
+Primary screens (Explore, Feed):     Warm white background (#FAF9F7) + AppBackground decorations
 Onboarding form cards:               White card on warm-white bg
 Modals (Product Detail):             White card on scrim overlay
-Favorites grid:                      Warm white background, white product cards
-Profile:                             Warm white background
-Auth screens (Login/Register):       Warm white background
+Favorites grid:                      Warm white background (#FAF9F7) + AppBackground decorations
+Profile:                             Warm white background (#FAF9F7) + AppBackground decorations
+Auth screens (Login/Register):       AuthBackground (gradient + animated blobs)
 ```
+
+### Decorative Background Elements (AppBackground)
+
+Tab screens (Explore, Favorites, Profile) use the `<AppBackground>` component which renders:
+- 2 teal blobs: `rgba(72, 230, 205, 0.12)` and `rgba(72, 230, 205, 0.07)` — slow drift animation
+- 1 coral blob: `rgba(250, 104, 105, 0.06)` — very subtle
+- 1 decorative circle: 400px, `border: 1px solid rgba(72, 230, 205, 0.08)`
+- 1 accent line: thin horizontal `rgba(200, 196, 192, 0.15)`
+
+Auth screens keep `<AuthBackground>` (stronger gradient + more prominent blobs).
 
 ---
 
@@ -513,19 +535,18 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        warmWhite: '#F5F0E8',
-        bone: '#F5F0E8',      // alias — text on teal/coral surfaces
+        warmWhite: '#FAF9F7',  // Updated from #F5F0E8 per brand audit
         teal: {
-          DEFAULT: '#48E6CD',  // #1AA39C is RETIRED
+          DEFAULT: '#48E6CD',  // Bright teal — headlines, CTAs, interactive
           bright: '#48E6CD',   // kept for backward compat
         },
         coral: {
           DEFAULT: '#FA6869',
-          deep: '#CC4968',
+          deep: '#CC4968',     // CTA gradient — keep unchanged
         },
         body: {
-          DEFAULT: '#5A5A58',
-          light: '#7A7A78',
+          DEFAULT: '#444842',  // Updated from #5A5A58
+          light: '#6E726C',    // Updated from #7A7A78
         },
         gold: '#F7C13D',
         kame: {
@@ -570,27 +591,22 @@ const [fontsLoaded] = useFonts({
 ### Theme Constants File (src/theme/constants.ts)
 ```ts
 export const COLORS = {
-  warmWhite: '#F5F0E8',   // Primary background (also "bone" — text on teal/coral surfaces)
-  teal: '#1AA39C',        // @deprecated — RETIRED, use tealBright instead
-  tealBright: '#48E6CD',  // Brand primary: buttons, text, interactive
+  warmWhite: '#FAF9F7',   // Primary background (updated from #F5F0E8)
+  tealBright: '#48E6CD',  // Brand primary: headlines, buttons, interactive
   coral: '#FA6869',
-  coralDeep: '#CC4968',
-  body: '#5A5A58',        // Body/paragraph text — warm neutral gray
-  bodyLight: '#7A7A78',   // Captions, placeholders, secondary text
-  gold: '#F7C13D',
-  green: '#289B62',
-  red: '#E3393C',
-  purple: '#744DA6',
-  white: '#FFFFFF',
-  gray100: '#F8F9FB',
-  gray200: '#E5E7EB',
-  gray400: '#9CA3AF',
-  gray500: '#6B7280',
-  gray700: '#374151',
+  coralDeep: '#CC4968',   // CTA gradient — keep for button styling
+  body: '#444842',        // Body text — warm green-gray (updated from #5A5A58)
+  bodyLight: '#6E726C',   // Captions, secondary text (updated from #7A7A78)
+  bgSection: '#F4F3F1',   // Section backgrounds
+  textPrimaryDark: '#1A1C1B', // Near-black emphasis text
+  error: '#AD3035',       // Form errors (updated from #E3393C)
+  inputBg: '#E9E8E6',    // Input backgrounds (updated from #F8F9FB)
+  divider: '#C4C8C0',    // Dividers (updated from #E5E7EB)
+  // ... gold, green, red, purple, grays unchanged
 } as const;
 
 export const GRADIENTS = {
-  cta: ['#CC4968', '#FA6869'],
+  cta: ['#CC4968', '#FA6869'],  // CTA gradient — unchanged
   cardOverlay: ['transparent', 'rgba(0,0,0,0.45)'],
   premium: ['#744DA6', '#9B6BC7'],
 } as const;
