@@ -1,0 +1,22 @@
+{
+  "name": "@kame/marketing-videos",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "studio": "remotion studio",
+    "render": "remotion render",
+    "dev": "remotion studio"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.441",
+    "@remotion/player": "4.0.441",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "remotion": "4.0.441"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "typescript": "^5.7.0"
+  }
+}

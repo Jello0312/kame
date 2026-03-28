@@ -11,7 +11,9 @@
     "typecheck": "pnpm -r typecheck",
     "db:migrate": "pnpm --filter @kame/server db:migrate",
     "db:seed": "pnpm --filter @kame/server db:seed",
-    "db:studio": "pnpm --filter @kame/server db:studio"
+    "db:studio": "pnpm --filter @kame/server db:studio",
+    "dev:videos": "pnpm --filter @kame/marketing-videos studio",
+    "render:video": "pnpm --filter @kame/marketing-videos render"
   },
   "engines": {
     "node": ">=20",
